@@ -33,6 +33,22 @@
       "type": "report",
       "added": "2026-06-27",
       "desc": "原文に忠実・章番号・引用ブロック・式の体裁"
+    },
+    {
+      "project": "paper-radar",
+      "title": "論文レーダー ホーム（本命）",
+      "file": "paper-radar/home.html",
+      "type": "dashboard",
+      "added": "2026-06-27",
+      "desc": "今日の配信＋次回設定(キーワード選択/説明レベルslider)＋アーカイブ検索。A案ベース"
+    },
+    {
+      "project": "paper-radar",
+      "title": "論文 詳細ページ（本命A）",
+      "file": "paper-radar/detail.html",
+      "type": "report",
+      "added": "2026-06-27",
+      "desc": "説明レベルslider(やさしい↔専門)で本文がライブ切替・用語タップで定義・豆知識増量"
     }
   ]
 }

@@ -1,0 +1,113 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>論文レーダー</title>
+<style>
+:root{--bg:#fbfaf6;--ink:#1f2430;--mut:#6b6f7a;--accent:#0f6e6a;--accent2:#b5742a;--line:#e7e3d8;--soft:#f3f0e7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:34px 24px 80px}
+.brand{font-size:13px;font-family:"Yu Gothic UI",sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:36px;line-height:1.2;margin:8px 0 6px}
+.tag{font-size:15px;color:var(--mut)}
+.sec{font-family:"Yu Gothic UI",sans-serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:40px 0 14px;display:flex;align-items:center;gap:12px}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* today */
+.today{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 22px 10px;box-shadow:0 8px 24px rgba(31,36,48,.05)}
+.today .date{font-family:"Yu Gothic UI",sans-serif;font-size:13px;color:var(--accent2);font-weight:700;margin-bottom:4px}
+.today h2{font-size:23px;margin-bottom:14px}
+.tg{font-family:"Yu Gothic UI",sans-serif;font-size:11.5px;letter-spacing:.08em;color:var(--mut);font-weight:700;margin:14px 0 7px}
+.pl{display:block;text-decoration:none;color:inherit;border-top:1px solid var(--line);padding:12px 2px}
+.pl:hover{background:#fcfbf7}
+.pl .pt{font-size:16px;font-weight:600;line-height:1.5}
+.pl .pm{font-family:"Yu Gothic UI",sans-serif;font-size:12px;color:var(--mut);margin-top:3px}
+.chip2{display:inline-block;font-family:"Yu Gothic UI",sans-serif;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 8px;margin-right:6px}
+.c-def{background:#e6f1f0;color:var(--accent)}.c-new{background:#f7ecdd;color:var(--accent2)}.c-oa{border:1px solid var(--line);color:var(--mut)}
+
+/* settings */
+.set{background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:22px}
+.set h3{font-family:"Yu Gothic UI",sans-serif;font-size:14px;color:var(--ink);margin:0 0 6px}
+.set .topic{font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;font-weight:800;color:var(--accent);margin:16px 0 8px}
+.kw{display:flex;flex-wrap:wrap;gap:7px}
+.k{user-select:none;cursor:pointer;font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;border:1px solid var(--line);background:#fff;color:var(--mut);border-radius:999px;padding:6px 12px}
+.k.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.slidebox{margin:20px 0 6px;font-family:"Yu Gothic UI",sans-serif}
+.slidebox .row{display:flex;align-items:center;gap:14px}
+.slidebox input{flex:1;accent-color:var(--accent)}
+.slidebox .e{font-size:11.5px;color:var(--mut)}.slidebox .now{font-weight:800;min-width:52px;text-align:right}
+.applybtn{margin-top:16px;width:100%;border:none;border-radius:11px;background:var(--ink);color:#fff;font-family:"Yu Gothic UI",sans-serif;font-weight:800;font-size:14px;padding:13px;cursor:pointer}
+.done{font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;color:var(--accent);text-align:center;height:16px;margin-top:8px;font-weight:700}
+
+/* archive */
+.search{width:100%;font-family:"Yu Gothic UI",sans-serif;font-size:15px;padding:11px 15px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:10px}
+.filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.f{cursor:pointer;font-family:"Yu Gothic UI",sans-serif;font-size:12px;border:1px solid var(--line);background:#fff;color:var(--mut);border-radius:999px;padding:6px 12px}
+.f.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.cards{grid-template-columns:1fr}}
+.card{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;box-shadow:0 3px 10px rgba(31,36,48,.04)}
+.card .ct{font-size:15.5px;font-weight:600;line-height:1.5;margin:6px 0 6px}
+.card .cm{font-family:"Yu Gothic UI",sans-serif;font-size:11.5px;color:var(--mut)}
+.empty{font-family:"Yu Gothic UI",sans-serif;color:var(--mut);text-align:center;padding:24px;grid-column:1/-1}
+</style></head><body><div class="wrap">
+<div class="brand">Paper Radar</div>
+<h1>論文レーダー</h1>
+<div class="tag">気になる論文を、やさしく・きれいに届ける</div>
+
+<div class="sec">今日の配信</div>
+<div class="today"><div class="date">2026-06-27 号 ・ 3トピック × 2件</div><h2>本日のピックアップ</h2>
+<div class="tg">🔩 フォイルガス軸受</div>
+<a class="pl" href="detail.html"><div class="pt">柔軟フォイル気体軸受の連成解析</div><div class="pm"><span class="chip2 c-def">定番</span><span class="chip2 c-oa">OA</span>Heshmat ほか · 1983 · 被引用~900</div></a>
+<a class="pl" href="#"><div class="pt">ガスフォイル軸受の熱弾性流体潤滑モデル</div><div class="pm"><span class="chip2 c-new">最新</span>2025 · arXiv</div></a>
+<div class="tg">🌀 ロータダイナミクス</div>
+<a class="pl" href="#"><div class="pt">回転体‑軸受系の非線形不釣合い応答</div><div class="pm"><span class="chip2 c-def">定番</span>被引用~1200</div></a>
+<a class="pl" href="#"><div class="pt">データ駆動による軸受動特性係数の同定</div><div class="pm"><span class="chip2 c-new">最新</span>2026</div></a>
+<div class="tg">💨 流体ターボ機械</div>
+<a class="pl" href="#"><div class="pt">遠心圧縮機の翼端漏れ流れと損失</div><div class="pm"><span class="chip2 c-def">定番</span>被引用~800</div></a>
+<a class="pl" href="#"><div class="pt">超臨界CO₂ターボ機械の空力設計</div><div class="pm"><span class="chip2 c-new">最新</span>2026 · OA</div></a>
+</div>
+
+<div class="sec">次回サーチ設定</div>
+<div class="set">
+<h3>検索キーワード（ONのものを次回サーチ）</h3>
+<div class="topic">🔩 フォイルガス軸受</div><div class="kw" data-t="foil">
+<span class="k on">gas foil bearing</span><span class="k on">bump foil bearing</span><span class="k">air foil bearing</span><span class="k on">foil thrust bearing</span><span class="k">compliant foil bearing</span><span class="k">oil-free turbomachinery</span></div>
+<div class="topic">🌀 ロータダイナミクス</div><div class="kw" data-t="rotor">
+<span class="k on">rotordynamics</span><span class="k on">rotor stability</span><span class="k">unbalance response</span><span class="k">critical speed</span><span class="k on">stiffness damping coefficients</span><span class="k">subsynchronous vibration</span></div>
+<div class="topic">💨 流体ターボ機械</div><div class="kw" data-t="turbo">
+<span class="k on">centrifugal compressor</span><span class="k">axial turbine aerodynamics</span><span class="k on">impeller CFD</span><span class="k">blade flutter</span><span class="k">surge stall</span><span class="k on">supercritical CO2 turbomachinery</span></div>
+
+<div class="slidebox"><h3 style="margin-top:20px">次号の説明レベル（既定）</h3><div class="row"><span class="e">やさしい</span><input id="slv" type="range" min="1" max="3" value="2"><span class="e">専門</span><span class="now" id="slvn">標準</span></div></div>
+
+<button class="applybtn" id="apply">📋 次回設定をコピー</button>
+<div class="done" id="done"></div>
+</div>
+
+<div class="sec">アーカイブ</div>
+<input class="search" id="q" placeholder="🔍 タイトル・著者で検索">
+<div class="filters" id="filters"><span class="f on" data-f="all">すべて</span><span class="f" data-f="foil">フォイル軸受</span><span class="f" data-f="rotor">ロータ</span><span class="f" data-f="turbo">ターボ機械</span></div>
+<div class="cards" id="cards"></div>
+</div>
+
+<script>
+// keyword toggles
+document.querySelectorAll('.k').forEach(k=>k.onclick=()=>k.classList.toggle('on'));
+// level slider
+const NM={1:"やさしい",2:"標準",3:"専門"};const slv=document.getElementById('slv'),slvn=document.getElementById('slvn');
+slv.oninput=()=>slvn.textContent=NM[slv.value];
+// copy config
+document.getElementById('apply').onclick=()=>{const cfg={level:NM[slv.value],keywords:{}};document.querySelectorAll('.kw').forEach(g=>{cfg.keywords[g.dataset.t]=[...g.querySelectorAll('.k.on')].map(k=>k.textContent)});const txt="【論文レーダー 次回設定】\n"+JSON.stringify(cfg);const d=document.getElementById('done');if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{d.textContent="コピーしました ✓ チャットに貼ってください"},()=>{prompt("コピーしてください",txt)});else prompt("コピーしてください",txt);setTimeout(()=>d.textContent="",3000)};
+// archive
+const ARC=[
+ {t:"柔軟フォイル気体軸受の連成解析",m:"Heshmat 1983 · 定番",f:"foil",h:"detail.html"},
+ {t:"バンプフォイル軸受の動特性係数",m:"2019 · 被引用~210",f:"foil",h:"#"},
+ {t:"回転体‑軸受系の安定性解析",m:"Lund 1974 · 定番",f:"rotor",h:"#"},
+ {t:"シール流体力のロータダイナミクス",m:"2021",f:"rotor",h:"#"},
+ {t:"遠心圧縮機サージの能動制御",m:"2018",f:"turbo",h:"#"},
+ {t:"翼列フラッタの数値予測",m:"2022 · OA",f:"turbo",h:"#"}];
+const cards=document.getElementById('cards');let flt="all",qq="";
+function render(){const list=ARC.filter(a=>(flt=="all"||a.f==flt)&&(!qq||(a.t+a.m).toLowerCase().includes(qq)));cards.innerHTML=list.length?list.map(a=>`<a class="card" href="${a.h}"><div class="cm">${a.f=='foil'?'🔩':a.f=='rotor'?'🌀':'💨'}</div><div class="ct">${a.t}</div><div class="cm">${a.m}</div></a>`).join(''):'<div class="empty">該当なし</div>';}
+document.getElementById('q').oninput=e=>{qq=e.target.value.toLowerCase();render()};
+document.querySelectorAll('.f').forEach(f=>f.onclick=()=>{document.querySelectorAll('.f').forEach(x=>x.classList.remove('on'));f.classList.add('on');flt=f.dataset.f;render()});
+render();
+</script>
+</body></html>
