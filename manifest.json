@@ -1,0 +1,14 @@
+{
+  "title": "viz-panels",
+  "description": "各プロジェクトの可視化をスマホで確認するハブ",
+  "items": [
+    {
+      "project": "kaizen-desk",
+      "title": "巡回コンサル 設定パネル",
+      "file": "kaizen-desk/consult-config.html",
+      "type": "panel",
+      "added": "2026-06-26",
+      "desc": "巡回の対象/深さ/件数/観点を調整して『設定をコピー』→チャットに貼り戻す"
+    }
+  ]
+}

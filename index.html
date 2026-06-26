@@ -1,125 +1,61 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>巡回コンサル 設定パネル</title>
+<title>viz-panels — 可視化ハブ</title>
 <style>
 :root{--bg:#0f1220;--card:#181c2e;--ink:#eef1f8;--mut:#9aa3bd;--ind:#7c8cff;--teal:#2dd4bf;--line:#2a2f47;--amber:#f5b042}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:linear-gradient(160deg,#0f1220,#141a30);color:var(--ink);
- font-family:"Yu Gothic UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
- -webkit-font-smoothing:antialiased;padding:22px;max-width:680px;margin:0 auto}
-h1{font-size:21px;font-weight:800;letter-spacing:.01em}
-.sub{color:var(--mut);font-size:13px;margin:4px 0 18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px;margin-bottom:14px}
-.lab{font-size:13px;font-weight:700;color:var(--mut);letter-spacing:.04em;margin-bottom:10px;text-transform:uppercase}
-.row{display:flex;align-items:center;gap:12px;margin:10px 0}
-input[type=range]{flex:1;accent-color:var(--ind);height:4px}
-.val{min-width:84px;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{user-select:none;cursor:pointer;border:1px solid var(--line);border-radius:999px;
- padding:7px 13px;font-size:13.5px;color:var(--ink);background:#1f2540;transition:.12s}
-.chip.on{background:var(--ind);border-color:var(--ind);color:#0c1023;font-weight:800}
-.chip.proj.on{background:var(--teal);border-color:var(--teal)}
-.tog{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
-.tog:last-child{border-bottom:none}
-.tog .t{font-size:14.5px}
-.sw{width:46px;height:26px;border-radius:999px;background:#2a2f47;position:relative;cursor:pointer;transition:.15s;flex:none}
-.sw.on{background:var(--teal)}
-.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s}
-.sw.on::after{left:23px}
-.prev{background:#0c1023;border:1px solid var(--line);border-radius:14px;padding:16px}
-.prev .pt{font-size:13px;color:var(--teal);font-weight:800;margin-bottom:8px}
-.prev .ps{font-size:15px;line-height:1.7}
-.prev code{background:#1b2138;padding:1px 6px;border-radius:6px;color:var(--ind);font-weight:700}
-.cmd{margin-top:10px;font-family:Consolas,monospace;font-size:13px;color:var(--mut);word-break:break-all}
-.btn{width:100%;margin-top:14px;padding:14px;border:none;border-radius:12px;cursor:pointer;
- background:linear-gradient(90deg,var(--ind),#9aa6ff);color:#0c1023;font-size:15px;font-weight:800}
-.btn:active{transform:translateY(1px)}
-.out{margin-top:10px;width:100%;height:96px;background:#0c1023;color:var(--mut);border:1px solid var(--line);
- border-radius:10px;padding:10px;font-family:Consolas,monospace;font-size:12px;display:none}
-.done{color:var(--teal);font-weight:800;font-size:13px;text-align:center;margin-top:8px;height:16px}
+body{background:linear-gradient(160deg,#0f1220,#141a30);color:var(--ink);min-height:100vh;
+ font-family:"Yu Gothic UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;-webkit-font-smoothing:antialiased;
+ padding:24px 18px 48px;max-width:720px;margin:0 auto}
+header{margin-bottom:8px}
+h1{font-size:23px;font-weight:800;letter-spacing:.01em}
+.sub{color:var(--mut);font-size:13px;margin-top:4px}
+.search{width:100%;margin:18px 0 6px;padding:11px 14px;background:#0c1023;border:1px solid var(--line);
+ border-radius:12px;color:var(--ink);font-size:15px}
+.grp{margin-top:22px}
+.gh{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin:0 2px 10px}
+a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
+ border-radius:16px;padding:15px 16px;margin-bottom:11px;transition:.12s}
+a.card:active{transform:scale(.99)}
+.ct{display:flex;align-items:center;gap:9px}
+.ct .ttl{font-size:16px;font-weight:800}
+.badge{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:#26304f;color:var(--ind)}
+.badge.panel{background:rgba(124,140,255,.16);color:var(--ind)}
+.badge.chart{background:rgba(45,212,191,.16);color:var(--teal)}
+.badge.report{background:rgba(245,176,66,.16);color:var(--amber)}
+.desc{font-size:13px;color:var(--mut);margin-top:6px;line-height:1.6}
+.meta{font-size:11.5px;color:#6b7493;margin-top:7px}
+.empty{color:var(--mut);font-size:14px;text-align:center;padding:40px 0}
+footer{margin-top:30px;color:#6b7493;font-size:11.5px;text-align:center;line-height:1.7}
 </style></head>
 <body>
-<h1>🛰️ 巡回コンサル 設定パネル</h1>
-<div class="sub">触って調整 → 下の「設定をコピー」→ チャットに貼り戻してください</div>
-
-<div class="card">
-  <div class="lab">対象プロジェクト</div>
-  <div class="chips" id="projs"></div>
-</div>
-
-<div class="card">
-  <div class="lab">巡回の深さ</div>
-  <div class="row"><input type="range" id="depth" min="1" max="3" value="2"><span class="val" id="depthV"></span></div>
-  <div class="lab" style="margin-top:14px">1回あたりの提案数</div>
-  <div class="row"><input type="range" id="count" min="3" max="15" value="8"><span class="val" id="countV"></span></div>
-</div>
-
-<div class="card">
-  <div class="lab">観点フォーカス（無選択＝全観点）</div>
-  <div class="chips" id="lenses"></div>
-</div>
-
-<div class="card">
-  <div class="lab">オプション</div>
-  <div class="tog"><span class="t">🚀 新視点の実験案（moonshot）を含む</span><div class="sw on" data-k="moonshot"></div></div>
-  <div class="tog"><span class="t">前回比サマリ（差分）を先頭に</span><div class="sw on" data-k="diff"></div></div>
-  <div class="tog"><span class="t">スマホ用PDFをDriveに出力</span><div class="sw on" data-k="pdf"></div></div>
-  <div class="tog"><span class="t">採否ゲート＝厳格モード</span><div class="sw" data-k="strict"></div></div>
-</div>
-
-<div class="card">
-  <div class="prev">
-    <div class="pt">プレビュー</div>
-    <div class="ps" id="prev"></div>
-    <div class="cmd" id="cmd"></div>
-  </div>
-  <button class="btn" id="copy">📋 設定をコピー</button>
-  <div class="done" id="done"></div>
-  <textarea class="out" id="out" readonly></textarea>
-</div>
-
+<header>
+  <h1>🛰️ viz-panels</h1>
+  <div class="sub">各プロジェクトの可視化をスマホで確認するハブ</div>
+</header>
+<input class="search" id="q" placeholder="🔍 検索（タイトル・説明・プロジェクト）">
+<div id="list"></div>
+<footer>publish: 各プロジェクトのHTMLを <code>&lt;project&gt;/</code> に置き manifest に追記 → push で自動公開<br>YukiKanedomi/viz-panels</footer>
 <script>
-const PROJECTS=["travel-itinerary","qol-radar-app","Counsel","Linkive","experts/gas-bearing","experts/rotordynamics"];
-const LENSES=["デザイン","機能","コンテンツ正確性","パフォーマンス","アクセシビリティ","コード品質","磨き込み","成長"];
-const DEPTH=["浅い(1パス)","標準","深掘り(全レンズ)"];
-const st={projects:["travel-itinerary"],depth:2,count:8,lenses:[],moonshot:true,diff:true,pdf:true,strict:false};
-
-const pc=document.getElementById("projs");
-PROJECTS.forEach(p=>{const e=document.createElement("div");e.className="chip proj"+(st.projects.includes(p)?" on":"");e.textContent=p;
- e.onclick=()=>{const i=st.projects.indexOf(p);i<0?st.projects.push(p):st.projects.splice(i,1);e.classList.toggle("on");render()};pc.appendChild(e)});
-const all=document.createElement("div");all.className="chip";all.textContent="◎ all（全件）";
- all.onclick=()=>{st.projects=st.projects.length===PROJECTS.length?["travel-itinerary"]:[...PROJECTS];
- [...pc.children].forEach((c,idx)=>{if(idx<PROJECTS.length)c.classList.toggle("on",st.projects.includes(PROJECTS[idx]))});render()};pc.appendChild(all);
-
-const lc=document.getElementById("lenses");
-LENSES.forEach(l=>{const e=document.createElement("div");e.className="chip";e.textContent=l;
- e.onclick=()=>{const i=st.lenses.indexOf(l);i<0?st.lenses.push(l):st.lenses.splice(i,1);e.classList.toggle("on");render()};lc.appendChild(e)});
-
-document.getElementById("depth").oninput=e=>{st.depth=+e.target.value;render()};
-document.getElementById("count").oninput=e=>{st.count=+e.target.value;render()};
-document.querySelectorAll(".sw").forEach(s=>s.onclick=()=>{const k=s.dataset.k;st[k]=!st[k];s.classList.toggle("on",st[k]);render()});
-
-function render(){
- document.getElementById("depthV").textContent=DEPTH[st.depth-1];
- document.getElementById("countV").textContent=st.count+"件";
- const tgt=st.projects.length===PROJECTS.length?"all":(st.projects.length?st.projects.join(" + "):"(未選択)");
- const lens=st.lenses.length?st.lenses.join("・"):"全観点";
- const opt=[st.moonshot?"実験案あり":null,st.diff?"前回比":null,st.pdf?"PDF出力":null,st.strict?"厳格":null].filter(Boolean).join(" / ");
- document.getElementById("prev").innerHTML=
-   `対象 <code>${tgt}</code> を、深さ<code>${DEPTH[st.depth-1]}</code>で巡回。`+
-   `観点は<code>${lens}</code>、提案<code>${st.count}件</code>。<br>オプション：${opt||"なし"}`;
- const arg=st.projects.length===PROJECTS.length?"all":(st.projects[0]||"");
- document.getElementById("cmd").textContent="→ /consult "+arg+(st.projects.length>1&&arg!=="all"?"  (＋他"+(st.projects.length-1)+"件)":"");
+const TYPE={panel:"設定パネル",chart:"グラフ",report:"レポート",dashboard:"ダッシュボード"};
+let ITEMS=[];
+fetch('manifest.json?_='+Date.now()).then(r=>r.json()).then(d=>{ITEMS=d.items||[];render('')})
+ .catch(()=>{document.getElementById('list').innerHTML='<div class="empty">manifest.json を読めませんでした</div>'});
+document.getElementById('q').oninput=e=>render(e.target.value.trim().toLowerCase());
+function render(q){
+ const f=ITEMS.filter(it=>!q||[it.title,it.desc,it.project].join(' ').toLowerCase().includes(q));
+ const byProj={};f.forEach(it=>{(byProj[it.project]=byProj[it.project]||[]).push(it)});
+ const el=document.getElementById('list');
+ if(!f.length){el.innerHTML='<div class="empty">該当なし</div>';return}
+ el.innerHTML=Object.keys(byProj).sort().map(p=>{
+  const cards=byProj[p].map(it=>{
+   const t=(it.type||'panel');
+   return `<a class="card" href="${it.file}">
+     <div class="ct"><span class="ttl">${esc(it.title)}</span><span class="badge ${t}">${TYPE[t]||t}</span></div>
+     ${it.desc?`<div class="desc">${esc(it.desc)}</div>`:''}
+     <div class="meta">${it.added||''}</div></a>`}).join('');
+  return `<div class="grp"><div class="gh">${esc(p)}</div>${cards}</div>`}).join('');
 }
-document.getElementById("copy").onclick=()=>{
- const json=JSON.stringify(st);
- const txt="【巡回コンサル設定】\n"+json;
- const o=document.getElementById("out");o.value=txt;
- navigator.clipboard&&navigator.clipboard.writeText(txt).then(
-   ()=>flash("コピーしました ✓"),()=>{o.style.display="block";o.select();flash("下のテキストを選択→コピー")});
- if(!navigator.clipboard){o.style.display="block";o.select();flash("下のテキストを選択→コピー")}
-};
-function flash(m){const d=document.getElementById("done");d.textContent=m;setTimeout(()=>d.textContent="",2600)}
-render();
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 </script>
 </body></html>
