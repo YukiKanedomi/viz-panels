@@ -1,0 +1,63 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C 案 アカデミック</title>
+<style>
+:root{--bg:#ffffff;--ink:#1a1d24;--mut:#5b6270;--accent:#7a1f2b;--line:#e4e6ec;--soft:#f6f7f9;--slate:#33415c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho","Times New Roman",serif;line-height:1.85;-webkit-font-smoothing:antialiased}
+.bar{height:5px;background:linear-gradient(90deg,var(--accent),#b5454f)}
+.wrap{max-width:760px;margin:0 auto;padding:46px 28px 80px}
+.cite{font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;color:var(--mut);background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px 16px;line-height:1.7}
+.cite b{color:var(--ink)}
+h1{font-size:29px;line-height:1.4;margin:22px 0 6px;font-weight:700}
+.sub{font-size:15px;color:var(--mut);font-style:italic;margin-bottom:16px}
+.badges{font-family:"Yu Gothic UI",sans-serif;margin-bottom:26px}
+.bd{font-size:11px;font-weight:700;border-radius:4px;padding:3px 9px;margin-right:6px;background:var(--soft);border:1px solid var(--line);color:var(--slate)}
+.bd.def{background:#fbeef0;border-color:#e9c9ce;color:var(--accent)}
+.abs{font-size:15.5px;background:var(--soft);border-left:3px solid var(--slate);padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:10px}
+.abs .t{font-family:"Yu Gothic UI",sans-serif;font-size:11.5px;font-weight:700;letter-spacing:.1em;color:var(--slate);margin-bottom:6px}
+h2{font-family:"Yu Gothic UI",sans-serif;font-size:17px;font-weight:800;color:var(--slate);margin:34px 0 12px;padding-bottom:7px;border-bottom:2px solid var(--line)}
+h2 .n{color:var(--accent);margin-right:10px}
+p{margin:0 0 13px;text-align:justify}
+.eq{margin:18px 0;display:flex;align-items:center;gap:14px}
+.eq .box{flex:1;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:16px;text-align:center;font-size:18px}
+.eq .box i{font-style:italic}.eq .box sub,.eq .box sup{font-size:.7em}
+.eq .tag{font-family:"Yu Gothic UI",sans-serif;font-size:12px;color:var(--mut)}
+.fig{margin:22px 0;text-align:center}
+.fig svg{width:100%;max-width:520px;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+.fig .cap{font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;color:var(--mut);margin-top:7px}
+.nums{display:flex;gap:12px;margin:20px 0}
+.num{flex:1;text-align:center;border:1px solid var(--line);border-radius:8px;padding:14px}
+.num .v{font-size:21px;font-weight:700;color:var(--accent);font-family:"Yu Gothic UI",sans-serif}
+.num .l{font-family:"Yu Gothic UI",sans-serif;font-size:11.5px;color:var(--mut);margin-top:3px}
+.note{font-family:"Yu Gothic UI",sans-serif;font-size:14.5px;background:#fbf8f2;border:1px solid #ecdfc7;border-radius:8px;padding:15px 18px;margin:22px 0;color:#5a4a2a}
+.note .t{font-weight:800;color:#9a6a1a;margin-bottom:5px;font-size:12.5px;letter-spacing:.06em}
+.orig{display:inline-block;font-family:"Yu Gothic UI",sans-serif;font-size:14px;font-weight:700;color:#fff;background:var(--accent);border-radius:6px;padding:11px 22px;margin-top:28px;text-decoration:none}
+</style></head><body><div class="bar"></div><div class="wrap">
+<div class="cite"><b>Heshmat, H., Walowit, J. A., &amp; Pinkus, O.</b> (1983). Analysis of Gas-Lubricated Compliant Foil Journal Bearings. <i>ASME Journal of Lubrication Technology</i>. &nbsp;被引用 ~900 · DOI: 10.1115/1.xxxxxxx</div>
+<h1>柔軟フォイル気体軸受の連成解析</h1>
+<div class="sub">Gas-Lubricated Compliant Foil Journal Bearings</div>
+<div class="badges"><span class="bd def">定番 / Seminal</span><span class="bd">OA・全文</span><span class="bd">難易度 ★★☆</span></div>
+
+<div class="abs"><div class="t">要旨（原文に忠実）</div>気体潤滑膜と柔軟フォイル構造を連成して解いた先駆的研究。圧縮性レイノルズ方程式とフォイルのコンプライアンスを結合し、膜厚分布と負荷容量を予測する枠組みを与えた。オイルフリー高速ターボ機械のフォイル軸受設計の理論的基盤。</div>
+
+<h2><span class="n">1.</span>背景と課題</h2>
+<p>剛体の気体軸受は負荷容量と安定性に本質的な限界をもつ。柔軟フォイルは流体圧に応じて膜形状を自己調整し得るが、本研究以前は流体膜とフォイル弾性の連成を扱う解析的枠組みが確立されていなかった。</p>
+
+<h2><span class="n">2.</span>解析手法</h2>
+<p>気体膜には圧縮性レイノルズ方程式を、フォイルにはバンプ構造を等価剛性で表したコンプライアンスモデルを用い、両者を結合して数値的に解いた（原文 §2–3）。</p>
+<div class="eq"><div class="box"><i>∂</i>/<i>∂x</i>(<i>p h</i><sup>3</sup> <i>∂p</i>/<i>∂x</i>) + <i>∂</i>/<i>∂z</i>(<i>p h</i><sup>3</sup> <i>∂p</i>/<i>∂z</i>) = 6<i>μU</i> <i>∂</i>(<i>p h</i>)/<i>∂x</i></div><div class="tag">式(1)<br>原文通り</div></div>
+<p>ここで膜厚 <i>h</i> はフォイル変形 <i>δ(p)</i> を含み、圧力分布と連成して定まる。</p>
+
+<h2><span class="n">3.</span>主要な結果</h2>
+<div class="nums"><div class="num"><div class="v">↑ 負荷容量</div><div class="l">剛体比で向上</div></div><div class="num"><div class="v">安定域 拡大</div><div class="l">高速域で安定</div></div><div class="num"><div class="v">ε, Λ<sub>c</sub></div><div class="l">無次元整理</div></div></div>
+<div class="fig"><svg viewBox="0 0 520 150"><rect width="520" height="150" fill="#fff"/><circle cx="120" cy="70" r="44" fill="none" stroke="#33415c" stroke-width="1.6"/><circle cx="126" cy="70" r="27" fill="#7a1f2b" opacity=".1"/><circle cx="126" cy="70" r="27" fill="none" stroke="#7a1f2b" stroke-width="1.6"/><path d="M120 26 a44 44 0 0 1 0 88" fill="none" stroke="#7a1f2b" stroke-width="3" stroke-dasharray="3 3"/><text x="120" y="135" font-family="sans-serif" font-size="11.5" fill="#5b6270" text-anchor="middle">偏心したジャーナルとフォイル膜</text>
+<text x="330" y="50" font-family="sans-serif" font-size="12.5" fill="#1a1d24">・膜厚が自己調整</text><text x="330" y="74" font-family="sans-serif" font-size="12.5" fill="#1a1d24">・負荷容量を ε, Λc で整理</text><text x="330" y="98" font-family="sans-serif" font-size="12.5" fill="#1a1d24">・安定領域が拡大</text></svg><div class="cap">図1：偏心率 ε とコンプライアンス数 Λc による整理（概念図）</div></div>
+<p>膜厚とフォイル変形の自己調整を定量化し、負荷容量を偏心率とコンプライアンス数で統一的に整理。剛体軸受に比べ安定領域が拡大することを示した。</p>
+
+<div class="note"><div class="t">補足・豆知識</div>フォイル軸受は NASA の航空機エアサイクルマシンで実用化が進展。現在はオイルフリーの空調用圧縮機やマイクロガスタービンに搭載され、Heshmat らの一連の研究が設計理論を支えている。</div>
+
+<h2><span class="n">4.</span>限界と展望</h2>
+<p>等温・層流を仮定し、フォイルの動的挙動や摩擦は簡略化されている。動特性（剛性・減衰係数）の精緻化は後続研究に委ねられた。</p>
+
+<a class="orig" href="#">原文（DOI）を開く →</a>
+</div></body></html>

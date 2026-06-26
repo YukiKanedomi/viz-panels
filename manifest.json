@@ -9,6 +9,30 @@
       "type": "panel",
       "added": "2026-06-26",
       "desc": "巡回の対象/深さ/件数/観点を調整して『設定をコピー』→チャットに貼り戻す"
+    },
+    {
+      "project": "paper-radar",
+      "title": "論文詳細 案A エディトリアル",
+      "file": "paper-radar/A-editorial.html",
+      "type": "report",
+      "added": "2026-06-27",
+      "desc": "Quanta/Distill風・読み物として美しい。広い余白・線画・用語ホバー"
+    },
+    {
+      "project": "paper-radar",
+      "title": "論文詳細 案B モダンテック",
+      "file": "paper-radar/B-tech.html",
+      "type": "report",
+      "added": "2026-06-27",
+      "desc": "ダーク・数値カード/タブ/チャート主役。ダッシュボード感"
+    },
+    {
+      "project": "paper-radar",
+      "title": "論文詳細 案C アカデミック",
+      "file": "paper-radar/C-academic.html",
+      "type": "report",
+      "added": "2026-06-27",
+      "desc": "原文に忠実・章番号・引用ブロック・式の体裁"
     }
   ]
 }

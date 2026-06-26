@@ -1,0 +1,68 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A 案 エディトリアル</title>
+<style>
+:root{--bg:#fbfaf6;--ink:#1f2430;--mut:#6b6f7a;--accent:#0f6e6a;--line:#e7e3d8;--soft:#f3f0e7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:740px;margin:0 auto;padding:54px 26px 80px}
+.kick{font-family:"Yu Gothic UI",sans-serif;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:34px;line-height:1.3;margin:14px 0 16px;letter-spacing:.01em}
+.meta{font-family:"Yu Gothic UI",sans-serif;font-size:13.5px;color:var(--mut);border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:8px}
+.meta b{color:var(--ink)}
+.badges{margin:18px 0 26px}
+.bd{font-family:"Yu Gothic UI",sans-serif;font-size:11.5px;font-weight:700;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:3px 11px;margin-right:7px}
+.bd.fill{background:var(--accent);color:#fff}
+.lead{font-size:19px;line-height:1.9;color:#33384a}
+.lead .dc{float:left;font-size:62px;line-height:.78;font-weight:700;color:var(--accent);margin:6px 12px 0 0}
+.sec{font-family:"Yu Gothic UI",sans-serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:42px 0 12px;display:flex;align-items:center;gap:12px}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+p{margin:0 0 14px}
+.eq{background:var(--soft);border-radius:10px;padding:18px 20px;text-align:center;font-size:19px;margin:18px 0;color:#1a2b2a}
+.eq i{font-style:italic} .eq sub,.eq sup{font-size:.7em}
+.eq .cap{display:block;font-family:"Yu Gothic UI",sans-serif;font-size:12px;color:var(--mut);margin-top:8px;font-style:normal}
+.fig{margin:24px 0}
+.fig svg{width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
+.fig .cap{font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;color:var(--mut);margin-top:8px;text-align:center}
+.nums{display:flex;gap:14px;margin:22px 0}
+.num{flex:1;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.num .v{font-size:25px;font-weight:700;color:var(--accent)}
+.num .l{font-family:"Yu Gothic UI",sans-serif;font-size:12px;color:var(--mut);margin-top:3px}
+.triv{background:#fff;border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:16px 20px;margin:26px 0;font-size:15.5px}
+.triv .t{font-family:"Yu Gothic UI",sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--accent);margin-bottom:6px}
+.term{border-bottom:1.5px dotted var(--accent);cursor:help}
+.orig{display:inline-block;font-family:"Yu Gothic UI",sans-serif;font-size:14px;font-weight:700;color:#fff;background:var(--ink);border-radius:10px;padding:11px 20px;margin-top:30px;text-decoration:none}
+</style></head><body><div class="wrap">
+<div class="kick">定番論文 · Gas Foil Bearing</div>
+<h1>柔軟フォイル気体軸受の連成解析</h1>
+<div class="meta"><b>H. Heshmat, J. A. Walowit, O. Pinkus</b> &nbsp;·&nbsp; ASME J. of Lubrication Technology &nbsp;·&nbsp; 1983 &nbsp;·&nbsp; 被引用 ~900</div>
+<div class="badges"><span class="bd fill">定番</span><span class="bd">OA・全文</span><span class="bd">難易度 ★★☆</span></div>
+
+<p class="lead"><span class="dc">フ</span>ォイル軸受の気体潤滑膜と柔軟フォイル構造を<b>連成</b>して解いた先駆的研究。圧縮性レイノルズ方程式とフォイルの<span class="term">コンプライアンス</span>を結合し、膜厚分布と負荷容量を予測。オイルフリー高速ターボ機械の設計基盤となった。</p>
+
+<div class="sec">何が問題だったか</div>
+<p>剛体の気体軸受は負荷容量と安定性に限界がある。柔軟フォイルは膜形状を<b>自己調整</b>するが、当時は流体膜とフォイル弾性の連成解析が確立していなかった。</p>
+
+<div class="sec">手法</div>
+<p>圧縮性レイノルズ方程式（気体膜）に、バンプ構造を等価剛性で表したフォイルのコンプライアンスを結合し、数値的に解いた。</p>
+<div class="eq"><i>∂</i>/<i>∂x</i> ( <i>p h</i><sup>3</sup> <i>∂p</i>/<i>∂x</i> ) + <i>∂</i>/<i>∂z</i> ( <i>p h</i><sup>3</sup> <i>∂p</i>/<i>∂z</i> ) = 6<i>μU</i> <i>∂</i>(<i>p h</i>)/<i>∂x</i>
+<span class="cap">圧縮性レイノルズ方程式（原文 式(1)）。膜厚 <i>h</i> はフォイル変形 <i>δ(p)</i> を含み自己調整する</span></div>
+
+<div class="fig"><svg viewBox="0 0 600 150"><rect x="0" y="0" width="600" height="150" fill="#fff"/>
+<circle cx="120" cy="75" r="48" fill="none" stroke="#0f6e6a" stroke-width="2"/><circle cx="120" cy="75" r="30" fill="#0f6e6a" opacity=".12"/><circle cx="120" cy="75" r="30" fill="none" stroke="#0f6e6a" stroke-width="2"/><text x="120" y="140" font-family="sans-serif" font-size="12" fill="#6b6f7a" text-anchor="middle">①剛体軸受</text>
+<path d="M200 75 h60" stroke="#1f2430" stroke-width="1.5" marker-end="url(#a)"/><defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#1f2430"/></marker></defs>
+<circle cx="330" cy="75" r="48" fill="none" stroke="#0f6e6a" stroke-width="2" stroke-dasharray="4 3"/><circle cx="336" cy="75" r="30" fill="#0f6e6a" opacity=".12"/><circle cx="336" cy="75" r="30" fill="none" stroke="#0f6e6a" stroke-width="2"/><text x="330" y="140" font-family="sans-serif" font-size="12" fill="#6b6f7a" text-anchor="middle">②フォイルが変形</text>
+<path d="M410 75 h60" stroke="#1f2430" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="540" y="70" font-family="sans-serif" font-size="13" fill="#0f6e6a" text-anchor="middle" font-weight="700">膜厚が</text><text x="540" y="88" font-family="sans-serif" font-size="13" fill="#0f6e6a" text-anchor="middle" font-weight="700">自己調整</text></svg>
+<div class="cap">図：剛体軸受 → フォイル変形 → 膜厚の自己調整（概念）</div></div>
+
+<div class="sec">主要な結果</div>
+<div class="nums"><div class="num"><div class="v">↑ 負荷容量</div><div class="l">剛体比で向上</div></div><div class="num"><div class="v">安定域 拡大</div><div class="l">高速まで安定</div></div><div class="num"><div class="v">ε, Λ<sub>c</sub></div><div class="l">無次元で整理</div></div></div>
+<p>膜厚とフォイル変形の自己調整を定量化。負荷容量が偏心率 <i>ε</i> とコンプライアンス数 <i>Λ<sub>c</sub></i> で整理できることを示し、剛体軸受比で安定領域が広がることを明らかにした。</p>
+
+<div class="triv"><div class="t">豆知識</div>フォイル軸受は NASA の航空機エアサイクルマシンで実用化が進み、現在は<b>オイルフリー空調圧縮機やマイクロガスタービン</b>に搭載。Heshmat らの一連の研究がその設計理論を支えた。</div>
+
+<div class="sec">限界</div>
+<p>等温・層流の仮定、フォイルの動的挙動や摩擦は簡略化。動特性（減衰）の精緻化は後続研究に委ねられた。</p>
+
+<a class="orig" href="#">原文を読む（DOI） →</a>
+</div></body></html>
