@@ -1,7 +1,7 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>論文レーダー</title>
 <style>
-:root{--bg:#faf9f5;--ink:#1d2127;--mut:#6c7078;--accent:#1a5e54;--accent-d:#114a42;--line:#e7e4db;--soft:#f2f0e9}
+:root{--bg:#faf9f5;--ink:#1d2127;--mut:#6c7078;--accent:#1a5e54;--line:#e7e4db;--soft:#f2f0e9}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;-webkit-font-smoothing:antialiased}
 .wrap{max-width:760px;margin:0 auto;padding:36px 24px 80px}
@@ -20,20 +20,6 @@ h1{font-size:37px;line-height:1.18;margin:9px 0 6px;letter-spacing:.01em}
 .pl .pm{font-family:"Yu Gothic UI",sans-serif;font-size:12px;color:var(--mut);margin-top:3px}
 .chip2{display:inline-block;font-family:"Yu Gothic UI",sans-serif;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 9px;margin-right:6px}
 .c-def{background:var(--accent);color:#fff}.c-new{border:1px solid var(--accent);color:var(--accent)}.c-oa{border:1px solid var(--line);color:var(--mut)}
-.set{background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:22px}
-.set h3{font-family:"Yu Gothic UI",sans-serif;font-size:13.5px;color:var(--ink);margin:0 0 4px}
-.set .topic{font-family:"Yu Gothic UI",sans-serif;font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--accent);margin:18px 0 8px}
-.kw{display:flex;flex-wrap:wrap;gap:7px}
-.k{user-select:none;cursor:pointer;font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;border:1px solid var(--line);background:#fff;color:var(--mut);border-radius:999px;padding:6px 12px}
-.k.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
-.count{margin:22px 0 4px;font-family:"Yu Gothic UI",sans-serif}
-.count .row{display:flex;align-items:center;gap:14px;margin-top:8px}
-.count .stp{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
-.count .stp button{border:none;background:#fff;width:40px;height:40px;font-size:20px;cursor:pointer;color:var(--accent)}
-.count .stp .n{width:48px;text-align:center;font-size:17px;font-weight:800;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:40px}
-.count .hint{font-size:12.5px;color:var(--mut)} .count .hint b{color:var(--ink)}
-.applybtn{margin-top:18px;width:100%;border:none;border-radius:11px;background:var(--ink);color:#fff;font-family:"Yu Gothic UI",sans-serif;font-weight:800;font-size:14px;padding:13px;cursor:pointer}
-.done{font-family:"Yu Gothic UI",sans-serif;font-size:12.5px;color:var(--accent);text-align:center;height:16px;margin-top:8px;font-weight:700}
 .search{width:100%;font-family:"Yu Gothic UI",sans-serif;font-size:15px;padding:11px 15px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:10px}
 .filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
 .f{cursor:pointer;font-family:"Yu Gothic UI",sans-serif;font-size:12px;border:1px solid var(--line);background:#fff;color:var(--mut);border-radius:999px;padding:6px 12px}
@@ -51,54 +37,29 @@ h1{font-size:37px;line-height:1.18;margin:9px 0 6px;letter-spacing:.01em}
 <div class="tag">気になる論文を、やさしく・きれいに届ける</div>
 
 <div class="sec">今日の配信</div>
-<div class="today"><div class="date">2026-06-27 号 — 3トピック × 2件</div><h2>本日のピックアップ</h2>
+<div class="today"><div class="date">2026-06-27 号 — 各トピック 2件</div><h2>本日のピックアップ</h2>
 <div class="tg">フォイルガス軸受</div>
-<a class="pl" href="detail.html"><div class="pt">柔軟フォイル気体軸受の連成解析</div><div class="pm"><span class="chip2 c-def">定番</span><span class="chip2 c-oa">OA</span>Heshmat ほか · 1983 · 被引用~900</div></a>
+<a class="pl" href="detail.html"><div class="pt">柔軟フォイル気体軸受の連成解析</div><div class="pm"><span class="chip2 c-def">定番</span><span class="chip2 c-oa">OA</span>Heshmat ほか · 1983</div></a>
 <a class="pl" href="#"><div class="pt">ガスフォイル軸受の熱弾性流体潤滑モデル</div><div class="pm"><span class="chip2 c-new">最新</span>2025 · arXiv</div></a>
 <div class="tg">ロータダイナミクス</div>
-<a class="pl" href="#"><div class="pt">回転体‑軸受系の非線形不釣合い応答</div><div class="pm"><span class="chip2 c-def">定番</span>被引用~1200</div></a>
+<a class="pl" href="#"><div class="pt">回転体‑軸受系の非線形不釣合い応答</div><div class="pm"><span class="chip2 c-def">定番</span></div></a>
 <a class="pl" href="#"><div class="pt">データ駆動による軸受動特性係数の同定</div><div class="pm"><span class="chip2 c-new">最新</span>2026</div></a>
-<div class="tg">流体ターボ機械</div>
-<a class="pl" href="#"><div class="pt">遠心圧縮機の翼端漏れ流れと損失</div><div class="pm"><span class="chip2 c-def">定番</span>被引用~800</div></a>
-<a class="pl" href="#"><div class="pt">超臨界CO₂ターボ機械の空力設計</div><div class="pm"><span class="chip2 c-new">最新</span>2026 · OA</div></a>
-</div>
-
-<div class="sec">次回サーチ設定</div>
-<div class="set">
-<h3>検索キーワード（ONのものを次回サーチ）</h3>
-<div class="topic">フォイルガス軸受</div><div class="kw" data-t="foil">
-<span class="k on">gas foil bearing</span><span class="k on">bump foil bearing</span><span class="k">air foil bearing</span><span class="k on">foil thrust bearing</span><span class="k">compliant foil bearing</span><span class="k">oil-free turbomachinery</span></div>
-<div class="topic">ロータダイナミクス</div><div class="kw" data-t="rotor">
-<span class="k on">rotordynamics</span><span class="k on">rotor stability</span><span class="k">unbalance response</span><span class="k">critical speed</span><span class="k on">stiffness damping coefficients</span><span class="k">subsynchronous vibration</span></div>
-<div class="topic">流体ターボ機械</div><div class="kw" data-t="turbo">
-<span class="k on">centrifugal compressor</span><span class="k">axial turbine aerodynamics</span><span class="k on">impeller CFD</span><span class="k">blade flutter</span><span class="k">surge stall</span><span class="k on">supercritical CO2 turbomachinery</span></div>
-
-<div class="count"><h3 style="margin-top:18px">次回の配信数</h3><div class="row"><div class="stp"><button id="minus">−</button><span class="n" id="cnt">2</span><button id="plus">＋</button></div><div class="hint">1トピックあたり <b id="cnth">2</b> 件（3トピックで計 <b id="tot">6</b> 件）</div></div></div>
-
-<button class="applybtn" id="apply">次回設定をコピー</button>
-<div class="done" id="done"></div>
 </div>
 
 <div class="sec">アーカイブ</div>
 <input class="search" id="q" placeholder="タイトル・著者で検索">
-<div class="filters" id="filters"><span class="f on" data-f="all">すべて</span><span class="f" data-f="foil">フォイル軸受</span><span class="f" data-f="rotor">ロータ</span><span class="f" data-f="turbo">ターボ機械</span></div>
+<div class="filters" id="filters"><span class="f on" data-f="all">すべて</span><span class="f" data-f="foil">フォイル軸受</span><span class="f" data-f="rotor">ロータダイナミクス</span></div>
 <div class="cards" id="cards"></div>
 </div>
-
 <script>
-document.querySelectorAll('.k').forEach(k=>k.onclick=()=>k.classList.toggle('on'));
-let cnt=2;const cn=document.getElementById('cnt'),cnh=document.getElementById('cnth'),tot=document.getElementById('tot');
-function setc(n){cnt=Math.max(1,Math.min(5,n));cn.textContent=cnt;cnh.textContent=cnt;tot.textContent=cnt*3;}
-document.getElementById('plus').onclick=()=>setc(cnt+1);document.getElementById('minus').onclick=()=>setc(cnt-1);
-document.getElementById('apply').onclick=()=>{const cfg={perTopic:cnt,keywords:{}};document.querySelectorAll('.kw').forEach(g=>{cfg.keywords[g.dataset.t]=[...g.querySelectorAll('.k.on')].map(k=>k.textContent)});const txt="【論文レーダー 次回設定】\n"+JSON.stringify(cfg);const d=document.getElementById('done');if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{d.textContent="コピーしました — チャットに貼ってください"},()=>prompt("コピーしてください",txt));else prompt("コピーしてください",txt);setTimeout(()=>d.textContent="",3200)};
 const ARC=[
  {t:"柔軟フォイル気体軸受の連成解析",m:"Heshmat 1983 · 定番",f:"foil",h:"detail.html"},
- {t:"バンプフォイル軸受の動特性係数",m:"2019 · 被引用~210",f:"foil",h:"#"},
+ {t:"バンプフォイル軸受の動特性係数",m:"2019",f:"foil",h:"#"},
+ {t:"ガスフォイル軸受の熱弾性流体潤滑モデル",m:"2025 · arXiv",f:"foil",h:"#"},
  {t:"回転体‑軸受系の安定性解析",m:"Lund 1974 · 定番",f:"rotor",h:"#"},
  {t:"シール流体力のロータダイナミクス",m:"2021",f:"rotor",h:"#"},
- {t:"遠心圧縮機サージの能動制御",m:"2018",f:"turbo",h:"#"},
- {t:"翼列フラッタの数値予測",m:"2022 · OA",f:"turbo",h:"#"}];
-const TP={foil:"フォイル軸受",rotor:"ロータダイナミクス",turbo:"ターボ機械"};
+ {t:"データ駆動による軸受動特性係数の同定",m:"2026",f:"rotor",h:"#"}];
+const TP={foil:"フォイル軸受",rotor:"ロータダイナミクス"};
 const cards=document.getElementById('cards');let flt="all",qq="";
 function render(){const list=ARC.filter(a=>(flt=="all"||a.f==flt)&&(!qq||(a.t+a.m).toLowerCase().includes(qq)));cards.innerHTML=list.length?list.map(a=>`<a class="card" href="${a.h}"><div class="tp">${TP[a.f]}</div><div class="ct">${a.t}</div><div class="cm">${a.m}</div></a>`).join(''):'<div class="empty">該当なし</div>';}
 document.getElementById('q').oninput=e=>{qq=e.target.value.toLowerCase();render()};
