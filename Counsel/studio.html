@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>フォイル軸受 特許アイデア工房</title>
+<style>
+  :root{
+    --bg:#0e1320; --panel:#161d2e; --panel2:#1d2638; --line:#2a3650;
+    --ink:#e8edf7; --muted:#9aa9c4; --faint:#6b7896;
+    --idf:#34d399; --honmei:#fbbf24; --ikusei:#60a5fa; --tane:#94a3b8; --yubou:#a78bfa;
+    --accent:#7dd3fc; --bar:#3b82f6; --hot:#fb7185;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+    -webkit-text-size-adjust:100%;}
+  .wrap{max-width:1000px;margin:0 auto;padding:14px 14px 60px;}
+  h1{font-size:18px;margin:2px 0 2px;letter-spacing:.02em}
+  .sub{color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.5}
+  .small{font-size:11px;color:var(--muted)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+  .card h2{font-size:14px;margin:0 0 10px;color:var(--accent);letter-spacing:.03em;font-weight:700}
+
+  /* tab bar */
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 2px;position:sticky;top:0;background:var(--bg);z-index:5}
+  .tab{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .tab.on{background:var(--accent);color:#06283b;border-color:var(--accent)}
+  .view{display:none}
+  .view.on{display:block}
+
+  /* controls (dashboard) */
+  .ctrl{display:flex;flex-direction:column;gap:12px}
+  .slider-row{display:grid;grid-template-columns:108px 1fr 40px;align-items:center;gap:10px}
+  .slider-row label{font-size:12.5px}
+  .slider-row .val{font-variant-numeric:tabular-nums;text-align:right;color:var(--accent);font-size:12.5px}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:5px;border-radius:6px;
+    background:linear-gradient(90deg,var(--bar),var(--accent));outline:none;width:100%}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;
+    border-radius:50%;background:#fff;border:2px solid var(--bar);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--bar)}
+  .toggle{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+  .toggle input{width:17px;height:17px;accent-color:var(--idf)}
+
+  svg{width:100%;height:auto;display:block;touch-action:manipulation}
+  .legend{display:flex;flex-wrap:wrap;gap:9px 15px;margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+
+  /* card rows */
+  .row{border:1px solid var(--line);border-radius:11px;margin:9px 0;overflow:hidden;background:var(--panel2)}
+  .rhead{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px;padding:11px 12px;cursor:pointer}
+  .rank{font-weight:800;font-size:15px;color:var(--faint);text-align:center;font-variant-numeric:tabular-nums}
+  .rtitle{min-width:0}
+  .rtitle .nm{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .rtitle .core{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .idtag{font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+  .badge{font-size:10px;font-weight:700;border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .b-idf{background:rgba(52,211,153,.16);color:var(--idf);border:1px solid rgba(52,211,153,.4)}
+  .b-honmei{background:rgba(251,191,36,.15);color:var(--honmei);border:1px solid rgba(251,191,36,.4)}
+  .b-ikusei{background:rgba(96,165,250,.15);color:var(--ikusei);border:1px solid rgba(96,165,250,.4)}
+  .b-tane{background:rgba(148,163,184,.15);color:var(--tane);border:1px solid rgba(148,163,184,.4)}
+  .b-yubou{background:rgba(167,139,250,.15);color:var(--yubou);border:1px solid rgba(167,139,250,.4)}
+  .rright{display:flex;align-items:center;gap:9px}
+  .score{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px;color:var(--accent);min-width:34px;text-align:right}
+  .scorebar{width:54px;height:6px;border-radius:5px;background:#0c1322;overflow:hidden}
+  .scorebar i{display:block;height:100%;background:linear-gradient(90deg,var(--bar),var(--accent))}
+  .star{font-size:18px;line-height:1;color:var(--faint);cursor:pointer;padding:2px;user-select:none}
+  .star.on{color:var(--honmei)}
+  .rbody{display:none;padding:0 12px 13px;border-top:1px solid var(--line)}
+  .row.open .rbody{display:block}
+  .kv{display:grid;grid-template-columns:78px 1fr;gap:5px 10px;margin-top:11px;font-size:12px;line-height:1.5}
+  .kv dt{color:var(--faint)}
+  .kv dd{margin:0}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+  .chip{font-size:10.5px;background:#0c1322;border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--accent)}
+  .chip.eff{color:var(--muted)}
+  .reflink{font-size:11px;color:var(--accent);cursor:pointer;border-bottom:1px dotted var(--accent)}
+  .gate{font-size:10.5px;border-radius:6px;padding:1px 8px;border:1px solid var(--line);font-weight:700}
+  .g-strong{color:#86efac;border-color:rgba(52,211,153,.45)}
+  .g-mid{color:#fcd34d;border-color:rgba(251,191,36,.45)}
+  .g-weak{color:#fca5a5;border-color:rgba(248,113,113,.45)}
+  .g-none{color:var(--faint)}
+  .relpill{font-size:10.5px;color:var(--ikusei);border:1px solid var(--line);border-radius:6px;padding:0 6px;cursor:pointer}
+  .figthumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .figthumb{width:120px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;cursor:pointer}
+  .figthumb .cap{font-size:9.5px;color:#334;padding:2px 5px;background:#eef2f7;text-align:center}
+  .warn{color:#fca5a5}
+
+  /* ref map */
+  .refgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .reflist{max-height:none}
+  .refrow{border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin:7px 0;background:var(--panel2);cursor:pointer}
+  .refrow.hot{border-color:rgba(251,113,133,.5)}
+  .refrow.sel{box-shadow:0 0 0 1.5px var(--accent)}
+  .refrow .no{font-weight:800;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .refrow .ap{font-size:10.5px;color:var(--muted)}
+  .refrow .fl{font-size:11px;color:var(--ink);margin-top:3px;line-height:1.4}
+  .citebadge{font-size:9.5px;border-radius:20px;padding:1px 7px;border:1px solid var(--line);color:var(--faint);font-variant-numeric:tabular-nums}
+  .citebadge.hot{color:#fda4af;border-color:rgba(251,113,133,.5)}
+  .refdetail{border:1px solid var(--line);border-radius:11px;padding:12px;background:var(--panel2);min-height:120px}
+  .cardchip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;border:1px solid var(--line);border-radius:8px;padding:5px 9px;margin:4px 5px 0 0;cursor:pointer;background:#0c1322}
+
+  /* pipeline */
+  .kan{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kcol{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:9px;min-height:90px}
+  .kcol h3{font-size:12px;margin:0 0 9px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+  .kcount{font-size:10px;background:#0c1322;border:1px solid var(--line);border-radius:20px;padding:0 7px;color:var(--faint)}
+  .ktile{border:1px solid var(--line);border-radius:9px;padding:8px;margin:7px 0;background:var(--panel);cursor:pointer;border-left-width:4px}
+  .ktile .kt{font-size:11.5px;font-weight:700;line-height:1.35}
+  .ktile .kid{font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums}
+
+  /* gallery */
+  .galfilter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .galfilter button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 11px;font-size:11.5px;cursor:pointer}
+  .galfilter button.on{background:var(--accent);color:#06283b;border-color:var(--accent)}
+  .galgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .galcell{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .galcell .gsvg{padding:6px}
+  .galcell .gcap{font-size:11px;color:#223;background:#eef2f7;padding:6px 9px;border-top:1px solid #dde}
+  .galcell .gcap b{color:#0a3}
+  .galcell .gcap .gk{color:#667;font-size:10px}
+
+  /* output */
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--idf);color:#06281c;font-weight:800;border:none;border-radius:10px;padding:11px 16px;font-size:13.5px;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .btn.sec{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:700}
+  .outbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  textarea{width:100%;height:120px;margin-top:10px;background:#0a0f1a;color:#cfe3ff;border:1px solid var(--line);border-radius:9px;padding:10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
+  .copied{color:var(--idf);font-size:12px;font-weight:700;opacity:0;transition:opacity .2s}
+  .copied.show{opacity:1}
+  .foot{color:var(--faint);font-size:10.5px;line-height:1.6;margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+
+  /* lightbox */
+  .lb{position:fixed;inset:0;background:rgba(4,8,16,.88);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+  .lb.on{display:flex}
+  .lb .box{background:#fff;border-radius:12px;max-width:96vw;max-height:92vh;overflow:auto;padding:8px}
+  .lb .cap{font-size:12px;color:#223;text-align:center;padding:6px}
+  .lb .x{position:fixed;top:14px;right:18px;color:#fff;font-size:26px;cursor:pointer;font-weight:700}
+
+  @media(max-width:640px){
+    .refgrid{grid-template-columns:1fr}
+    .kan{grid-template-columns:1fr;}
+    .galgrid{grid-template-columns:1fr}
+    .slider-row{grid-template-columns:92px 1fr 34px}
+    h1{font-size:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧭 フォイル軸受 特許アイデア工房</h1>
+  <p class="sub" id="subline">アイデアを俯瞰し、文献の混み具合を見て、段階を管理し、図を並べる。<span class="small">公開版（安全側のみ表示）。スコアは仮・web一次調査ベース。</span></p>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="dash">① ダッシュボード</button>
+    <button class="tab" data-tab="ref">② 文献マップ</button>
+    <button class="tab" data-tab="pipe">③ パイプライン</button>
+    <button class="tab" data-tab="gal">④ 図ギャラリー</button>
+  </div>
+
+  <!-- ===== ① DASHBOARD ===== -->
+  <section class="view on" id="view-dash">
+    <div class="card">
+      <h2>重みづけ（何を重視して並べるか）</h2>
+      <div class="ctrl">
+        <div class="slider-row"><label>新規性</label><input type="range" id="wN" min="0" max="100" value="40"><span class="val" id="wNv">40</span></div>
+        <div class="slider-row"><label>製作性</label><input type="range" id="wM" min="0" max="100" value="35"><span class="val" id="wMv">35</span></div>
+        <div class="slider-row"><label>進歩性の強度</label><input type="range" id="wG" min="0" max="100" value="25"><span class="val" id="wGv">25</span></div>
+        <label class="toggle"><input type="checkbox" id="gatedOnly"><span>IDF化の案だけ表示</span></label>
+        <p class="small" style="margin:0">「進歩性の強度」は進歩性スクリーニングの判定（強/中/弱）。未実施の案は新規性を仮値に使い「暫定」と表示。</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>散布図：新規性 × 製作性</h2>
+      <svg id="plot" viewBox="0 0 600 440"></svg>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--idf)"></i>IDF化</span>
+        <span><i class="dot" style="background:var(--honmei)"></i>育成中(本命)</span>
+        <span><i class="dot" style="background:var(--ikusei)"></i>育成中</span>
+        <span><i class="dot" style="background:var(--tane)"></i>種</span>
+        <span class="small">○の大きさ＝総合スコア</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>優先順位（重みで自動。★は固定）</h2>
+      <div id="list"></div>
+    </div>
+    <div class="card">
+      <h2>結果を戻す</h2>
+      <div class="outbar">
+        <button class="btn" id="copyBtn">📋 設定をコピー</button>
+        <button class="btn sec" id="toggleJson">JSONを表示</button>
+        <span class="copied" id="copied">コピーしました</span>
+      </div>
+      <textarea id="out" style="display:none" readonly></textarea>
+    </div>
+  </section>
+
+  <!-- ===== ② REF MAP ===== -->
+  <section class="view" id="view-ref">
+    <div class="card">
+      <h2>文献マップ：どの公知文献が、どの案に近いか</h2>
+      <p class="small" style="margin:-4px 0 8px">複数の案から名指しされる文献＝<span class="warn">混雑ハブ</span>（その周辺は先行が混んでいるサイン）。文献をタップ→右に「その文献を最近接に挙げる案」。案チップをタップ→①の詳細へ。</p>
+      <div class="refgrid">
+        <div class="reflist" id="reflist"></div>
+        <div class="refdetail" id="refdetail"><span class="small">← 文献を選ぶと、ここに関連する案が出ます。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ③ PIPELINE ===== -->
+  <section class="view" id="view-pipe">
+    <div class="card">
+      <h2>パイプライン：種 → 育成中 → 有望 → IDF化</h2>
+      <p class="small" style="margin:-4px 0 10px">各案がいまどの段階か。★＝本命。タイルをタップ→①の詳細へ。</p>
+      <div class="kan" id="kan"></div>
+    </div>
+  </section>
+
+  <!-- ===== ④ GALLERY ===== -->
+  <section class="view" id="view-gal">
+    <div class="card">
+      <h2>図ギャラリー（ポンチ絵）</h2>
+      <div class="galfilter" id="galfilter"></div>
+      <p class="small warn" id="galnote" style="margin:0 0 8px"></p>
+      <div class="galgrid" id="galgrid"></div>
+      <p class="small" style="margin-top:10px">各図は社内検討用ドラフト。符号・寸法は仮で、確定図面は弁理士レビュー前提です。</p>
+    </div>
+  </section>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<div class="lb" id="lb"><span class="x" id="lbx">✕</span><div><div class="box" id="lbbox"></div><div class="cap" id="lbcap"></div></div></div>
+
+<script>window.DATA={"meta":{"project":"Counsel — フォイル軸受 特許アイデア工房","date":"2026-06-28","filter":"public","count":6,"withheldFigs":[{"cardId":"0001"},{"cardId":"0005"},{"cardId":"0006"}]},"stages":["種","育成中","有望","IDF化"],"statusColors":{"idf":"#34d399","honmei":"#fbbf24","ikusei":"#60a5fa","tane":"#94a3b8","yubou":"#a78bfa","horyu":"#64748b","botsu":"#475569"},"cards":[{"id":"0001","title":"屈曲稜線の軸方向 部分スリット分節","shortName":"案A 部分スリット分節","status":"IDF化","statusKind":"idf","stage":"IDF化","honmei":false,"source":"案件「軸方向追従性」/ 発散案A","idfRef":"0001","hasIdf":true,"relation":["0002","0003"],"axes":["軸方向追従","荷重容量","減衰"],"coreSummary":"周方向の係止・擬似3パッド機能を担う屈曲稜線を、軸方向の部分スリットで分節化し、軸方向の曲げだけを解放する。","whyNonObviousSummary":"荷重・係止・疲労を落とすとされる機能稜線にはスリットを入れないのが定石。その逆張り。","effects":["軸方向曲げ剛性を低減","最小膜厚の均一化","クーロン減衰の付与余地","切る加工で既存ライン流用"],"weakness":null,"nearestRefs":[{"no":"US4296976A","applicant":"Heshmat/MTI","field":"フォイルの部分スリット/分節"},{"no":"CN212959540U","applicant":"Hebei Kingston","field":"バンプの相互連結・擬似独立"}],"gateBucket":"weak","gateLabel":"弱","scoreInputs":{"novelty":2,"mfg":5},"figIds":["ideas_fig_0001_axial_decoupled_ridge_slit_fig1_svg","idf_fig_0001_axial_decoupled_ridge_fig2_svg"]},{"id":"0002","title":"屈曲稜線のシェブロン/波形クリース化（軸方向ベローズ）","shortName":"案B シェブロン波形クリース","status":"育成中（本命）","statusKind":"honmei","stage":"育成中","honmei":true,"source":"案件「軸方向追従性」/ 発散案B（本命）","idfRef":null,"hasIdf":false,"relation":["0001"],"axes":["軸方向追従","係止強度","疲労"],"coreSummary":"係止・ひだの折れ線を軸方向に波形化し、稜線をベローズ化。材料を除去せず連続材のまま軸方向のしなりを得る。","whyNonObviousSummary":"荷重と係止を担う稜線は直線・連続にするのが定石。あえて波形化して軸方向の自由度を得る逆張り。","effects":["軸方向コンプライアンス↑","材料除去なしで係止・疲労に有利","最小膜厚の均一化"],"weakness":"非可展面の成形が難所（しわ・偏肉・スプリングバック）。","nearestRefs":[{"no":"US3957317A","applicant":"(Shaped foil)","field":"シェブロン後端＝動圧ポンピング"},{"no":"US9222509B2","applicant":"Xdot","field":"ヘリンボーン/タブ配列"},{"no":"WO2024176423A1","applicant":"—","field":"波状バンプ（周方向）"}],"gateBucket":null,"gateLabel":"未","scoreInputs":{"novelty":4,"mfg":2},"figIds":["ideas_fig_0002_axial_bellows_crease_fig1_svg","ideas_fig_0002_axial_bellows_crease_fig2_svg"]},{"id":"0003","title":"分節スリットの切り起こしタブ化（多機能スリット）","shortName":"切り起こしタブ","status":"IDF化","statusKind":"idf","stage":"IDF化","honmei":false,"source":"案A 派生（工夫1）","idfRef":"0002","hasIdf":true,"relation":["0001"],"axes":["起動停止寿命","組立性","安定性"],"coreSummary":"分節スリットの捨て材をコの字に切り起こしてタブ化し、トップ⇔バンプの相対すべり（フレッティング源）を拘束。軸方向ストッパ・局所プリロードも兼ねる。","whyNonObviousSummary":"「スリット＝構造を弱める」常識を、捨て材のタブ化で別の性能軸（起動停止寿命）に逆用する。","effects":["フレッティング摩耗の低減","マイグレーション防止・位置決め性↑","局所プリロード微調整","追加部品なし（切る＋曲げる）"],"weakness":null,"nearestRefs":[{"no":"US8672549B2","applicant":"(fold-over tab)","field":"折り返しタブによる固定"},{"no":"US20140376844A1","applicant":"wing foil","field":"シムによる局所予圧"}],"gateBucket":"mid","gateLabel":"中","scoreInputs":{"novelty":4,"mfg":4},"figIds":["ideas_fig_0003_slit_bent_tab_fig1_svg"]},{"id":"0004","title":"公差鈍感・自己位置決めなフォイル固定（溶接レス）","shortName":"公差鈍感・自己位置決め固定","status":"種","statusKind":"tane","stage":"種","honmei":false,"source":"課題発掘「フォイル固定」P2×P1","idfRef":null,"hasIdf":false,"relation":["0001","0003"],"axes":["量産歩留り","性能再現性"],"coreSummary":"溶接レスで公差に鈍感な固定。固定部に受動的なすきま／プリロード自己補正の自由度を持たせ、ばらつきを吸収する（未発散）。","whyNonObviousSummary":"固定はガッチリ拘束が定石。わざと弾性・自由度を持たせて公差を吸収する逆張り。","effects":["量産歩留り・再現性↑","溶接HAZ起因不良の排除","被膜との両立"],"weakness":null,"nearestRefs":[{"no":"US8672549B2","applicant":"(fold-over tab)","field":"溶接レス固定"},{"no":"US9568042","applicant":"—","field":"固定・プリロード関連"},{"no":"US9551375","applicant":"—","field":"固定・プリロード関連"},{"no":"US8944688","applicant":"—","field":"固定・プリロード関連"}],"gateBucket":null,"gateLabel":"未","scoreInputs":{"novelty":3,"mfg":3},"figIds":[]},{"id":"0005","title":"異方拘束固定（周方向は拘束・軸方向は解放）","shortName":"異方拘束固定","status":"育成中","statusKind":"ikusei","stage":"育成中","honmei":false,"source":"課題発掘「フォイル固定」P4","idfRef":null,"hasIdf":false,"relation":["0001","0002","0003","0004"],"axes":["熱クラウニング追従","疲労寿命"],"coreSummary":"固定部の拘束を方向で分け、周方向（抗回転）は拘束、軸方向（熱膨張）は滑り/弾性で解放。固定端に熱応力を溜めない。","whyNonObviousSummary":"固定は全方向拘束が定石。意図的に1方向（軸方向）だけ逃がして熱応力を溜めない。","effects":["固定端の熱応力・うねり・座屈を低減","抗回転は維持","受動・低コスト"],"weakness":null,"nearestRefs":[{"no":"US20170030404A1","applicant":"—","field":"スプリットキー固定（全方向拘束）"},{"no":"US9109622","applicant":"—","field":"支持剛性の異方性（振動対策）"},{"no":"US4668108","applicant":"—","field":"支持剛性の異方性（振動対策）"},{"no":"CN104603480B","applicant":"—","field":"スロット固定（自由端膨張）"}],"gateBucket":null,"gateLabel":"未","scoreInputs":{"novelty":4,"mfg":4},"figIds":["ideas_fig_0005_anisotropic_constraint_fixation_fig1_svg"]},{"id":"0006","title":"速度適応で浮上回転数を下げる起動停止強化構造","shortName":"速度適応 浮上回転数低減","status":"育成中","statusKind":"ikusei","stage":"育成中","honmei":false,"source":"課題発掘「起動停止耐久性」Q2","idfRef":null,"hasIdf":false,"relation":["0001","0003","0004"],"axes":["起動停止寿命"],"coreSummary":"低速だけ効くジオメトリ／接触圧の分散で起動停止摩耗を減らす。問題設定を浮上回転数の低減から接触損傷の最小化へ寄せる。","whyNonObviousSummary":"形状固定のテクスチャは高速でも働き抗力を増やす。低速だけ効かせる、または接触損傷側へ問題を寄せる。","effects":["起動停止摩耗の低減","高速性能を犠牲にしない","接触圧スパイクの分散"],"weakness":null,"nearestRefs":[{"no":"US4445792A","applicant":"—","field":"可変プリロードで適応起動"},{"no":"US4795274A","applicant":"—","field":"剛性勾配で速度依存傾斜"},{"no":"US20190203761A1","applicant":"wing foil","field":"膜圧応答プリロード/テーパ"}],"gateBucket":null,"gateLabel":"未","scoreInputs":{"novelty":3,"mfg":3},"figIds":["ideas_fig_0006_speed_adaptive_liftoff_fig1_svg"]}],"refIndex":[{"no":"US8672549B2","applicant":"(fold-over tab)","field":"折り返しタブによる固定","citedBy":["0003","0004"]},{"no":"CN104603480B","applicant":"—","field":"スロット固定（自由端膨張）","citedBy":["0005"]},{"no":"CN212959540U","applicant":"Hebei Kingston","field":"バンプの相互連結・擬似独立","citedBy":["0001"]},{"no":"US20140376844A1","applicant":"wing foil","field":"シムによる局所予圧","citedBy":["0003"]},{"no":"US20170030404A1","applicant":"—","field":"スプリットキー固定（全方向拘束）","citedBy":["0005"]},{"no":"US20190203761A1","applicant":"wing foil","field":"膜圧応答プリロード/テーパ","citedBy":["0006"]},{"no":"US3957317A","applicant":"(Shaped foil)","field":"シェブロン後端＝動圧ポンピング","citedBy":["0002"]},{"no":"US4296976A","applicant":"Heshmat/MTI","field":"フォイルの部分スリット/分節","citedBy":["0001"]},{"no":"US4445792A","applicant":"—","field":"可変プリロードで適応起動","citedBy":["0006"]},{"no":"US4668108","applicant":"—","field":"支持剛性の異方性（振動対策）","citedBy":["0005"]},{"no":"US4795274A","applicant":"—","field":"剛性勾配で速度依存傾斜","citedBy":["0006"]},{"no":"US8944688","applicant":"—","field":"固定・プリロード関連","citedBy":["0004"]},{"no":"US9109622","applicant":"—","field":"支持剛性の異方性（振動対策）","citedBy":["0005"]},{"no":"US9222509B2","applicant":"Xdot","field":"ヘリンボーン/タブ配列","citedBy":["0002"]},{"no":"US9551375","applicant":"—","field":"固定・プリロード関連","citedBy":["0004"]},{"no":"US9568042","applicant":"—","field":"固定・プリロード関連","citedBy":["0004"]},{"no":"WO2024176423A1","applicant":"—","field":"波状バンプ（周方向）","citedBy":["0002"]}],"figs":[{"id":"idf_fig_0001_axial_decoupled_ridge_fig2_svg","cardId":"0001","title":"樽形追従の前後比較","kind":"断面"},{"id":"ideas_fig_0002_axial_bellows_crease_fig1_svg","cardId":"0002","title":"展開図：波形クリース","kind":"展開図"},{"id":"ideas_fig_0002_axial_bellows_crease_fig2_svg","cardId":"0002","title":"斜視：ベローズ挙動","kind":"斜視"},{"id":"ideas_fig_0003_slit_bent_tab_fig1_svg","cardId":"0003","title":"平面・斜視・断面の3面","kind":"複合"},{"id":"sources_fig_ref_bump_radial_anatomy_svg","cardId":"ref","title":"バンプ型ラジアル軸受の解剖図","kind":"参照"},{"id":"sources_fig_ref_bump_geometry_svg","cardId":"ref","title":"バンプ形状の幾何パラメータ","kind":"参照"},{"id":"sources_fig_ref_axial_film_svg","cardId":"ref","title":"軸方向の膜厚プロファイル","kind":"参照"}]};
+window.FIGSVG={"idf_fig_0001_axial_decoupled_ridge_fig2_svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 900 600\" font-family=\"'Segoe UI','Yu Gothic UI',sans-serif\">\n  <defs><marker id=\"fg_idf_fig_0001_axial_decoupled_ridge_fig2_svg_a\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 Z\" fill=\"#c0392b\"/></marker></defs>\n  <rect width=\"900\" height=\"600\" fill=\"#ffffff\"/>\n  <text x=\"450\" y=\"32\" font-size=\"21\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#1a1a1a\">作用・効果：軸方向追従 Before / After（軸方向断面）</text>\n  <text x=\"450\" y=\"54\" font-size=\"12\" text-anchor=\"middle\" fill=\"#777\">＊社内検討用ドラフト図。寸法は誇張。確定図面は弁理士レビュー前提。</text>\n\n  <!-- ===== 従来 ===== -->\n  <text x=\"120\" y=\"100\" font-size=\"16\" font-weight=\"700\" fill=\"#c0392b\">従来：直線・連続稜線 → 軸方向に曲がれない</text>\n  <!-- shaft barrel -->\n  <path d=\"M 120,230 Q 400,195 680,230 L 680,300 L 120,300 Z\" fill=\"#aeb4bd\" stroke=\"#555\" stroke-width=\"2\"/>\n  <text x=\"400\" y=\"278\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\">軸（樽型）</text>\n  <!-- foil straight -->\n  <line x1=\"120\" y1=\"170\" x2=\"680\" y2=\"170\" stroke=\"#2980b9\" stroke-width=\"3\"/>\n  <text x=\"690\" y=\"174\" font-size=\"12\" fill=\"#2980b9\">フォイル（直線のまま）</text>\n  <!-- gaps -->\n  <line x1=\"150\" y1=\"170\" x2=\"150\" y2=\"227\" stroke=\"#c0392b\" stroke-width=\"1.3\" marker-end=\"url(#fg_idf_fig_0001_axial_decoupled_ridge_fig2_svg_a)\"/>\n  <text x=\"140\" y=\"205\" font-size=\"11\" text-anchor=\"end\" fill=\"#c0392b\">端部:大</text>\n  <line x1=\"400\" y1=\"170\" x2=\"400\" y2=\"197\" stroke=\"#c0392b\" stroke-width=\"1.3\" marker-end=\"url(#fg_idf_fig_0001_axial_decoupled_ridge_fig2_svg_a)\"/>\n  <text x=\"410\" y=\"190\" font-size=\"11\" fill=\"#c0392b\">中央:最小膜厚(危険)</text>\n  <line x1=\"650\" y1=\"170\" x2=\"650\" y2=\"227\" stroke=\"#c0392b\" stroke-width=\"1.3\" marker-end=\"url(#fg_idf_fig_0001_axial_decoupled_ridge_fig2_svg_a)\"/>\n  <text x=\"120\" y=\"330\" font-size=\"13\" fill=\"#444\">→ 膜厚が軸方向に不均一。中央で過小 → 接触・焼付きリスク、荷重容量低下。</text>\n\n  <!-- ===== 案A ===== -->\n  <text x=\"120\" y=\"400\" font-size=\"16\" font-weight=\"700\" fill=\"#16a085\">案A：分節稜線 → 樽に沿って軸方向に湾曲し追従</text>\n  <!-- shaft barrel -->\n  <path d=\"M 120,520 Q 400,485 680,520 L 680,580 L 120,580 Z\" fill=\"#aeb4bd\" stroke=\"#555\" stroke-width=\"2\"/>\n  <text x=\"400\" y=\"560\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\">軸（樽型）</text>\n  <!-- foil conforming (parallel, constant gap), dashed = 分節稜線 -->\n  <path d=\"M 120,475 Q 400,440 680,475\" fill=\"none\" stroke=\"#2980b9\" stroke-width=\"3\" stroke-dasharray=\"22 8\"/>\n  <text x=\"690\" y=\"455\" font-size=\"12\" fill=\"#2980b9\">フォイル（分節で湾曲）</text>\n  <!-- uniform gaps -->\n  <line x1=\"150\" y1=\"478\" x2=\"150\" y2=\"516\" stroke=\"#16a085\" stroke-width=\"1.3\"/>\n  <line x1=\"400\" y1=\"443\" x2=\"400\" y2=\"483\" stroke=\"#16a085\" stroke-width=\"1.3\"/>\n  <line x1=\"650\" y1=\"478\" x2=\"650\" y2=\"516\" stroke=\"#16a085\" stroke-width=\"1.3\"/>\n  <text x=\"120\" y=\"598\" font-size=\"13\" fill=\"#444\">→ 膜厚ほぼ一定。最小膜厚を確保し、荷重容量・焼付き余裕を回復。</text>\n</svg>","ideas_fig_0002_axial_bellows_crease_fig1_svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 920 560\" font-family=\"'Segoe UI','Yu Gothic UI',sans-serif\">\n  <defs><marker id=\"fg_ideas_fig_0002_axial_bellows_crease_fig1_svg_aB\" markerWidth=\"9\" markerHeight=\"9\" refX=\"7\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L7,3 L0,6 Z\" fill=\"#333\"/></marker></defs>\n  <rect width=\"920\" height=\"560\" fill=\"#ffffff\"/>\n  <text x=\"460\" y=\"34\" font-size=\"21\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#1a1a1a\">案B：屈曲稜線のシェブロン化（軸方向ベローズ／材料除去なし）</text>\n  <text x=\"460\" y=\"56\" font-size=\"12\" text-anchor=\"middle\" fill=\"#777\">＊社内検討用ドラフト図。符号・寸法は仮。確定図面は弁理士レビュー前提。</text>\n  <g transform=\"translate(60,95)\">\n    <line x1=\"0\" y1=\"0\" x2=\"55\" y2=\"0\" stroke=\"#333\" stroke-width=\"2\" marker-end=\"url(#fg_ideas_fig_0002_axial_bellows_crease_fig1_svg_aB)\"/>\n    <text x=\"60\" y=\"5\" font-size=\"12\" fill=\"#333\">軸方向 Z（ベローズが伸縮する方向）</text>\n    <line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"40\" stroke=\"#333\" stroke-width=\"2\" marker-end=\"url(#fg_ideas_fig_0002_axial_bellows_crease_fig1_svg_aB)\"/>\n    <text x=\"6\" y=\"56\" font-size=\"12\" fill=\"#333\">周方向(展開)</text>\n  </g>\n  <rect x=\"170\" y=\"120\" width=\"600\" height=\"320\" fill=\"#f5f7fa\" stroke=\"#888\" stroke-width=\"1.5\"/>\n  <path d=\"M170,150 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14\" fill=\"none\" stroke=\"#c0392b\" stroke-width=\"4\"/>\n  <path d=\"M170,237 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14\" fill=\"none\" stroke=\"#e67e22\" stroke-width=\"3.5\"/>\n  <path d=\"M170,323 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14\" fill=\"none\" stroke=\"#e67e22\" stroke-width=\"3.5\"/>\n  <path d=\"M170,410 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14 l20,-14 l20,14\" fill=\"none\" stroke=\"#c0392b\" stroke-width=\"4\"/>\n  <text x=\"782\" y=\"150\" font-size=\"12\" fill=\"#c0392b\">係止部(波形)</text>\n  <text x=\"782\" y=\"240\" font-size=\"12\" fill=\"#e67e22\">ひだ(波形)</text>\n  <text x=\"782\" y=\"326\" font-size=\"12\" fill=\"#e67e22\">ひだ(波形)</text>\n  <text x=\"782\" y=\"412\" font-size=\"12\" fill=\"#c0392b\">係止部(波形)</text>\n  <!-- bellows extension inset -->\n  <g transform=\"translate(300,470)\">\n    <text x=\"-110\" y=\"5\" font-size=\"13\" fill=\"#444\">軸方向に張力 →</text>\n    <path d=\"M0,0 l16,-12 l16,12 l16,-12 l16,12 l16,-12 l16,12\" fill=\"none\" stroke=\"#16a085\" stroke-width=\"3\"/>\n    <text x=\"100\" y=\"5\" font-size=\"13\" fill=\"#16a085\">折り角が開き軸方向に伸縮（曲げでなく折り）</text>\n  </g>\n  <text x=\"170\" y=\"525\" font-size=\"13\" fill=\"#444\">・連続材のまま軸方向コンプライアンスを獲得 → 係止強度・疲労・気密(膜の谷/側方漏れ)に有利</text>\n</svg>","ideas_fig_0002_axial_bellows_crease_fig2_svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1020 660\" font-family=\"'Segoe UI','Yu Gothic UI',sans-serif\">\n  <defs>\n    <marker id=\"fg_ideas_fig_0002_axial_bellows_crease_fig2_svg_ar\" markerWidth=\"10\" markerHeight=\"10\" refX=\"7\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L7,3 L0,6 Z\" fill=\"#16a085\"/></marker>\n    <marker id=\"fg_ideas_fig_0002_axial_bellows_crease_fig2_svg_ag\" markerWidth=\"10\" markerHeight=\"10\" refX=\"7\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L7,3 L0,6 Z\" fill=\"#555\"/></marker>\n  </defs>\n  <rect width=\"1020\" height=\"660\" fill=\"#ffffff\"/>\n  <text x=\"510\" y=\"34\" font-size=\"22\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#1a1a1a\">案B：稜線(ひだ/係止)を「直線」から「波形」へ — 斜視イメージ</text>\n  <text x=\"510\" y=\"56\" font-size=\"12\" text-anchor=\"middle\" fill=\"#777\">＊社内検討用ドラフト図。形状は概念。確定図面は弁理士レビュー前提。橙の太線＝稜線(山の頂)。</text>\n\n  <text x=\"270\" y=\"100\" font-size=\"17\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#c0392b\">従来：直線の稜線</text>\n  <text x=\"745\" y=\"100\" font-size=\"17\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#16a085\">案B：波形(シェブロン)の稜線</text>\n\n  <polyline points='150.0,250.0 166.0,254.0 182.0,258.0 198.0,262.0 214.0,266.0 230.0,270.0 246.0,274.0 262.0,278.0 278.0,282.0 294.0,286.0 310.0,290.0 326.0,294.0 342.0,298.0 358.0,302.0 374.0,306.0 390.0,310.0 406.0,314.0 422.0,318.0 438.0,322.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='141.0,261.0 157.0,265.0 173.0,269.0 189.0,273.0 205.0,277.0 221.0,281.0 237.0,285.0 253.0,289.0 269.0,293.0 285.0,297.0 301.0,301.0 317.0,305.0 333.0,309.0 349.0,313.0 365.0,317.0 381.0,321.0 397.0,325.0 413.0,329.0 429.0,333.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='132.0,272.0 148.0,276.0 164.0,280.0 180.0,284.0 196.0,288.0 212.0,292.0 228.0,296.0 244.0,300.0 260.0,304.0 276.0,308.0 292.0,312.0 308.0,316.0 324.0,320.0 340.0,324.0 356.0,328.0 372.0,332.0 388.0,336.0 404.0,340.0 420.0,344.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='123.0,283.0 139.0,287.0 155.0,291.0 171.0,295.0 187.0,299.0 203.0,303.0 219.0,307.0 235.0,311.0 251.0,315.0 267.0,319.0 283.0,323.0 299.0,327.0 315.0,331.0 331.0,335.0 347.0,339.0 363.0,343.0 379.0,347.0 395.0,351.0 411.0,355.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='114.0,294.0 130.0,298.0 146.0,302.0 162.0,306.0 178.0,310.0 194.0,314.0 210.0,318.0 226.0,322.0 242.0,326.0 258.0,330.0 274.0,334.0 290.0,338.0 306.0,342.0 322.0,346.0 338.0,350.0 354.0,354.0 370.0,358.0 386.0,362.0 402.0,366.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='105.0,263.0 121.0,267.0 137.0,271.0 153.0,275.0 169.0,279.0 185.0,283.0 201.0,287.0 217.0,291.0 233.0,295.0 249.0,299.0 265.0,303.0 281.0,307.0 297.0,311.0 313.0,315.0 329.0,319.0 345.0,323.0 361.0,327.0 377.0,331.0 393.0,335.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='96.0,316.0 112.0,320.0 128.0,324.0 144.0,328.0 160.0,332.0 176.0,336.0 192.0,340.0 208.0,344.0 224.0,348.0 240.0,352.0 256.0,356.0 272.0,360.0 288.0,364.0 304.0,368.0 320.0,372.0 336.0,376.0 352.0,380.0 368.0,384.0 384.0,388.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='87.0,327.0 103.0,331.0 119.0,335.0 135.0,339.0 151.0,343.0 167.0,347.0 183.0,351.0 199.0,355.0 215.0,359.0 231.0,363.0 247.0,367.0 263.0,371.0 279.0,375.0 295.0,379.0 311.0,383.0 327.0,387.0 343.0,391.0 359.0,395.0 375.0,399.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='78.0,338.0 94.0,342.0 110.0,346.0 126.0,350.0 142.0,354.0 158.0,358.0 174.0,362.0 190.0,366.0 206.0,370.0 222.0,374.0 238.0,378.0 254.0,382.0 270.0,386.0 286.0,390.0 302.0,394.0 318.0,398.0 334.0,402.0 350.0,406.0 366.0,410.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='69.0,349.0 85.0,353.0 101.0,357.0 117.0,361.0 133.0,365.0 149.0,369.0 165.0,373.0 181.0,377.0 197.0,381.0 213.0,385.0 229.0,389.0 245.0,393.0 261.0,397.0 277.0,401.0 293.0,405.0 309.0,409.0 325.0,413.0 341.0,417.0 357.0,421.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='60.0,360.0 76.0,364.0 92.0,368.0 108.0,372.0 124.0,376.0 140.0,380.0 156.0,384.0 172.0,388.0 188.0,392.0 204.0,396.0 220.0,400.0 236.0,404.0 252.0,408.0 268.0,412.0 284.0,416.0 300.0,420.0 316.0,424.0 332.0,428.0 348.0,432.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='150.0,250.0 141.0,261.0 132.0,272.0 123.0,283.0 114.0,294.0 105.0,263.0 96.0,316.0 87.0,327.0 78.0,338.0 69.0,349.0 60.0,360.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='182.0,258.0 173.0,269.0 164.0,280.0 155.0,291.0 146.0,302.0 137.0,271.0 128.0,324.0 119.0,335.0 110.0,346.0 101.0,357.0 92.0,368.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='214.0,266.0 205.0,277.0 196.0,288.0 187.0,299.0 178.0,310.0 169.0,279.0 160.0,332.0 151.0,343.0 142.0,354.0 133.0,365.0 124.0,376.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='246.0,274.0 237.0,285.0 228.0,296.0 219.0,307.0 210.0,318.0 201.0,287.0 192.0,340.0 183.0,351.0 174.0,362.0 165.0,373.0 156.0,384.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='278.0,282.0 269.0,293.0 260.0,304.0 251.0,315.0 242.0,326.0 233.0,295.0 224.0,348.0 215.0,359.0 206.0,370.0 197.0,381.0 188.0,392.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='310.0,290.0 301.0,301.0 292.0,312.0 283.0,323.0 274.0,334.0 265.0,303.0 256.0,356.0 247.0,367.0 238.0,378.0 229.0,389.0 220.0,400.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='342.0,298.0 333.0,309.0 324.0,320.0 315.0,331.0 306.0,342.0 297.0,311.0 288.0,364.0 279.0,375.0 270.0,386.0 261.0,397.0 252.0,408.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='374.0,306.0 365.0,317.0 356.0,328.0 347.0,339.0 338.0,350.0 329.0,319.0 320.0,372.0 311.0,383.0 302.0,394.0 293.0,405.0 284.0,416.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='406.0,314.0 397.0,325.0 388.0,336.0 379.0,347.0 370.0,358.0 361.0,327.0 352.0,380.0 343.0,391.0 334.0,402.0 325.0,413.0 316.0,424.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='438.0,322.0 429.0,333.0 420.0,344.0 411.0,355.0 402.0,366.0 393.0,335.0 384.0,388.0 375.0,399.0 366.0,410.0 357.0,421.0 348.0,432.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='105.0,263.0 121.0,267.0 137.0,271.0 153.0,275.0 169.0,279.0 185.0,283.0 201.0,287.0 217.0,291.0 233.0,295.0 249.0,299.0 265.0,303.0 281.0,307.0 297.0,311.0 313.0,315.0 329.0,319.0 345.0,323.0 361.0,327.0 377.0,331.0 393.0,335.0 ' fill='none' stroke='#e67e22' stroke-width='4'/>\n\n  <polyline points='600.0,250.0 616.0,254.0 632.0,258.0 648.0,262.0 664.0,266.0 680.0,270.0 696.0,274.0 712.0,278.0 728.0,282.0 744.0,286.0 760.0,290.0 776.0,294.0 792.0,298.0 808.0,302.0 824.0,306.0 840.0,310.0 856.0,314.0 872.0,318.0 888.0,322.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='591.0,261.0 607.0,265.0 623.0,269.0 639.0,273.0 655.0,277.0 671.0,281.0 687.0,285.0 703.0,289.0 719.0,293.0 735.0,297.0 751.0,301.0 767.0,305.0 783.0,309.0 799.0,313.0 815.0,317.0 831.0,321.0 847.0,325.0 863.0,329.0 879.0,333.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='582.0,272.0 598.0,276.0 614.0,280.0 630.0,284.0 646.0,288.0 662.0,292.0 678.0,296.0 694.0,300.0 710.0,304.0 726.0,308.0 742.0,312.0 758.0,316.0 774.0,320.0 790.0,324.0 806.0,328.0 822.0,332.0 838.0,336.0 854.0,340.0 870.0,344.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='573.0,283.0 589.0,287.0 605.0,291.0 621.0,295.0 637.0,257.0 653.0,261.0 669.0,307.0 685.0,311.0 701.0,315.0 717.0,319.0 733.0,281.0 749.0,285.0 765.0,331.0 781.0,335.0 797.0,339.0 813.0,343.0 829.0,305.0 845.0,309.0 861.0,355.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='564.0,294.0 580.0,298.0 596.0,302.0 612.0,306.0 628.0,268.0 644.0,272.0 660.0,318.0 676.0,322.0 692.0,326.0 708.0,330.0 724.0,292.0 740.0,296.0 756.0,300.0 772.0,346.0 788.0,350.0 804.0,354.0 820.0,316.0 836.0,320.0 852.0,324.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='555.0,263.0 571.0,309.0 587.0,313.0 603.0,275.0 619.0,321.0 635.0,325.0 651.0,287.0 667.0,333.0 683.0,337.0 699.0,299.0 715.0,345.0 731.0,349.0 747.0,311.0 763.0,357.0 779.0,361.0 795.0,323.0 811.0,369.0 827.0,373.0 843.0,335.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='546.0,316.0 562.0,278.0 578.0,282.0 594.0,328.0 610.0,332.0 626.0,336.0 642.0,340.0 658.0,302.0 674.0,306.0 690.0,310.0 706.0,356.0 722.0,360.0 738.0,364.0 754.0,326.0 770.0,330.0 786.0,334.0 802.0,380.0 818.0,384.0 834.0,388.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='537.0,327.0 553.0,289.0 569.0,293.0 585.0,339.0 601.0,343.0 617.0,347.0 633.0,351.0 649.0,313.0 665.0,317.0 681.0,363.0 697.0,367.0 713.0,371.0 729.0,375.0 745.0,337.0 761.0,341.0 777.0,387.0 793.0,391.0 809.0,395.0 825.0,399.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='528.0,338.0 544.0,342.0 560.0,346.0 576.0,350.0 592.0,354.0 608.0,358.0 624.0,362.0 640.0,366.0 656.0,370.0 672.0,374.0 688.0,378.0 704.0,382.0 720.0,386.0 736.0,390.0 752.0,394.0 768.0,398.0 784.0,402.0 800.0,406.0 816.0,410.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='519.0,349.0 535.0,353.0 551.0,357.0 567.0,361.0 583.0,365.0 599.0,369.0 615.0,373.0 631.0,377.0 647.0,381.0 663.0,385.0 679.0,389.0 695.0,393.0 711.0,397.0 727.0,401.0 743.0,405.0 759.0,409.0 775.0,413.0 791.0,417.0 807.0,421.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='510.0,360.0 526.0,364.0 542.0,368.0 558.0,372.0 574.0,376.0 590.0,380.0 606.0,384.0 622.0,388.0 638.0,392.0 654.0,396.0 670.0,400.0 686.0,404.0 702.0,408.0 718.0,412.0 734.0,416.0 750.0,420.0 766.0,424.0 782.0,428.0 798.0,432.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='600.0,250.0 591.0,261.0 582.0,272.0 573.0,283.0 564.0,294.0 555.0,263.0 546.0,316.0 537.0,327.0 528.0,338.0 519.0,349.0 510.0,360.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='632.0,258.0 623.0,269.0 614.0,280.0 605.0,291.0 596.0,302.0 587.0,313.0 578.0,282.0 569.0,293.0 560.0,346.0 551.0,357.0 542.0,368.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='664.0,266.0 655.0,277.0 646.0,288.0 637.0,257.0 628.0,268.0 619.0,321.0 610.0,332.0 601.0,343.0 592.0,354.0 583.0,365.0 574.0,376.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='696.0,274.0 687.0,285.0 678.0,296.0 669.0,307.0 660.0,318.0 651.0,287.0 642.0,340.0 633.0,351.0 624.0,362.0 615.0,373.0 606.0,384.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='728.0,282.0 719.0,293.0 710.0,304.0 701.0,315.0 692.0,326.0 683.0,337.0 674.0,306.0 665.0,317.0 656.0,370.0 647.0,381.0 638.0,392.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='760.0,290.0 751.0,301.0 742.0,312.0 733.0,281.0 724.0,292.0 715.0,345.0 706.0,356.0 697.0,367.0 688.0,378.0 679.0,389.0 670.0,400.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='792.0,298.0 783.0,309.0 774.0,320.0 765.0,331.0 756.0,300.0 747.0,311.0 738.0,364.0 729.0,375.0 720.0,386.0 711.0,397.0 702.0,408.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='824.0,306.0 815.0,317.0 806.0,328.0 797.0,339.0 788.0,350.0 779.0,361.0 770.0,330.0 761.0,341.0 752.0,394.0 743.0,405.0 734.0,416.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='856.0,314.0 847.0,325.0 838.0,336.0 829.0,305.0 820.0,316.0 811.0,369.0 802.0,380.0 793.0,391.0 784.0,402.0 775.0,413.0 766.0,424.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='888.0,322.0 879.0,333.0 870.0,344.0 861.0,355.0 852.0,324.0 843.0,335.0 834.0,388.0 825.0,399.0 816.0,410.0 807.0,421.0 798.0,432.0 ' fill='none' stroke='#cfd6dd' stroke-width='1'/>\n<polyline points='555.0,263.0 557.7,283.2 573.7,287.2 603.0,275.0 632.3,262.8 648.3,266.8 651.0,287.0 653.7,307.2 669.7,311.2 699.0,299.0 728.3,286.8 744.3,290.8 747.0,311.0 749.7,331.2 765.7,335.2 795.0,323.0 824.3,310.8 840.3,314.8 843.0,335.0 ' fill='none' stroke='#e67e22' stroke-width='4'/>\n\n\n  <!-- direction hint -->\n  <g transform=\"translate(120,470)\">\n    <line x1=\"0\" y1=\"0\" x2=\"70\" y2=\"18\" stroke=\"#555\" stroke-width=\"2\" marker-end=\"url(#fg_ideas_fig_0002_axial_bellows_crease_fig2_svg_ag)\"/>\n    <text x=\"78\" y=\"22\" font-size=\"12\" fill=\"#555\">軸方向 Z</text>\n  </g>\n\n  <!-- notes -->\n  <text x=\"270\" y=\"560\" font-size=\"13\" text-anchor=\"middle\" fill=\"#444\">稜線がまっすぐ＝コルゲートが軸方向に連続</text>\n  <text x=\"270\" y=\"580\" font-size=\"13\" text-anchor=\"middle\" fill=\"#c0392b\">→ 軸方向の曲げに固く、樽/鼓に追従しにくい ✗</text>\n\n  <text x=\"745\" y=\"560\" font-size=\"13\" text-anchor=\"middle\" fill=\"#444\">折り角が開閉してアコーディオン状に軸方向へ伸縮</text>\n  <text x=\"745\" y=\"580\" font-size=\"13\" text-anchor=\"middle\" fill=\"#16a085\">→ 軸方向に曲がって径プロファイルへ追従できる ✓</text>\n\n  <!-- bellows analogy -->\n  <g transform=\"translate(360,612)\">\n    <text x=\"-210\" y=\"5\" font-size=\"13\" fill=\"#1a1a1a\" font-weight=\"700\">イメージ：蛇腹(ベローズ)</text>\n    <path d=\"M0,0 l14,-13 l14,13 l14,-13 l14,13 l14,-13 l14,13 l14,-13 l14,13\" fill=\"none\" stroke=\"#16a085\" stroke-width=\"3\"/>\n    <line x1=\"-6\" y1=\"20\" x2=\"132\" y2=\"20\" stroke=\"#16a085\" stroke-width=\"1.5\" marker-start=\"url(#fg_ideas_fig_0002_axial_bellows_crease_fig2_svg_ar)\" marker-end=\"url(#fg_ideas_fig_0002_axial_bellows_crease_fig2_svg_ar)\"/>\n    <text x=\"145\" y=\"6\" font-size=\"13\" fill=\"#444\">直線の折り目は伸びない／波形の折り目は開閉して伸縮する</text>\n  </g>\n</svg>","ideas_fig_0003_slit_bent_tab_fig1_svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 720\" font-family=\"'Segoe UI','Yu Gothic UI',sans-serif\">\n  <defs>\n    <marker id=\"fg_ideas_fig_0003_slit_bent_tab_fig1_svg_g\" markerWidth=\"9\" markerHeight=\"9\" refX=\"7\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L7,3 L0,6 Z\" fill=\"#16a085\"/></marker>\n    <marker id=\"fg_ideas_fig_0003_slit_bent_tab_fig1_svg_k\" markerWidth=\"9\" markerHeight=\"9\" refX=\"7\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L7,3 L0,6 Z\" fill=\"#555\"/></marker>\n  </defs>\n  <rect width=\"1000\" height=\"720\" fill=\"#ffffff\"/>\n  <text x=\"500\" y=\"34\" font-size=\"22\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#1a1a1a\">工夫1：分節スリットの「切り起こしタブ」化（多機能スリット）</text>\n  <text x=\"500\" y=\"56\" font-size=\"12\" text-anchor=\"middle\" fill=\"#777\">＊社内検討用ドラフト図。形状は概念・寸法は仮。確定図面は弁理士レビュー前提。</text>\n\n  <!-- ===== (1) 平面図 ===== -->\n  <text x=\"70\" y=\"100\" font-size=\"16\" font-weight=\"700\" fill=\"#1a1a1a\">① 平面図：分節スリット＋コの字切り込み</text>\n  <rect x=\"80\" y=\"115\" width=\"380\" height=\"200\" fill=\"#f5f7fa\" stroke=\"#888\" stroke-width=\"1.5\"/>\n  <!-- ridge with transverse segmentation slit -->\n  <line x1=\"80\" y1=\"160\" x2=\"220\" y2=\"160\" stroke=\"#e67e22\" stroke-width=\"5\"/>\n  <line x1=\"240\" y1=\"160\" x2=\"460\" y2=\"160\" stroke=\"#e67e22\" stroke-width=\"5\"/>\n  <text x=\"470\" y=\"164\" font-size=\"12\" fill=\"#e67e22\">稜線</text>\n  <text x=\"200\" y=\"140\" font-size=\"11\" fill=\"#2980b9\">分節スリット</text>\n  <line x1=\"222\" y1=\"150\" x2=\"238\" y2=\"150\" stroke=\"#2980b9\" stroke-width=\"1\"/>\n  <!-- U-cut flap in the flat below the ridge -->\n  <path d=\"M 230,200 L 230,250 L 300,250 L 300,200\" fill=\"none\" stroke=\"#c0392b\" stroke-width=\"2.5\"/>\n  <line x1=\"230\" y1=\"200\" x2=\"300\" y2=\"200\" stroke=\"#16a085\" stroke-width=\"2\" stroke-dasharray=\"5 4\"/>\n  <text x=\"265\" y=\"270\" font-size=\"11\" text-anchor=\"middle\" fill=\"#c0392b\">コの字切り込み</text>\n  <text x=\"312\" y=\"196\" font-size=\"11\" fill=\"#16a085\">折り線</text>\n  <!-- bend arrow -->\n  <path d=\"M 330,225 q 40,-30 70,-5\" fill=\"none\" stroke=\"#16a085\" stroke-width=\"2.5\" marker-end=\"url(#fg_ideas_fig_0003_slit_bent_tab_fig1_svg_g)\"/>\n  <text x=\"360\" y=\"205\" font-size=\"11\" fill=\"#16a085\">折り起こし</text>\n  <!-- axis legend -->\n  <g transform=\"translate(95,295)\">\n    <line x1=\"0\" y1=\"0\" x2=\"40\" y2=\"0\" stroke=\"#555\" stroke-width=\"1.5\" marker-end=\"url(#fg_ideas_fig_0003_slit_bent_tab_fig1_svg_k)\"/>\n    <text x=\"44\" y=\"4\" font-size=\"10\" fill=\"#555\">軸方向Z</text>\n  </g>\n\n  <!-- ===== (2) 斜視：折り起こし後 ===== -->\n  <text x=\"560\" y=\"100\" font-size=\"16\" font-weight=\"700\" fill=\"#1a1a1a\">② 斜視：折り起こし後（タブ）</text>\n  <!-- foil patch parallelogram -->\n  <polygon points=\"560,210 800,250 760,320 520,280\" fill=\"#eef1f4\" stroke=\"#888\" stroke-width=\"1.5\"/>\n  <!-- slot (hole left behind) -->\n  <polygon points=\"620,255 672,264 664,286 612,277\" fill=\"#ffffff\" stroke=\"#999\" stroke-width=\"1.2\"/>\n  <text x=\"700\" y=\"300\" font-size=\"11\" fill=\"#999\">切り起こし跡(孔)</text>\n  <!-- tab raised -->\n  <polygon points=\"620,255 672,264 672,214 620,205\" fill=\"#f6d6c4\" stroke=\"#c0392b\" stroke-width=\"2\"/>\n  <text x=\"690\" y=\"220\" font-size=\"12\" fill=\"#c0392b\">タブ</text>\n  <path d=\"M 600,250 q -20,-30 0,-50\" fill=\"none\" stroke=\"#16a085\" stroke-width=\"2\" marker-end=\"url(#fg_ideas_fig_0003_slit_bent_tab_fig1_svg_g)\"/>\n  <text x=\"555\" y=\"200\" font-size=\"11\" fill=\"#16a085\">外径側へ起こす</text>\n\n  <!-- ===== (3) 断面 A-A：機能 ===== -->\n  <text x=\"70\" y=\"385\" font-size=\"16\" font-weight=\"700\" fill=\"#1a1a1a\">③ 断面 A-A：タブの機能（外径側＝空気膜と反対）</text>\n  <!-- housing -->\n  <rect x=\"120\" y=\"410\" width=\"760\" height=\"55\" fill=\"#c8ccd2\" stroke=\"#555\" stroke-width=\"2\"/>\n  <text x=\"135\" y=\"443\" font-size=\"13\" fill=\"#333\">ハウジング／スリーブ</text>\n  <!-- housing recess for tab -->\n  <rect x=\"470\" y=\"410\" width=\"40\" height=\"35\" fill=\"#ffffff\" stroke=\"#555\" stroke-width=\"1.5\"/>\n  <!-- bump (one) -->\n  <path d=\"M 150,560 Q 250,470 350,560\" fill=\"none\" stroke=\"#e67e22\" stroke-width=\"3\"/>\n  <path d=\"M 560,560 Q 660,470 760,560\" fill=\"none\" stroke=\"#e67e22\" stroke-width=\"3\"/>\n  <text x=\"200\" y=\"585\" font-size=\"12\" fill=\"#e67e22\">バンプフォイル</text>\n  <!-- top foil -->\n  <line x1=\"120\" y1=\"560\" x2=\"880\" y2=\"560\" stroke=\"#2980b9\" stroke-width=\"3\"/>\n  <text x=\"800\" y=\"554\" font-size=\"12\" fill=\"#2980b9\">トップフォイル</text>\n  <!-- air film + shaft -->\n  <line x1=\"120\" y1=\"585\" x2=\"880\" y2=\"585\" stroke=\"#c0392b\" stroke-width=\"1\" stroke-dasharray=\"3 3\"/>\n  <text x=\"135\" y=\"600\" font-size=\"11\" fill=\"#c0392b\">空気膜</text>\n  <rect x=\"120\" y=\"605\" width=\"760\" height=\"60\" fill=\"#aeb4bd\" stroke=\"#555\" stroke-width=\"2\"/>\n  <text x=\"500\" y=\"642\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\">軸</text>\n  <!-- tab: from top foil bent outward up into housing recess, threading through bump valley -->\n  <polygon points=\"478,560 502,560 500,445 480,445\" fill=\"#f6d6c4\" stroke=\"#c0392b\" stroke-width=\"2\"/>\n  <text x=\"515\" y=\"430\" font-size=\"12\" fill=\"#c0392b\">タブ(係合)</text>\n  <!-- benefit callouts -->\n  <text x=\"560\" y=\"470\" font-size=\"12\" fill=\"#16a085\">① 層間レジスト＝トップ⇔バンプの</text>\n  <text x=\"560\" y=\"487\" font-size=\"12\" fill=\"#16a085\">　 相対滑り拘束（フレッティング抑制）</text>\n  <text x=\"560\" y=\"512\" font-size=\"12\" fill=\"#8e44ad\">② 軸方向ストッパ（マイグレーション防止）</text>\n  <text x=\"560\" y=\"537\" font-size=\"12\" fill=\"#2980b9\">③ 局所プリロード（タブ位置で剛性UP）</text>\n</svg>","sources_fig_ref_bump_radial_anatomy_svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 720\" font-family=\"'Segoe UI','Yu Gothic UI',sans-serif\">\n  <defs>\n    <path id=\"fg_sources_fig_ref_bump_radial_anatomy_svg_b\" d=\"M -15,-184 Q 0,-208 15,-184\" fill=\"none\" stroke=\"#e67e22\" stroke-width=\"2.5\"/>\n    <marker id=\"fg_sources_fig_ref_bump_radial_anatomy_svg_ar\" markerWidth=\"9\" markerHeight=\"9\" refX=\"7\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L7,3 L0,6 Z\" fill=\"#333\"/></marker>\n  </defs>\n  <rect width=\"760\" height=\"720\" fill=\"#ffffff\"/>\n  <text x=\"380\" y=\"36\" font-size=\"22\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#1a1a1a\">典型バンプフォイル型ラジアルガス軸受：横断面図</text>\n  <text x=\"380\" y=\"58\" font-size=\"12\" text-anchor=\"middle\" fill=\"#777\">＊参照用模式図。符号・寸法は仮・誇張。確定図面は弁理士レビュー前提。</text>\n\n  <g transform=\"translate(360,360)\">\n    <!-- housing outer -->\n    <circle cx=\"0\" cy=\"0\" r=\"240\" fill=\"#c8ccd2\" stroke=\"#555\" stroke-width=\"2\"/>\n    <!-- inner wall (carve white) -->\n    <circle cx=\"0\" cy=\"0\" r=\"205\" fill=\"#ffffff\" stroke=\"#555\" stroke-width=\"2\"/>\n    <!-- bump foil base ring -->\n    <circle cx=\"0\" cy=\"0\" r=\"184\" fill=\"none\" stroke=\"#e67e22\" stroke-width=\"1.4\"/>\n    <!-- 30 bumps -->\n    <use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(12)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(24)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(36)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(48)\"/>\n    <use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(60)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(72)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(84)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(96)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(108)\"/>\n    <use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(120)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(132)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(144)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(156)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(168)\"/>\n    <use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(180)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(192)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(204)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(216)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(228)\"/>\n    <use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(240)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(252)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(264)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(276)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(288)\"/>\n    <use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(300)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(312)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(324)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(336)\"/><use href=\"#fg_sources_fig_ref_bump_radial_anatomy_svg_b\" transform=\"rotate(348)\"/>\n    <!-- top foil -->\n    <circle cx=\"0\" cy=\"0\" r=\"180\" fill=\"#ffffff\" stroke=\"#2980b9\" stroke-width=\"3\"/>\n    <!-- shaft (eccentric downward) -->\n    <circle cx=\"0\" cy=\"14\" r=\"170\" fill=\"#aeb4bd\" stroke=\"#555\" stroke-width=\"2\"/>\n    <line x1=\"-12\" y1=\"14\" x2=\"12\" y2=\"14\" stroke=\"#333\" stroke-width=\"1.2\"/>\n    <line x1=\"0\" y1=\"2\" x2=\"0\" y2=\"26\" stroke=\"#333\" stroke-width=\"1.2\"/>\n    <text x=\"0\" y=\"60\" font-size=\"14\" text-anchor=\"middle\" fill=\"#333\">軸</text>\n    <!-- rotation arrow -->\n    <path d=\"M -55,-70 A 90,90 0 0 1 70,-50\" fill=\"none\" stroke=\"#16a085\" stroke-width=\"3\" marker-end=\"url(#fg_sources_fig_ref_bump_radial_anatomy_svg_ar)\"/>\n    <text x=\"78\" y=\"-58\" font-size=\"13\" fill=\"#16a085\">回転</text>\n    <!-- fixed end (left, 9 o'clock): clamp slot -->\n    <rect x=\"-208\" y=\"-10\" width=\"30\" height=\"20\" fill=\"#7f8c8d\" stroke=\"#333\" stroke-width=\"1\"/>\n  </g>\n\n  <!-- callouts -->\n  <text x=\"640\" y=\"150\" font-size=\"13\" fill=\"#555\">ハウジング/スリーブ</text>\n  <line x1=\"638\" y1=\"146\" x2=\"560\" y2=\"190\" stroke=\"#555\" stroke-width=\"1\" marker-end=\"url(#fg_sources_fig_ref_bump_radial_anatomy_svg_ar)\"/>\n  <text x=\"650\" y=\"300\" font-size=\"13\" fill=\"#e67e22\">バンプフォイル</text>\n  <line x1=\"648\" y1=\"296\" x2=\"548\" y2=\"320\" stroke=\"#e67e22\" stroke-width=\"1\" marker-end=\"url(#fg_sources_fig_ref_bump_radial_anatomy_svg_ar)\"/>\n  <text x=\"650\" y=\"430\" font-size=\"13\" fill=\"#2980b9\">トップフォイル</text>\n  <line x1=\"648\" y1=\"426\" x2=\"540\" y2=\"402\" stroke=\"#2980b9\" stroke-width=\"1\" marker-end=\"url(#fg_sources_fig_ref_bump_radial_anatomy_svg_ar)\"/>\n  <text x=\"60\" y=\"360\" font-size=\"13\" fill=\"#333\" text-anchor=\"end\" transform=\"translate(70,0)\">固定端</text>\n  <line x1=\"92\" y1=\"356\" x2=\"162\" y2=\"360\" stroke=\"#333\" stroke-width=\"1\" marker-end=\"url(#fg_sources_fig_ref_bump_radial_anatomy_svg_ar)\"/>\n  <text x=\"60\" y=\"378\" font-size=\"11\" fill=\"#777\" transform=\"translate(0,0)\">(溶接/差込)</text>\n\n  <!-- 空気膜 callout -->\n  <text x=\"360\" y=\"690\" font-size=\"13\" text-anchor=\"middle\" fill=\"#c0392b\">空気膜(すきま)：周方向に楔形成 → 浮上。偏心側に最小膜厚 h_min</text>\n</svg>","sources_fig_ref_bump_geometry_svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 820 430\" font-family=\"'Segoe UI','Yu Gothic UI',sans-serif\">\n  <defs>\n    <marker id=\"fg_sources_fig_ref_bump_geometry_svg_a2\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 Z\" fill=\"#333\"/></marker>\n    <marker id=\"fg_sources_fig_ref_bump_geometry_svg_a2s\" markerWidth=\"8\" markerHeight=\"8\" refX=\"2\" refY=\"3\" orient=\"auto\"><path d=\"M6,0 L0,3 L6,6 Z\" fill=\"#333\"/></marker>\n  </defs>\n  <rect width=\"820\" height=\"430\" fill=\"#ffffff\"/>\n  <text x=\"410\" y=\"34\" font-size=\"21\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#1a1a1a\">バンプ形状の詳細（剛性レバー）</text>\n  <text x=\"410\" y=\"55\" font-size=\"12\" text-anchor=\"middle\" fill=\"#777\">＊参照用模式図。符号・寸法は仮。確定図面は弁理士レビュー前提。</text>\n\n  <!-- housing line (top) -->\n  <line x1=\"80\" y1=\"110\" x2=\"740\" y2=\"110\" stroke=\"#555\" stroke-width=\"4\"/>\n  <text x=\"748\" y=\"114\" font-size=\"13\" fill=\"#555\">ハウジング内壁</text>\n\n  <!-- bump foil: arcs sitting between top foil(bottom) and housing(top) -->\n  <!-- top foil flat -->\n  <line x1=\"80\" y1=\"250\" x2=\"740\" y2=\"250\" stroke=\"#2980b9\" stroke-width=\"4\"/>\n  <text x=\"748\" y=\"254\" font-size=\"13\" fill=\"#2980b9\">トップフォイル</text>\n\n  <!-- bumps (5 bumps) bulging up from top foil toward housing -->\n  <path d=\"M 120,250 Q 165,118 210,250 M 230,250 Q 275,118 320,250 M 340,250 Q 385,118 430,250 M 450,250 Q 495,118 540,250 M 560,250 Q 605,118 650,250\"\n        fill=\"none\" stroke=\"#e67e22\" stroke-width=\"3.5\"/>\n  <text x=\"120\" y=\"300\" font-size=\"13\" fill=\"#e67e22\">バンプフォイル</text>\n\n  <!-- pitch s0 between apexes (165 -> 275) -->\n  <line x1=\"165\" y1=\"92\" x2=\"275\" y2=\"92\" stroke=\"#333\" stroke-width=\"1\" marker-start=\"url(#fg_sources_fig_ref_bump_geometry_svg_a2s)\" marker-end=\"url(#fg_sources_fig_ref_bump_geometry_svg_a2)\"/>\n  <text x=\"220\" y=\"86\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\">ピッチ s₀</text>\n  <line x1=\"165\" y1=\"118\" x2=\"165\" y2=\"92\" stroke=\"#999\" stroke-width=\"0.8\" stroke-dasharray=\"3 3\"/>\n  <line x1=\"275\" y1=\"118\" x2=\"275\" y2=\"92\" stroke=\"#999\" stroke-width=\"0.8\" stroke-dasharray=\"3 3\"/>\n\n  <!-- bump height h (apex 118 to base 250) at x=495 -->\n  <line x1=\"495\" y1=\"118\" x2=\"495\" y2=\"250\" stroke=\"#333\" stroke-width=\"1\" marker-start=\"url(#fg_sources_fig_ref_bump_geometry_svg_a2s)\" marker-end=\"url(#fg_sources_fig_ref_bump_geometry_svg_a2)\"/>\n  <text x=\"505\" y=\"190\" font-size=\"13\" fill=\"#333\">高さ h</text>\n\n  <!-- half length l (foot of a bump: 450 -> 495) -->\n  <line x1=\"450\" y1=\"268\" x2=\"495\" y2=\"268\" stroke=\"#333\" stroke-width=\"1\" marker-start=\"url(#fg_sources_fig_ref_bump_geometry_svg_a2s)\" marker-end=\"url(#fg_sources_fig_ref_bump_geometry_svg_a2)\"/>\n  <text x=\"472\" y=\"288\" font-size=\"12\" text-anchor=\"middle\" fill=\"#333\">半長 l</text>\n\n  <!-- thickness t callout -->\n  <line x1=\"650\" y1=\"250\" x2=\"700\" y2=\"210\" stroke=\"#333\" stroke-width=\"0.8\"/>\n  <text x=\"700\" y=\"208\" font-size=\"12\" fill=\"#333\">板厚 t</text>\n\n  <!-- curvature radius -->\n  <line x1=\"385\" y1=\"118\" x2=\"385\" y2=\"250\" stroke=\"#bbb\" stroke-width=\"0.8\" stroke-dasharray=\"3 3\"/>\n  <text x=\"360\" y=\"135\" font-size=\"12\" fill=\"#888\" text-anchor=\"end\">曲率半径 R_b</text>\n\n  <!-- fixed/free -->\n  <rect x=\"80\" y=\"244\" width=\"22\" height=\"12\" fill=\"#7f8c8d\" stroke=\"#333\" stroke-width=\"1\"/>\n  <text x=\"80\" y=\"335\" font-size=\"13\" fill=\"#333\">固定端</text>\n  <text x=\"650\" y=\"335\" font-size=\"13\" fill=\"#333\">自由端 →</text>\n\n  <text x=\"410\" y=\"388\" font-size=\"13\" text-anchor=\"middle\" fill=\"#444\">剛性レバー：ピッチ s₀・高さ h・板厚 t・半長 l・曲率 R_b を変えて、周/軸方向の剛性分布を仕立てる</text>\n</svg>","sources_fig_ref_axial_film_svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 820 560\" font-family=\"'Segoe UI','Yu Gothic UI',sans-serif\">\n  <defs>\n    <marker id=\"fg_sources_fig_ref_axial_film_svg_a3\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6 Z\" fill=\"#333\"/></marker>\n  </defs>\n  <rect width=\"820\" height=\"560\" fill=\"#ffffff\"/>\n  <text x=\"410\" y=\"34\" font-size=\"21\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#1a1a1a\">軸方向断面：膜厚プロファイルと端部の最小膜厚</text>\n  <text x=\"410\" y=\"55\" font-size=\"12\" text-anchor=\"middle\" fill=\"#777\">＊参照用模式図。符号・寸法は仮・誇張。確定図面は弁理士レビュー前提。</text>\n\n  <!-- axis arrow -->\n  <line x1=\"120\" y1=\"90\" x2=\"700\" y2=\"90\" stroke=\"#333\" stroke-width=\"1.5\" marker-end=\"url(#fg_sources_fig_ref_axial_film_svg_a3)\"/>\n  <text x=\"708\" y=\"94\" font-size=\"13\" fill=\"#333\">軸方向 Z</text>\n\n  <!-- bump foil + top foil (top, flat-ish) -->\n  <line x1=\"140\" y1=\"150\" x2=\"680\" y2=\"150\" stroke=\"#e67e22\" stroke-width=\"3\"/>\n  <text x=\"688\" y=\"154\" font-size=\"12\" fill=\"#e67e22\">バンプ/トップフォイル</text>\n  <line x1=\"140\" y1=\"175\" x2=\"680\" y2=\"175\" stroke=\"#2980b9\" stroke-width=\"2.5\"/>\n\n  <!-- shaft surface: barrel profile (bulging up at center) -->\n  <path d=\"M 140,250 Q 410,205 680,250\" fill=\"#aeb4bd\" stroke=\"#555\" stroke-width=\"2\"/>\n  <rect x=\"140\" y=\"250\" width=\"540\" height=\"70\" fill=\"#aeb4bd\" stroke=\"#555\" stroke-width=\"2\"/>\n  <text x=\"410\" y=\"295\" font-size=\"14\" text-anchor=\"middle\" fill=\"#333\">軸(樽型プロファイル：遠心/熱膨張)</text>\n\n  <!-- film thickness: between top foil(175) and shaft top(barrel) -->\n  <!-- center gap small, end gap large -->\n  <line x1=\"160\" y1=\"175\" x2=\"160\" y2=\"247\" stroke=\"#c0392b\" stroke-width=\"1.4\" marker-end=\"url(#fg_sources_fig_ref_axial_film_svg_a3)\"/>\n  <text x=\"150\" y=\"220\" font-size=\"11\" text-anchor=\"end\" fill=\"#c0392b\">端部</text>\n  <line x1=\"410\" y1=\"175\" x2=\"410\" y2=\"207\" stroke=\"#c0392b\" stroke-width=\"1.4\" marker-end=\"url(#fg_sources_fig_ref_axial_film_svg_a3)\"/>\n  <text x=\"420\" y=\"198\" font-size=\"11\" fill=\"#c0392b\">中央(薄)</text>\n  <line x1=\"660\" y1=\"175\" x2=\"660\" y2=\"247\" stroke=\"#c0392b\" stroke-width=\"1.4\" marker-end=\"url(#fg_sources_fig_ref_axial_film_svg_a3)\"/>\n\n  <text x=\"410\" y=\"350\" font-size=\"13\" text-anchor=\"middle\" fill=\"#444\">膜厚 h(z)：軸の樽/鼓・テーパで軸方向に非一様 → 中央が薄く、端部側方漏れで圧力降下</text>\n\n  <!-- pressure profile plot -->\n  <text x=\"140\" y=\"410\" font-size=\"13\" font-weight=\"700\" fill=\"#1a1a1a\">膜内圧 p(z)（模式）</text>\n  <line x1=\"160\" y1=\"520\" x2=\"680\" y2=\"520\" stroke=\"#333\" stroke-width=\"1.2\"/>\n  <line x1=\"160\" y1=\"520\" x2=\"160\" y2=\"420\" stroke=\"#333\" stroke-width=\"1.2\"/>\n  <text x=\"150\" y=\"425\" font-size=\"11\" text-anchor=\"end\" fill=\"#333\">p</text>\n  <text x=\"688\" y=\"524\" font-size=\"11\" fill=\"#333\">Z</text>\n  <!-- pressure hump, drops to ambient at ends -->\n  <path d=\"M 160,520 Q 290,440 410,440 Q 530,440 680,520\" fill=\"none\" stroke=\"#8e44ad\" stroke-width=\"3\"/>\n  <line x1=\"160\" y1=\"520\" x2=\"680\" y2=\"520\" stroke=\"#bbb\" stroke-width=\"0.8\" stroke-dasharray=\"4 4\"/>\n  <text x=\"420\" y=\"432\" font-size=\"11\" fill=\"#8e44ad\">中央で最大</text>\n  <text x=\"160\" y=\"540\" font-size=\"11\" fill=\"#777\">端=大気圧</text>\n  <text x=\"640\" y=\"540\" font-size=\"11\" fill=\"#777\">端=大気圧</text>\n</svg>"};</script>
+<script>
+const D = window.DATA, FIGSVG = window.FIGSVG;
+const $ = id => document.getElementById(id);
+const byId = {}; D.cards.forEach(c => byId[c.id] = c);
+const BADGE = {idf:"b-idf",honmei:"b-honmei",ikusei:"b-ikusei",tane:"b-tane",yubou:"b-yubou"};
+const GATEVAL = {strong:4.5, mid:3, weak:2};
+const stars = {}, openRows = {};
+let highlightId = null, selRef = null;
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+    document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+    t.classList.add("on");
+    $("view-"+t.dataset.tab).classList.add("on");
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+});
+function gotoTab(name){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.tab===name));
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+  $("view-"+name).classList.add("on");
+}
+
+/* ---------- scoring ---------- */
+function weights(){let n=+$("wN").value,m=+$("wM").value,g=+$("wG").value;const s=n+m+g||1;return{n:n/s,m:m/s,g:g/s,rawN:n,rawM:m,rawG:g};}
+function gateProxy(c){return c.gateBucket?{v:GATEVAL[c.gateBucket],prov:false}:{v:c.scoreInputs.novelty,prov:true};}
+function scoreOf(c){const w=weights(),gp=gateProxy(c);return{score:w.n*c.scoreInputs.novelty+w.m*c.scoreInputs.mfg+w.g*gp.v,provisional:gp.prov};}
+function visible(){return D.cards.filter(c=>!$("gatedOnly").checked||c.stage==="IDF化");}
+function ranked(){
+  const list=visible().map(c=>({c,...scoreOf(c)}));
+  list.sort((a,b)=>{const pa=stars[a.c.id]?1:0,pb=stars[b.c.id]?1:0;if(pa!==pb)return pb-pa;return b.score-a.score;});
+  return list;
+}
+function gateCls(c){return !c.gateBucket?"g-none":c.gateBucket==="strong"?"g-strong":c.gateBucket==="mid"?"g-mid":"g-weak";}
+
+/* ---------- scatter ---------- */
+function drawPlot(){
+  const W=600,H=440,mL=58,mR=22,mT=20,mB=52,x0=mL,x1=W-mR,y0=H-mB,y1=mT;
+  const sx=v=>x0+(v-0.6)/(5.4-0.6)*(x1-x0), sy=v=>y0-(v-0.6)/(5.4-0.6)*(y0-y1);
+  let s=`<rect x="0" y="0" width="${W}" height="${H}" fill="#0c1322" rx="10"/>`;
+  for(let i=1;i<=5;i++){
+    s+=`<line x1="${sx(i)}" y1="${y1}" x2="${sx(i)}" y2="${y0}" stroke="#1c263a"/>`;
+    s+=`<line x1="${x0}" y1="${sy(i)}" x2="${x1}" y2="${sy(i)}" stroke="#1c263a"/>`;
+    s+=`<text x="${sx(i)}" y="${y0+18}" fill="#6b7896" font-size="11" text-anchor="middle">${i}</text>`;
+    s+=`<text x="${x0-12}" y="${sy(i)+4}" fill="#6b7896" font-size="11" text-anchor="end">${i}</text>`;
+  }
+  s+=`<text x="${(x0+x1)/2}" y="${H-12}" fill="#9aa9c4" font-size="13" text-anchor="middle">製作性（作りやすさ） →</text>`;
+  s+=`<text x="18" y="${(y0+y1)/2}" fill="#9aa9c4" font-size="13" text-anchor="middle" transform="rotate(-90 18 ${(y0+y1)/2})">新規性 →</text>`;
+  s+=`<text x="${x1-6}" y="${y1+16}" fill="#3f4d6b" font-size="10.5" text-anchor="end">作りやすく新しい＝狙い目</text>`;
+  ranked().forEach(({c,score})=>{
+    const cx=sx(c.scoreInputs.mfg),cy=sy(c.scoreInputs.novelty),r=10+score*4.2,col=D.statusColors[c.statusKind],hot=c.id===highlightId;
+    s+=`<g class="pt" data-id="${c.id}" style="cursor:pointer">`;
+    s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${col}" fill-opacity="${hot?.95:.62}" stroke="${hot?'#fff':col}" stroke-width="${hot?2.5:1.5}"/>`;
+    s+=`<text x="${cx}" y="${cy+4}" fill="#0a0f1a" font-size="11" font-weight="800" text-anchor="middle">${c.id.slice(2)}</text>`;
+    if(stars[c.id])s+=`<text x="${cx+r-2}" y="${cy-r+6}" font-size="13" text-anchor="middle">★</text>`;
+    s+=`</g>`;
+  });
+  $("plot").innerHTML=s;
+  $("plot").querySelectorAll(".pt").forEach(g=>g.addEventListener("click",()=>openCard(g.dataset.id)));
+}
+
+/* ---------- card detail (shared) ---------- */
+function figThumb(fid){
+  const f=D.figs.find(x=>x.id===fid); if(!f)return"";
+  return `<div class="figthumb" data-fig="${fid}"><div style="padding:4px">${FIGSVG[fid]||""}</div><div class="cap">${f.title}</div></div>`;
+}
+function detailHTML(c){
+  const refs=c.nearestRefs.map(r=>`<span class="reflink" data-refno="${r.no}">${r.no}</span> <span class="small">${r.applicant!=="—"?r.applicant+"・":""}${r.field}</span>`).join("<br>");
+  const rel=c.relation.map(id=>`<span class="relpill" data-rel="${id}">${id} ${byId[id]?byId[id].shortName:""}</span>`).join(" ");
+  return `<dl class="kv">
+    <dt>解決の芯</dt><dd>${c.coreSummary}</dd>
+    <dt>なぜ非自明</dt><dd>${c.whyNonObviousSummary}</dd>
+    <dt>効く軸</dt><dd><div class="chips">${c.axes.map(a=>`<span class="chip">${a}</span>`).join("")}</div></dd>
+    <dt>効果</dt><dd><div class="chips">${c.effects.map(a=>`<span class="chip eff">${a}</span>`).join("")}</div></dd>
+    ${c.weakness?`<dt>弱点</dt><dd class="warn">${c.weakness}</dd>`:""}
+    <dt>進歩性</dt><dd><span class="gate ${gateCls(c)}">${c.gateBucket?"スクリーニング "+c.gateLabel:"未評価"}</span> <span class="small">${c.hasIdf?"IDF化済み":""}</span></dd>
+    <dt>最近接</dt><dd>${refs}</dd>
+    ${rel?`<dt>関連</dt><dd>${rel}</dd>`:""}
+    ${c.figIds.length?`<dt>図</dt><dd><div class="figthumbs">${c.figIds.map(figThumb).join("")}</div></dd>`:""}
+  </dl>`;
+}
+function bindDetail(scope){
+  scope.querySelectorAll(".reflink").forEach(e=>e.addEventListener("click",ev=>{ev.stopPropagation();gotoTab("ref");selectRef(e.dataset.refno);}));
+  scope.querySelectorAll(".relpill").forEach(e=>e.addEventListener("click",ev=>{ev.stopPropagation();openCard(e.dataset.rel);}));
+  scope.querySelectorAll(".figthumb").forEach(e=>e.addEventListener("click",ev=>{ev.stopPropagation();lightbox(e.dataset.fig);}));
+}
+
+/* ---------- list ---------- */
+function renderList(){
+  let html="";
+  ranked().forEach(({c,score,provisional},i)=>{
+    html+=`<div class="row ${openRows[c.id]?"open":""}" data-id="${c.id}" style="${c.id===highlightId?'box-shadow:0 0 0 1.5px var(--accent)':''}">
+      <div class="rhead">
+        <div class="rank">${i+1}</div>
+        <div class="rtitle">
+          <div class="nm"><span class="idtag">${c.id}</span>${c.shortName}<span class="badge ${BADGE[c.statusKind]}">${c.status}</span></div>
+          <div class="core">${c.coreSummary}</div>
+        </div>
+        <div class="rright">
+          <div style="text-align:right">
+            <div class="score">${score.toFixed(2)}${provisional?'<span class="small" style="font-weight:600"> 暫定</span>':''}</div>
+            <div class="scorebar"><i style="width:${Math.min(100,score/5*100)}%"></i></div>
+          </div>
+          <span class="star ${stars[c.id]?'on':''}" data-star="${c.id}">${stars[c.id]?'★':'☆'}</span>
+        </div>
+      </div>
+      <div class="rbody">${detailHTML(c)}</div>
+    </div>`;
+  });
+  $("list").innerHTML=html;
+  $("list").querySelectorAll(".rhead").forEach(h=>h.addEventListener("click",e=>{
+    if(e.target.dataset.star)return;
+    const id=h.parentElement.dataset.id;openRows[id]=!openRows[id];highlightId=id;renderDash();
+  }));
+  $("list").querySelectorAll(".star").forEach(st=>st.addEventListener("click",e=>{
+    e.stopPropagation();const id=st.dataset.star;stars[id]=!stars[id];renderDash();
+  }));
+  bindDetail($("list"));
+}
+function openCard(id){
+  gotoTab("dash");openRows[id]=true;highlightId=id;renderDash();
+  setTimeout(()=>{const el=document.querySelector(`.row[data-id="${id}"]`);if(el)el.scrollIntoView({behavior:"smooth",block:"center"});},40);
+}
+
+/* ---------- ref map ---------- */
+function renderRef(){
+  let html="";
+  D.refIndex.forEach(r=>{
+    const hot=r.citedBy.length>=2;
+    html+=`<div class="refrow ${hot?'hot':''} ${selRef===r.no?'sel':''}" data-no="${r.no}">
+      <div class="no">${r.no} <span class="citebadge ${hot?'hot':''}">${r.citedBy.length}件</span></div>
+      <div class="ap">${r.applicant!=="—"?r.applicant:""}</div>
+      <div class="fl">${r.field}</div>
+    </div>`;
+  });
+  $("reflist").innerHTML=html;
+  $("reflist").querySelectorAll(".refrow").forEach(e=>e.addEventListener("click",()=>selectRef(e.dataset.no)));
+  if(selRef)renderRefDetail(selRef);
+}
+function selectRef(no){selRef=no;renderRef();renderRefDetail(no);}
+function renderRefDetail(no){
+  const r=D.refIndex.find(x=>x.no.toUpperCase()===no.toUpperCase());
+  if(!r){$("refdetail").innerHTML=`<span class="small">該当なし</span>`;return;}
+  const cards=r.citedBy.map(id=>byId[id]).filter(Boolean);
+  $("refdetail").innerHTML=`<div class="no" style="font-weight:800;font-size:13px">${r.no}</div>
+    <div class="small" style="margin:2px 0 8px">${r.applicant!=="—"?r.applicant+"・":""}${r.field}</div>
+    <div class="small">この文献を最近接に挙げる案（${cards.length}）：</div>
+    <div>${cards.map(c=>`<span class="cardchip" data-id="${c.id}"><span class="dot" style="background:${D.statusColors[c.statusKind]}"></span>${c.id} ${c.shortName}</span>`).join("")}</div>`;
+  $("refdetail").querySelectorAll(".cardchip").forEach(e=>e.addEventListener("click",()=>openCard(e.dataset.id)));
+}
+
+/* ---------- pipeline ---------- */
+function renderPipe(){
+  let html="";
+  D.stages.forEach(stage=>{
+    const cs=D.cards.filter(c=>c.stage===stage);
+    html+=`<div class="kcol"><h3>${stage}<span class="kcount">${cs.length}</span></h3>`;
+    cs.forEach(c=>{
+      const col=D.statusColors[c.statusKind];
+      html+=`<div class="ktile" data-id="${c.id}" style="border-left-color:${col}">
+        <div class="kid">${c.id}${c.honmei?' ★本命':''} ${c.hasIdf?'· IDF':''}</div>
+        <div class="kt">${c.shortName}</div>
+        <div class="chips" style="margin-top:5px">${c.axes.slice(0,2).map(a=>`<span class="chip">${a}</span>`).join("")}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  $("kan").innerHTML=html;
+  $("kan").querySelectorAll(".ktile").forEach(e=>e.addEventListener("click",()=>openCard(e.dataset.id)));
+}
+
+/* ---------- gallery ---------- */
+let galFilter="all";
+function renderGal(){
+  const cats=[["all","すべて"]];
+  D.cards.forEach(c=>{if(c.figIds.length)cats.push([c.id,c.id+" "+c.shortName]);});
+  if(D.figs.some(f=>f.cardId==="ref"))cats.push(["ref","参照図"]);
+  $("galfilter").innerHTML=cats.map(([k,l])=>`<button class="${galFilter===k?'on':''}" data-k="${k}">${l}</button>`).join("");
+  $("galfilter").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{galFilter=b.dataset.k;renderGal();}));
+  const figs=D.figs.filter(f=>galFilter==="all"||f.cardId===galFilter);
+  $("galgrid").innerHTML=figs.map(f=>{
+    const c=byId[f.cardId];
+    return `<div class="galcell" data-fig="${f.id}"><div class="gsvg">${FIGSVG[f.id]||""}</div>
+      <div class="gcap"><b>${f.title}</b><br><span class="gk">${f.kind}${c?' · '+c.shortName:' · 参照'}</span></div></div>`;
+  }).join("");
+  $("galgrid").querySelectorAll(".galcell").forEach(e=>e.addEventListener("click",()=>lightbox(e.dataset.fig)));
+  const wh=(D.meta.withheldFigs||[]);
+  $("galnote").innerHTML = wh.length
+    ? `🔒 機密ラベルを含む図 ${wh.length} 点は公開版では非表示です（${wh.map(w=>w.cardId).join("・")}）。`
+    : "";
+}
+
+/* ---------- lightbox ---------- */
+function lightbox(fid){
+  const f=D.figs.find(x=>x.id===fid);if(!f)return;
+  $("lbbox").innerHTML=FIGSVG[fid]||"";$("lbcap").textContent=f.title+"（"+f.kind+"）";$("lb").classList.add("on");
+}
+$("lbx").addEventListener("click",()=>$("lb").classList.remove("on"));
+$("lb").addEventListener("click",e=>{if(e.target===$("lb"))$("lb").classList.remove("on");});
+
+/* ---------- output ---------- */
+function buildOutput(){
+  const w=weights(),list=ranked();
+  const ranking=list.map(({c,score,provisional},i)=>({rank:i+1,id:c.id,title:c.shortName,status:c.status,score:+score.toFixed(2),provisional,pinned:!!stars[c.id],gate:c.gateLabel}));
+  const top=ranking[0],pins=ranking.filter(r=>r.pinned).map(r=>r.id);
+  return{panel:"counsel-studio",date:D.meta.date,weights:{novelty:w.rawN,mfg:w.rawM,gate:w.rawG,gatedOnly:$("gatedOnly").checked},
+    top_pick:top?top.id:null,pinned:pins,ranking,
+    summary:`重み[新規${w.rawN}/製作${w.rawM}/進歩${w.rawG}] → 1位 ${top?top.id+" "+top.title+"("+top.score+")":"-"}${pins.length?" ／ 固定:"+pins.join(","):""}`};
+}
+function refreshOut(){$("out").value=JSON.stringify(buildOutput(),null,2);}
+
+/* ---------- render ---------- */
+function renderDash(){$("wNv").textContent=$("wN").value;$("wMv").textContent=$("wM").value;$("wGv").textContent=$("wG").value;drawPlot();renderList();refreshOut();}
+["wN","wM","wG"].forEach(id=>$(id).addEventListener("input",renderDash));
+$("gatedOnly").addEventListener("change",renderDash);
+$("copyBtn").addEventListener("click",async()=>{const t=JSON.stringify(buildOutput(),null,2);try{await navigator.clipboard.writeText(t);}catch(e){const a=$("out");a.style.display="block";a.select();document.execCommand("copy");}const c=$("copied");c.classList.add("show");setTimeout(()=>c.classList.remove("show"),1500);});
+$("toggleJson").addEventListener("click",()=>{const t=$("out");t.style.display=t.style.display==="none"?"block":"none";});
+
+$("subline").innerHTML = D.meta.filter==="local"
+  ? 'アイデアを俯瞰し、文献の混み具合を見て、段階を管理し、図を並べる。<span class="small warn">ローカル全文版</span>'
+  : 'アイデアを俯瞰し、文献の混み具合を見て、段階を管理し、図を並べる。<span class="small">公開版（安全側のみ表示）。スコアは仮・web一次調査ベース。</span>';
+$("foot").innerHTML = `⚠️ 社内検討用ドラフト。スコア・順位は仮の評価で、先行調査は web の一次サーフェスにとどまります（網羅ではない）。最終的な特許出願は弁理士レビューを前提とし、公的特許データベースの精査は人が仕上げる前提です。${D.meta.project}／生成 ${D.meta.date}`;
+
+renderDash();renderRef();renderPipe();renderGal();
+if(location.hash){const n=location.hash.slice(1);if($("view-"+n))gotoTab(n);}
+</script>
+</body>
+</html>

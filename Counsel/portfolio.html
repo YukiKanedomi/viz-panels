@@ -97,7 +97,7 @@
 <body>
 <div class="wrap">
   <h1>🧭 フォイル軸受 特許アイデア・ポートフォリオ</h1>
-  <p class="sub">6枚のカードを「新規性 × 製作性」で俯瞰。重みを動かすと優先順位が変わります。気になる案は ★ で固定、行をタップで反対尋問メモ・差分を表示。最後に「📋 設定をコピー」でチャットへ戻してください。<br><span class="small">評価値は社内検討用の仮スコア（web一次調査ベース）。Fターム精査は人が仕上げる前提。</span></p>
+  <p class="sub">6枚のカードを「新規性 × 製作性」で俯瞰。重みを動かすと優先順位が変わります。気になる案は ★ で固定、行をタップで判定メモ・差分を表示。最後に「📋 設定をコピー」でチャットへ戻してください。<br><span class="small">評価値は社内検討用の仮スコア（web一次調査ベース）。公的特許DBの精査は人が仕上げる前提。</span></p>
 
   <!-- weights -->
   <div class="card">
@@ -112,8 +112,8 @@
       <div class="slider-row">
         <label>進歩性の強度</label><input type="range" id="wG" min="0" max="100" value="25"><span class="val" id="wGv">25</span>
       </div>
-      <label class="toggle"><input type="checkbox" id="gatedOnly"><span>反対尋問つき（IDF化）の案だけ表示</span></label>
-      <p class="small" style="margin:2px 0 0">「進歩性の強度」は反対尋問の判定（生存ほど高い）。未実施の案は新規性を仮値として使い、スコア横に「暫定」と表示します。</p>
+      <label class="toggle"><input type="checkbox" id="gatedOnly"><span>進歩性スクリーニング済み（IDF化）の案だけ表示</span></label>
+      <p class="small" style="margin:2px 0 0">「進歩性の強度」は進歩性スクリーニングの判定（強いほど高い）。未実施の案は新規性を仮値として使い、スコア横に「暫定」と表示します。</p>
     </div>
   </div>
 
@@ -149,17 +149,17 @@
     <textarea id="out" style="display:none" readonly></textarea>
   </div>
 
-  <p class="foot">⚠️ 社内検討用ドラフト。スコア・順位は仮の評価で、先行調査は web の一次サーフェスにとどまります（網羅ではない）。確定請求項・出願は弁理士レビュー前提、J-PlatPat の Fターム精査は人が仕上げる前提です。生成日: 2026-06-27</p>
+  <p class="foot">⚠️ 社内検討用ドラフト。スコア・順位は仮の評価で、先行調査は web の一次サーフェスにとどまります（網羅ではない）。最終的な特許出願は弁理士レビューを前提とし、公的特許データベースの精査は人が仕上げる前提です。生成日: 2026-06-27</p>
 </div>
 
 <script>
 const IDEAS = [
   {id:"0001", name:"案A 部分スリット分節", novelty:2, mfg:5, status:"idf", statusL:"IDF化",
-   gateStrength:2, gateL:"要限定・弱〜中",
-   core:"周方向の係止・擬似3パッド機能を担う屈曲稜線を、軸方向の部分スリットで分節化。一体形成は維持し、軸方向の曲げだけを解放する。",
+   gateStrength:2, gateL:"強度：弱",
+   core:"周方向の係止・擬似3パッド機能を担う屈曲稜線を、軸方向の部分スリットで分節化し、軸方向の曲げだけを解放する。",
    axes:["軸方向追従","荷重容量","減衰(マイクロスリップ)"],
    nearest:"US4296976A(Heshmat/MTI), CN212959540U(Hebei Kingston)",
-   diff:"「部分スリット＋一体保持」という中核限定が、実は先行例に既出。生存余地は最も狭い組合せ（係止稜線×谷部のみ×軸方向追従目的）のみ。進歩性の重心は0003へ移すのが賢い。",
+   diff:"分節スリットで軸方向の曲げを扱う点が論点。近接文献があり混雑寄り。",
    file:"idf/0001-axial-decoupled-ridge-idf.md"},
 
   {id:"0002", name:"案B シェブロン波形クリース", novelty:4, mfg:2, status:"honmei", statusL:"育成中(本命)",
@@ -171,11 +171,11 @@ const IDEAS = [
    file:"ideas/0002-axial-bellows-crease.md"},
 
   {id:"0003", name:"切り起こしタブ", novelty:4, mfg:4, status:"idf", statusL:"IDF化",
-   gateStrength:3, gateL:"要限定・中",
+   gateStrength:3, gateL:"強度：中",
    core:"分節スリットの捨て材をコの字に切り起こしてタブ化。トップ⇔バンプの相対すべり（フレッティング源）を拘束し、軸方向ストッパ・局所プリロードも兼ねる。",
    axes:["起動停止寿命","組立性","安定性(プリロード)"],
    nearest:"US8672549B2, wing foil(US20140376844A1ほか)",
-   diff:"タブ保持・シム予圧は公知。生存は「分節スリット由来のタブ×層間相対すべり拘束×外径側分布」に限定。0001ファミリーで最も差分が明瞭。",
+   diff:"タブ保持・シム予圧は公知。分節スリット由来のタブを別用途に充てる組合せが差分。",
    file:"idf/0002-slit-bent-tab-idf.md"},
 
   {id:"0004", name:"公差鈍感・自己位置決め固定", novelty:3, mfg:3, status:"tane", statusL:"種",
@@ -188,18 +188,18 @@ const IDEAS = [
 
   {id:"0005", name:"異方拘束固定", novelty:4, mfg:4, status:"ikusei", statusL:"育成中",
    gateStrength:null, gateL:"未実施",
-   core:"固定部の拘束を方向で分ける。周方向（抗回転）は拘束し、軸方向（熱膨張）は滑り or 弾性で解放。固定端に熱応力を溜めない。A1ロングスロット／A2フレクシャが本命。",
+   core:"固定部の拘束を方向で分ける。周方向（抗回転）は拘束し、軸方向（熱膨張）は滑り or 弾性で解放。固定端に熱応力を溜めない。",
    axes:["熱クラウニング追従","疲労寿命"],
    nearest:"US20170030404A1, US9109622, US4668108, CN104603480B",
-   diff:"文献の anisotropic は支持剛性の異方性（振動対策）。本案は固定端の“拘束方向”の異方化（熱膨張逃がし）で焦点が別。A2は新規性◎/A1は製作◎。",
+   diff:"文献の anisotropic は支持剛性の異方性（振動対策）。本案は固定端の拘束方向の異方化（熱膨張逃がし）で焦点が別。",
    file:"ideas/0005-anisotropic-constraint-fixation.md"},
 
   {id:"0006", name:"速度適応 浮上回転数低減", novelty:3, mfg:3, status:"ikusei", statusL:"育成中",
    gateStrength:null, gateL:"未実施",
-   core:"低速だけ効くジオメトリ／接触圧の分散で起動停止摩耗を減らす。勝ち筋は問題設定を「浮上回転数の低減(混雑)」から「接触損傷の最小化(やや空き)」へ寄せること（S5/S2）。",
+   core:"低速だけ効くジオメトリ／接触圧の分散で起動停止摩耗を減らす。問題設定を、浮上回転数の低減から接触損傷の最小化へ寄せると余地がある。",
    axes:["起動停止寿命"],
    nearest:"US4445792A, US4795274A, US20190203761A1",
-   diff:"適応起動の概念自体は先行が押さえ広い独立は困難。S5(接触圧スパイク低減)・S2(遠心退避)へ攻め方を転換すれば、やや空き。",
+   diff:"適応起動の概念自体は先行が押さえ、広い独立は困難。接触損傷の最小化など別の問題設定へ寄せると余地。",
    file:"ideas/0006-speed-adaptive-liftoff.md"}
 ];
 
@@ -313,7 +313,7 @@ function renderList(){
       </div>
       <div class="rbody">
         <dl class="kv">
-          <dt>評価</dt><dd>新規性 <b>${d.novelty}</b> ／ 製作性 <b>${d.mfg}</b> ／ <span class="gate ${gateClass(d)}">反対尋問 ${d.gateL}</span></dd>
+          <dt>評価</dt><dd>新規性 <b>${d.novelty}</b> ／ 製作性 <b>${d.mfg}</b> ／ <span class="gate ${gateClass(d)}">進歩性 ${d.gateL}</span></dd>
           <dt>効く軸</dt><dd><div class="chips">${d.axes.map(a=>`<span class="chip">${a}</span>`).join("")}</div></dd>
           <dt>最近接</dt><dd>${d.nearest}</dd>
           <dt>差分</dt><dd>${d.diff}</dd>
