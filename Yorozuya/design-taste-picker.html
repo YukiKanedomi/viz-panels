@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>デザイン好み選別パネル</title>
+<style>
+  :root{
+    --paper:#f5f0e6; --ink:#2b2620; --card:#fffdf8; --line:#d9d0bd;
+    --like:#b5502a; --meh:#8a8378; --dislike:#3d4a6b; --unknown:#a89f8d;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic",Meiryo,sans-serif;
+    font-size:15px; line-height:1.7;}
+  header{padding:20px 16px 8px; max-width:640px; margin:0 auto;}
+  h1{font-size:20px; margin:0 0 4px; letter-spacing:.02em;}
+  .sub{font-size:13px; color:#6b6355; margin:0;}
+  main{max-width:640px; margin:0 auto; padding:0 12px 140px;}
+  h2{font-size:14px; letter-spacing:.12em; color:#7a6a4f; border-bottom:2px solid var(--line);
+    padding:18px 4px 6px; margin:10px 0 10px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; margin-bottom:10px;}
+  .card.rated{border-color:#c9b98f;}
+  .t{font-weight:700; font-size:15.5px;}
+  .d{font-size:12.5px; color:#6b6355; margin:2px 0 10px;}
+  .btns{display:grid; grid-template-columns:repeat(4,1fr); gap:6px;}
+  .btns button{min-height:44px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fbf8f0; color:#5a5344; font-size:13px; font-weight:600; cursor:pointer; padding:4px 2px;}
+  .btns button.on-like{background:var(--like); border-color:var(--like); color:#fff;}
+  .btns button.on-meh{background:var(--meh); border-color:var(--meh); color:#fff;}
+  .btns button.on-dislike{background:var(--dislike); border-color:var(--dislike); color:#fff;}
+  .btns button.on-unknown{background:var(--unknown); border-color:var(--unknown); color:#fff;}
+  textarea{width:100%; min-height:88px; border:1.5px solid var(--line); border-radius:10px;
+    padding:10px; font:inherit; font-size:14px; background:var(--card); color:var(--ink);}
+  .bar{position:fixed; left:0; right:0; bottom:0; background:rgba(43,38,32,.96); color:#f5f0e6;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));}
+  .bar-in{max-width:640px; margin:0 auto; display:flex; gap:10px; align-items:center;}
+  .count{font-size:13px; white-space:nowrap;}
+  #copy{flex:1; min-height:48px; border:none; border-radius:10px; background:#e8b84b; color:#2b2620;
+    font-size:15px; font-weight:700; cursor:pointer;}
+  #copy.done{background:#7da65e; color:#fff;}
+  #fallback{display:none; margin:8px 0 0; width:100%; height:120px; font-size:11px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>デザイン好み選別</h1>
+  <p class="sub">直感でどうぞ。「見た目・デザインが」好きかどうかで（作品の中身の評価とは別）。知らないものは「知らない」で飛ばしてOK。途中で閉じても選択は端末に残ります。</p>
+</header>
+<main id="main"></main>
+<div class="bar"><div class="bar-in">
+  <span class="count" id="count">0/28</span>
+  <button id="copy">結果をコピー</button>
+</div>
+<textarea id="fallback" readonly></textarea>
+</div>
+<script>
+const ITEMS = [
+ // --- ゲーム ---
+ {id:"botw", c:"ゲーム", t:"ゼルダの伝説 ブレス オブ ザ ワイルド", d:"引き算のオープンワールド。空気と光、静かで邪魔しないUI", tags:["ミニマル","自然","静けさ"]},
+ {id:"splatoon", c:"ゲーム", t:"Splatoon", d:"蛍光インクとストリート文化。はみ出すロゴ、音楽まで一体", tags:["ポップ","ストリート","高彩度"]},
+ {id:"animal", c:"ゲーム", t:"あつまれ どうぶつの森", d:"丸くやわらかい造形。生活の道具としての優しいUI", tags:["かわいい","生活","やわらかい"]},
+ {id:"p5", c:"ゲーム", t:"ペルソナ5", d:"赤×黒、斜めの構図、メニューの全要素が動くスタイリッシュ演出", tags:["過剰演出","グラフィカル","モーション"]},
+ {id:"nier", c:"ゲーム", t:"NieR:Automata", d:"淡いセピアと機械的なノイズ。退廃と静けさのUI", tags:["退廃ミニマル","モノトーン","静けさ"]},
+ {id:"hades", c:"ゲーム", t:"Hades", d:"力強い手描きの線と濃い色気。イラストが主役", tags:["イラスト","手描き","濃厚"]},
+ {id:"monument", c:"ゲーム", t:"Monument Valley", d:"幾何学とパステルの建築パズル。1画面が1枚のグラフィックアート", tags:["幾何学","パステル","アート"]},
+ {id:"journey", c:"ゲーム", t:"風ノ旅ビト（Journey）", d:"砂と布と光だけ。言葉のない詩的な世界", tags:["詩的","ミニマル","抽象"]},
+ {id:"cuphead", c:"ゲーム", t:"Cuphead", d:"1930年代カートゥーンを手描きセル画で完全再現", tags:["レトロ","手仕事","再現"]},
+ {id:"baba", c:"ゲーム", t:"Baba Is You", d:"素朴な線のドット絵。飾りゼロ、概念だけで勝負", tags:["素朴","概念","ローファイ"]},
+ {id:"obra", c:"ゲーム", t:"Return of the Obra Dinn", d:"白黒1bitのディザ表現。版画のような実験的制約", tags:["制約","実験","モノクロ"]},
+ {id:"mother2", c:"ゲーム", t:"MOTHER2", d:"チープ可愛いポップ、ひらがなの文体の温度", tags:["ヴァナキュラー","ポップ","文体"]},
+ // --- アプリ・Webサイト ---
+ {id:"apple", c:"アプリ・Webサイト", t:"Apple 公式サイト", d:"製品写真と余白。大きな文字、プレミアムなミニマル", tags:["プレミアム","ミニマル","写真主導"]},
+ {id:"muji", c:"アプリ・Webサイト", t:"無印良品（サイト/アプリ）", d:"白と生成り。装飾を削ぎ、説明の文章で語る", tags:["和文モダニズム","生活","余白"]},
+ {id:"hobonichi", c:"アプリ・Webサイト", t:"ほぼ日刊イトイ新聞", d:"文章が主役。手作り感のある温かい賑やかさ", tags:["テキスト文化","温かい","賑やか"]},
+ {id:"dpz", c:"アプリ・Webサイト", t:"デイリーポータルZ", d:"洗練より人懐こさ。良い意味で垢抜けないWeb", tags:["ヴァナキュラー","ユーモア","脱力"]},
+ {id:"notion", c:"アプリ・Webサイト", t:"Notion", d:"グレーと余白、道具に徹した顔。今風SaaSの代表格", tags:["モダンSaaS","道具","無彩色"]},
+ {id:"duolingo", c:"アプリ・Webサイト", t:"Duolingo", d:"太い輪郭のキャラとゲーム的な報酬設計。緑のマスコット", tags:["マスコット","ポップ","ゲーミフィケーション"]},
+ {id:"material", c:"アプリ・Webサイト", t:"Google（Material Design）", d:"色面と影を規格化した大規模デザインシステム", tags:["システム","規格","色面"]},
+ {id:"nintendo", c:"アプリ・Webサイト", t:"任天堂 公式サイト", d:"赤と白。製品を邪魔しない実直な作り", tags:["実直","製品主役","明快"]},
+ {id:"airbnb", c:"アプリ・Webサイト", t:"Airbnb", d:"写真主導・角丸・親しみやすさの商業デザイン", tags:["フレンドリー","写真主導","角丸"]},
+ {id:"traintime", c:"アプリ・Webサイト", t:"乗換案内系アプリ（Yahoo!乗換など）", d:"情報密度全振り。飾りより一覧性の実用デザイン", tags:["高密度","実用","情報設計"]},
+ // --- モノ・紙・映像 ---
+ {id:"techo", c:"モノ・紙・映像", t:"ほぼ日手帳", d:"方眼と余白の道具設計。1日1ページという型", tags:["道具","方眼","型"]},
+ {id:"bunko", c:"モノ・紙・映像", t:"文庫本の定番装丁（岩波・新潮など）", d:"型の反復と背表紙の並びの美。何十年も変わらない骨格", tags:["型","伝統","組版"]},
+ {id:"lego", c:"モノ・紙・映像", t:"LEGO", d:"原色とシステム。文字のない説明書の図解力", tags:["システム","原色","図解"]},
+ {id:"eki", c:"モノ・紙・映像", t:"鉄道の駅サイン・路線図", d:"機能一辺倒の明快さ。色と番号の情報設計", tags:["サイン","機能美","情報設計"]},
+ {id:"design-ah", c:"モノ・紙・映像", t:"デザインあ（Eテレ）", d:"日常のモノを分解して見せる、音楽的な編集のグラフィック番組", tags:["教育","分解","グラフィカル"]},
+ {id:"casa", c:"モノ・紙・映像", t:"Casa BRUTUS / POPEYE 的な雑誌の誌面", d:"写真とタイポの雑誌文化。特集ごとに顔が変わる", tags:["エディトリアル","雑誌","写真"]},
+];
+const LABELS = {like:"好き", meh:"ふつう", dislike:"苦手", unknown:"知らない"};
+const KEY = "design-taste-picker-v1";
+let state = {};
+try{ state = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){}
+
+const main = document.getElementById("main");
+let cat = "";
+for(const it of ITEMS){
+  if(it.c !== cat){ cat = it.c; const h = document.createElement("h2"); h.textContent = cat; main.appendChild(h); }
+  const card = document.createElement("div");
+  card.className = "card"; card.id = "card-" + it.id;
+  card.innerHTML = '<div class="t">' + it.t + '</div><div class="d">' + it.d + '</div>';
+  const btns = document.createElement("div"); btns.className = "btns";
+  for(const k of ["like","meh","dislike","unknown"]){
+    const b = document.createElement("button");
+    b.textContent = LABELS[k];
+    b.dataset.k = k;
+    b.onclick = () => { state[it.id] = (state[it.id] === k) ? null : k; save(); paint(it.id); };
+    btns.appendChild(b);
+  }
+  card.appendChild(btns);
+  main.appendChild(card);
+}
+const cmWrap = document.createElement("div");
+cmWrap.innerHTML = '<h2>ひとことメモ（任意）</h2>';
+const ta = document.createElement("textarea");
+ta.placeholder = "例: ◯◯は昔から好き、△△は仕事っぽくて苦手、など何でも";
+ta.value = state.__comment || "";
+ta.oninput = () => { state.__comment = ta.value; save(); };
+cmWrap.appendChild(ta);
+main.appendChild(cmWrap);
+
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function paint(id){
+  const it = ITEMS.find(x => x.id === id);
+  const card = document.getElementById("card-" + id);
+  const cur = state[id];
+  card.classList.toggle("rated", !!cur);
+  for(const b of card.querySelectorAll("button")){
+    b.className = (b.dataset.k === cur) ? ("on-" + cur) : "";
+  }
+  const n = ITEMS.filter(x => state[x.id]).length;
+  document.getElementById("count").textContent = n + "/" + ITEMS.length;
+}
+for(const it of ITEMS) paint(it.id);
+
+document.getElementById("copy").onclick = async () => {
+  const ratings = ITEMS.map(it => ({id:it.id, title:it.t, category:it.c, tags:it.tags, rating:state[it.id] || null}));
+  const liked = ratings.filter(r => r.rating === "like").map(r => r.title);
+  const disliked = ratings.filter(r => r.rating === "dislike").map(r => r.title);
+  const payload = {panel:"design-taste-picker", version:1, ratings, comment:state.__comment || ""};
+  const text = "【デザイン好み選別 結果】\n好き: " + (liked.join("、") || "なし") +
+    "\n苦手: " + (disliked.join("、") || "なし") +
+    "\nメモ: " + (state.__comment || "なし") +
+    "\n----JSON----\n" + JSON.stringify(payload);
+  const btn = document.getElementById("copy");
+  try{
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "コピーしました — チャットに貼ってください";
+    btn.classList.add("done");
+  }catch(e){
+    const fb = document.getElementById("fallback");
+    fb.style.display = "block"; fb.value = text; fb.select();
+    btn.textContent = "下の欄を全選択してコピーしてください";
+  }
+};
+</script>
+</body>
+</html>

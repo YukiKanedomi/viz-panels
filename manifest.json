@@ -49,6 +49,14 @@
       "type": "report",
       "added": "2026-06-27",
       "desc": "説明レベルslider(やさしい↔専門)で本文がライブ切替・用語タップで定義・豆知識増量"
+    },
+    {
+      "project": "Yorozuya",
+      "title": "デザイン好み選別",
+      "file": "Yorozuya/design-taste-picker.html",
+      "type": "panel",
+      "added": "2026-07-02",
+      "desc": "ゲーム/アプリ/モノ28作品を好き・ふつう・苦手・知らないで評価するパネル（design-dojo用）"
     }
   ]
 }
