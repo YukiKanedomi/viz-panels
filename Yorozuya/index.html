@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>枯山水</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:#26221d;
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+  -webkit-user-select:none;user-select:none;
+}
+#stage{position:relative;display:flex;flex-direction:column;align-items:center}
+#tray{
+  position:relative;border-radius:6px;padding:14px;
+  background:linear-gradient(135deg,#7a5c3d,#5c4227 55%,#6b4f31);
+  box-shadow:0 10px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.15), inset 0 -2px 4px rgba(0,0,0,.35);
+}
+#garden{
+  display:block;border-radius:2px;touch-action:none;cursor:crosshair;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.28);
+}
+#title{
+  position:absolute;right:-32px;top:10px;writing-mode:vertical-rl;
+  font-family:"Shippori Mincho",serif;font-size:17px;letter-spacing:.5em;
+  color:#b9a988;opacity:.85;pointer-events:none;
+}
+#hint{
+  position:absolute;left:0;right:0;top:44%;text-align:center;pointer-events:none;
+  color:rgba(90,80,60,.6);font-size:13px;letter-spacing:.3em;
+  transition:opacity 2.5s;font-family:"Shippori Mincho",serif;
+}
+#tools{display:flex;gap:8px;margin-top:12px;align-items:center;justify-content:center}
+#tools button{
+  min-width:50px;min-height:40px;padding:6px 12px;border-radius:4px;cursor:pointer;
+  border:1px solid rgba(185,169,136,.25);background:rgba(255,255,255,.04);
+  color:#b9a988;font-family:"Shippori Mincho",serif;font-size:13px;letter-spacing:.2em;
+}
+#tools button.on{background:rgba(185,169,136,.18);border-color:rgba(185,169,136,.6);color:#e8dcc0}
+#tools button:active{transform:scale(.96)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="tray">
+    <canvas id="garden"></canvas>
+    <div id="title">枯山水</div>
+    <div id="hint">指 で 砂 を 撫 で る</div>
+  </div>
+  <div id="tools">
+    <button id="b-rake" class="on">熊手</button>
+    <button id="b-stone">石</button>
+    <button id="b-ripple">波紋</button>
+    <button id="b-smooth">整地</button>
+    <button id="b-time">刻</button>
+    <button id="b-save">写す</button>
+  </div>
+</div>
+<script>
+// ---- 刻（とき）: 3つの光 ----
+const MOODS = [
+  { name:"hiru", sand:"#e9e2d2", grain:"#d8cfba", grooveDark:"rgba(120,105,78,.55)",
+    grooveLight:"rgba(255,252,240,.9)", stoneA:"#5a5a52", stoneB:"#3b3b35",
+    shadow:"rgba(90,80,60,.30)", vignette:"rgba(120,100,70,.18)" },
+  { name:"yuu", sand:"#e3cdb2", grain:"#d3b997", grooveDark:"rgba(140,85,55,.5)",
+    grooveLight:"rgba(255,235,210,.95)", stoneA:"#5c4f4a", stoneB:"#3a322f",
+    shadow:"rgba(110,55,35,.35)", vignette:"rgba(160,80,50,.20)" },
+  { name:"yoru", sand:"#3c4356", grain:"#333a4b", grooveDark:"rgba(12,16,28,.65)",
+    grooveLight:"rgba(150,170,210,.5)", stoneA:"#2d3138", stoneB:"#1a1d22",
+    shadow:"rgba(5,8,18,.5)", vignette:"rgba(5,10,25,.35)" }
+];
+let mood = 0;
+
+// ---- キャンバス設営 ----
+const canvas = document.getElementById("garden");
+const ctx = canvas.getContext("2d");
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+let W, H;
+const sand = document.createElement("canvas");   // 砂と紋の永続レイヤ
+const sctx = sand.getContext("2d");
+let grainPattern = null;
+
+function sizeCanvas(){
+  const vw = Math.min(window.innerWidth - 36, 560);
+  const vh = window.innerHeight - 150;
+  W = Math.max(280, vw); H = Math.max(360, Math.min(vh, W * 1.5));
+  if (W > vh * 0.9) H = Math.min(H, vh);
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  sand.width = W * DPR; sand.height = H * DPR;
+  sctx.setTransform(DPR,0,0,DPR,0,0);
+  overlay.width = W * DPR; overlay.height = H * DPR;
+  octx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+// 砂の質感タイル（刻ごとに作り直す）
+function makeGrain(){
+  const t = document.createElement("canvas"); t.width = t.height = 160;
+  const g = t.getContext("2d"); const m = MOODS[mood];
+  g.fillStyle = m.sand; g.fillRect(0,0,160,160);
+  g.fillStyle = m.grain;
+  for(let i=0;i<900;i++){
+    g.globalAlpha = .12 + Math.random()*.3;
+    g.fillRect(Math.random()*160, Math.random()*160, 1, 1);
+  }
+  g.globalAlpha = 1;
+  grainPattern = sctx.createPattern(t, "repeat");
+}
+
+function resetSand(){
+  makeGrain();
+  sctx.fillStyle = grainPattern; sctx.fillRect(0,0,W,H);
+}
+
+// ---- 熊手の紋（レリーフ彫り） ----
+// 点線化（セグメント継ぎ目の透明度重なり）を避けるため、進行中のストロークは
+// overlay に「一筆のパス」として毎回描き直し、指を離した時に砂へ焼き付ける。
+const TINES = 5, SPACING = 8;
+const overlay = document.createElement("canvas");
+const octx = overlay.getContext("2d");
+let strokePts = [];
+
+function eraseBand(p0, p1){
+  sctx.strokeStyle = grainPattern;
+  sctx.lineWidth = SPACING * (TINES + 1);
+  sctx.lineCap = "butt";
+  sctx.beginPath(); sctx.moveTo(p0.x, p0.y); sctx.lineTo(p1.x, p1.y); sctx.stroke();
+}
+
+// 頂点ごとの法線（前後の点の差分の垂線）
+function normals(pts){
+  const ns = [];
+  for (let j=0; j<pts.length; j++){
+    const a = pts[Math.max(0, j-1)], b = pts[Math.min(pts.length-1, j+1)];
+    const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1;
+    ns.push({ x: -dy/l, y: dx/l });
+  }
+  return ns;
+}
+
+function strokeGrooves(c, pts){
+  if (pts.length < 2) return;
+  const m = MOODS[mood];
+  const ns = normals(pts);
+  c.lineCap = "round"; c.lineJoin = "round";
+  for (let i = -(TINES-1)/2; i <= (TINES-1)/2; i++){
+    // 影の溝（一筆）
+    c.strokeStyle = m.grooveDark; c.lineWidth = 2.6;
+    c.beginPath();
+    pts.forEach((p,j)=>{
+      const x = p.x + ns[j].x * i * SPACING, y = p.y + ns[j].y * i * SPACING;
+      j ? c.lineTo(x,y) : c.moveTo(x,y);
+    });
+    c.stroke();
+    // 光の稜線（一筆）
+    c.strokeStyle = m.grooveLight; c.lineWidth = 1.3;
+    c.beginPath();
+    pts.forEach((p,j)=>{
+      const x = p.x + ns[j].x * (i * SPACING + 1.5), y = p.y + ns[j].y * (i * SPACING + 1.5);
+      j ? c.lineTo(x,y) : c.moveTo(x,y);
+    });
+    c.stroke();
+  }
+}
+
+function redrawOverlay(){
+  octx.clearRect(0,0,W,H);
+  strokeGrooves(octx, strokePts);
+}
+
+function commitStroke(){
+  if (strokePts.length > 1) sctx.drawImage(overlay, 0, 0, W, H);
+  octx.clearRect(0,0,W,H);
+  strokePts = [];
+}
+
+// ---- 石 ----
+let stones = [];   // {x,y,r,shape:[{a,rr}..],seed}
+function makeStone(x, y){
+  const r = 20 + Math.random()*16;
+  const shape = [];
+  const n = 11 + (Math.random()*4|0);
+  for (let i=0;i<n;i++){
+    shape.push({ a: i/n * Math.PI*2, rr: r * (0.78 + Math.random()*0.4) });
+  }
+  return { x, y, r, shape, tilt: (Math.random()-.5)*.6 };
+}
+function stonePath(c, s, scale){
+  c.beginPath();
+  s.shape.forEach((p,i)=>{
+    const px = s.x + Math.cos(p.a + s.tilt) * p.rr * scale;
+    const py = s.y + Math.sin(p.a + s.tilt) * p.rr * scale * 0.88;
+    i ? c.lineTo(px,py) : c.moveTo(px,py);
+  });
+  c.closePath();
+}
+function drawStone(c, s){
+  const m = MOODS[mood];
+  c.save();
+  // 落ち影
+  c.fillStyle = m.shadow;
+  c.save(); c.translate(3.5, 5); stonePath(c, s, 1.02); c.fill(); c.restore();
+  // 本体
+  const g = c.createRadialGradient(s.x - s.r*.4, s.y - s.r*.55, s.r*.15, s.x, s.y, s.r*1.25);
+  g.addColorStop(0, m.stoneA); g.addColorStop(1, m.stoneB);
+  c.fillStyle = g; stonePath(c, s, 1); c.fill();
+  // 苔の気配（上面にわずかな緑）
+  c.globalAlpha = mood === 2 ? .12 : .22;
+  c.fillStyle = "#6a7a4f";
+  c.save(); c.translate(-s.r*.15, -s.r*.3); stonePath(c, s, .55); c.fill(); c.restore();
+  c.globalAlpha = 1;
+  c.restore();
+}
+function stoneAt(x, y){
+  for (let i = stones.length-1; i >= 0; i--){
+    const s = stones[i];
+    if (Math.hypot(x - s.x, y - s.y) < s.r * 1.15) return s;
+  }
+  return null;
+}
+
+// ---- 波紋（石の周りの同心紋） ----
+function rippleAround(s){
+  const m = MOODS[mood];
+  const rings = 5;
+  for (let k=1; k<=rings; k++){
+    const rr = s.r * 1.15 + k * SPACING * 1.15;
+    sctx.strokeStyle = grainPattern; sctx.lineWidth = SPACING;
+    sctx.beginPath(); sctx.arc(s.x, s.y, rr, 0, Math.PI*2); sctx.stroke();
+    sctx.strokeStyle = m.grooveDark; sctx.lineWidth = 2.4;
+    sctx.beginPath(); sctx.arc(s.x, s.y, rr, 0, Math.PI*2); sctx.stroke();
+    sctx.strokeStyle = m.grooveLight; sctx.lineWidth = 1.2;
+    sctx.beginPath(); sctx.arc(s.x, s.y, rr + 1.4, 0, Math.PI*2); sctx.stroke();
+  }
+}
+
+// ---- 描画合成 ----
+function render(){
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(sand, 0, 0, W, H);
+  ctx.drawImage(overlay, 0, 0, W, H);
+  stones.forEach(s => drawStone(ctx, s));
+  // 盆の内側の気配（ビネット）
+  const m = MOODS[mood];
+  const v = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*.35, W/2, H/2, Math.max(W,H)*.75);
+  v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, m.vignette);
+  ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
+  drawSignature();
+}
+
+// 題字と落款（庭の右肩に小さく）
+function drawSignature(){
+  const ink = (mood === 2) ? "rgba(190,200,225,.5)" : "rgba(90,78,58,.5)";
+  ctx.save();
+  ctx.font = '15px "Shippori Mincho", serif';
+  ctx.textAlign = "center"; ctx.fillStyle = ink;
+  const x = W - 22; let y = 26;
+  for (const ch of "枯山水"){ ctx.fillText(ch, x, y); y += 19; }
+  ctx.fillStyle = "rgba(178,52,36,.8)";
+  ctx.fillRect(x - 6.5, y - 8, 13, 13);
+  ctx.fillStyle = "rgba(245,238,225,.9)";
+  ctx.font = '9px "Shippori Mincho", serif';
+  ctx.fillText("金", x, y + 2);
+  ctx.restore();
+}
+
+// ---- 音（砂の声だけ） ----
+let actx = null, rakeGain = null, rakeFilter = null;
+function initAudio(){
+  if (actx) return;
+  try {
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    const len = actx.sampleRate * 2;
+    const buf = actx.createBuffer(1, len, actx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i=0;i<len;i++) d[i] = Math.random()*2 - 1;
+    const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+    rakeFilter = actx.createBiquadFilter(); rakeFilter.type = "bandpass";
+    rakeFilter.frequency.value = 1300; rakeFilter.Q.value = 0.9;
+    rakeGain = actx.createGain(); rakeGain.gain.value = 0;
+    src.connect(rakeFilter).connect(rakeGain).connect(actx.destination);
+    src.start();
+  } catch(e) { actx = null; }
+}
+function rakeSound(speed){
+  if (!actx) return;
+  const g = Math.min(speed / 900, 0.12);
+  rakeGain.gain.setTargetAtTime(g, actx.currentTime, 0.04);
+  rakeFilter.frequency.setTargetAtTime(900 + Math.min(speed, 1200), actx.currentTime, 0.05);
+}
+function rakeSoundStop(){
+  if (actx) rakeGain.gain.setTargetAtTime(0, actx.currentTime, 0.09);
+}
+function thud(){
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(110, actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(60, actx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.22, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.16);
+  o.connect(g).connect(actx.destination);
+  o.start(); o.stop(actx.currentTime + 0.18);
+}
+function sweep(dur){
+  if (!actx) return;
+  rakeGain.gain.setTargetAtTime(0.07, actx.currentTime, 0.05);
+  rakeGain.gain.setTargetAtTime(0, actx.currentTime + dur, 0.15);
+}
+
+// ---- 入力 ----
+let tool = "rake";
+let drawing = false, last = null, lastT = 0, dragStone = null, hinted = false;
+function pos(e){
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+canvas.addEventListener("pointerdown", e => {
+  e.preventDefault(); canvas.setPointerCapture(e.pointerId);
+  initAudio();
+  if (!hinted){ hinted = true; document.getElementById("hint").style.opacity = 0; }
+  const p = pos(e);
+  if (tool === "stone"){
+    const s = stoneAt(p.x, p.y);
+    if (s){ dragStone = s; } else if (stones.length < 9){ stones.push(makeStone(p.x, p.y)); thud(); }
+    render(); return;
+  }
+  if (tool === "ripple"){
+    const s = stoneAt(p.x, p.y);
+    if (s){ rippleAround(s); sweep(0.5); render(); }
+    return;
+  }
+  const s = stoneAt(p.x, p.y);
+  if (s){ dragStone = s; return; }        // 熊手中でも石はつまめる
+  drawing = true; last = p; lastT = performance.now(); strokePts = [p];
+});
+canvas.addEventListener("pointermove", e => {
+  if (dragStone){
+    const p = pos(e);
+    dragStone.x = Math.max(20, Math.min(W-20, p.x));
+    dragStone.y = Math.max(20, Math.min(H-20, p.y));
+    render(); return;
+  }
+  if (!drawing) return;
+  const p = pos(e), now = performance.now();
+  const d = Math.hypot(p.x - last.x, p.y - last.y);
+  if (d < 2.5) return;
+  eraseBand(last, p);
+  strokePts.push(p);
+  redrawOverlay();
+  rakeSound(d / Math.max(now - lastT, 1) * 1000);
+  last = p; lastT = now;
+  render();
+});
+function endStroke(){
+  if (drawing) commitStroke();
+  drawing = false; last = null; dragStone = null; rakeSoundStop();
+  render();
+}
+canvas.addEventListener("pointerup", endStroke);
+canvas.addEventListener("pointercancel", endStroke);
+
+// ---- 道具箱 ----
+const btns = { rake:"b-rake", stone:"b-stone", ripple:"b-ripple" };
+function setTool(t){
+  tool = t;
+  for (const k in btns) document.getElementById(btns[k]).classList.toggle("on", k === t);
+}
+document.getElementById("b-rake").onclick   = () => setTool("rake");
+document.getElementById("b-stone").onclick  = () => setTool("stone");
+document.getElementById("b-ripple").onclick = () => setTool("ripple");
+document.getElementById("b-smooth").onclick = () => {
+  initAudio(); strokePts = []; octx.clearRect(0,0,W,H);
+  resetSand(); sweep(0.8); render();
+};
+document.getElementById("b-time").onclick = () => {
+  mood = (mood + 1) % MOODS.length;
+  strokePts = []; octx.clearRect(0,0,W,H);
+  resetSand(); render();          // 刻が変わると庭は整地される（一日の区切り）
+};
+document.getElementById("b-save").onclick = () => {
+  render();
+  const a = document.createElement("a");
+  a.download = "karesansui.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+};
+
+// ---- 起動 ----
+function boot(){
+  sizeCanvas(); resetSand();
+  stones = [ makeStone(W*0.3, H*0.36), makeStone(W*0.68, H*0.62) ];
+  // 初期の景色：二石のまわりに波紋、対角に静かな流れ
+  rippleAround(stones[0]); rippleAround(stones[1]);
+  const steps = 26;
+  strokePts = [{ x: W*0.12, y: H*0.86 }];
+  for (let i=1; i<=steps; i++){
+    const t = i/steps;
+    const p = { x: W*0.12 + (W*0.76)*t, y: H*0.86 - (H*0.68)*t + Math.sin(t*Math.PI)*18 };
+    eraseBand(strokePts[strokePts.length-1], p);
+    strokePts.push(p);
+  }
+  redrawOverlay(); commitStroke();
+  render();
+}
+window.addEventListener("resize", () => { const old = mood; mood = old; sizeCanvas(); resetSand(); render(); });
+boot();
+</script>
+</body>
+</html>
