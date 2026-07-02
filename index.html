@@ -1,61 +1,149 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>viz-panels — 可視化ハブ</title>
+<title>viz-panels — 可視化の工作机</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1220;--card:#181c2e;--ink:#eef1f8;--mut:#9aa3bd;--ind:#7c8cff;--teal:#2dd4bf;--line:#2a2f47;--amber:#f5b042}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:linear-gradient(160deg,#0f1220,#141a30);color:var(--ink);min-height:100vh;
- font-family:"Yu Gothic UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;-webkit-font-smoothing:antialiased;
- padding:24px 18px 48px;max-width:720px;margin:0 auto}
-header{margin-bottom:8px}
-h1{font-size:23px;font-weight:800;letter-spacing:.01em}
-.sub{color:var(--mut);font-size:13px;margin-top:4px}
-.search{width:100%;margin:18px 0 6px;padding:11px 14px;background:#0c1023;border:1px solid var(--line);
- border-radius:12px;color:var(--ink);font-size:15px}
-.grp{margin-top:22px}
-.gh{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin:0 2px 10px}
-a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
- border-radius:16px;padding:15px 16px;margin-bottom:11px;transition:.12s}
-a.card:active{transform:scale(.99)}
-.ct{display:flex;align-items:center;gap:9px}
-.ct .ttl{font-size:16px;font-weight:800}
-.badge{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:#26304f;color:var(--ind)}
-.badge.panel{background:rgba(124,140,255,.16);color:var(--ind)}
-.badge.chart{background:rgba(45,212,191,.16);color:var(--teal)}
-.badge.report{background:rgba(245,176,66,.16);color:var(--amber)}
-.desc{font-size:13px;color:var(--mut);margin-top:6px;line-height:1.6}
-.meta{font-size:11.5px;color:#6b7493;margin-top:7px}
-.empty{color:var(--mut);font-size:14px;text-align:center;padding:40px 0}
-footer{margin-top:30px;color:#6b7493;font-size:11.5px;text-align:center;line-height:1.7}
-</style></head>
+body{
+  color:#43392c;
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+  font-size:14px;line-height:1.75;
+  background:#d9bd93;
+  background-image:repeating-linear-gradient(0deg,transparent 0 7px,rgba(160,120,70,.10) 7px 8px);
+  min-height:100vh;
+  padding:26px 16px 64px;
+}
+.wrap{max-width:640px;margin:0 auto}
+.klee{font-family:"Klee One","Zen Kaku Gothic New",sans-serif}
+header{position:relative;margin-bottom:26px}
+.namecard{
+  background:#fffdf6;display:inline-block;padding:12px 18px 10px;
+  transform:rotate(-1.6deg);box-shadow:2px 3px 6px rgba(90,60,20,.25);position:relative;
+}
+.namecard h1{font-size:26px;font-weight:600;letter-spacing:.03em;font-family:"Klee One",sans-serif}
+.namecard .sub{font-size:11px;color:#7d7261;font-family:"Klee One",sans-serif}
+.tape{
+  position:absolute;height:16px;width:74px;opacity:.95;
+  clip-path:polygon(3% 0,100% 2%,97% 100%,0 96%);box-shadow:0 1px 2px rgba(90,60,20,.15);
+}
+.namecard .tape{top:-9px;left:40px;background:rgba(240,205,80,.78);transform:rotate(-3deg)}
+.count{
+  position:absolute;right:0;top:2px;transform:rotate(2.5deg);
+  background:#fffdf6;font-size:11px;font-weight:600;
+  padding:6px 10px;box-shadow:2px 2px 5px rgba(90,60,20,.22);
+  font-family:"Klee One",sans-serif;
+}
+.search{
+  width:100%;margin:0 0 6px;padding:12px 14px;border:none;background:#fffdf6;
+  font-family:"Klee One",sans-serif;font-size:14px;color:#43392c;
+  transform:rotate(.5deg);box-shadow:2px 3px 6px rgba(90,60,20,.22);
+}
+.search::placeholder{color:#b8ad99}
+.search:focus{outline:2px dashed #a3865a;outline-offset:2px}
+.grp{margin-top:30px}
+.label{
+  display:inline-block;padding:5px 18px 4px;font-size:13.5px;font-weight:600;
+  margin-bottom:16px;color:#4a4034;font-family:"Klee One",sans-serif;
+  clip-path:polygon(2% 8%,98% 0,100% 88%,0 100%);box-shadow:0 1px 3px rgba(90,60,20,.18);
+}
+.memo{
+  display:block;text-decoration:none;color:inherit;position:relative;
+  background:#fffdf6;padding:17px 15px 11px;margin:0 2px 20px;
+  box-shadow:2px 3px 7px rgba(90,60,20,.22);
+  transition:transform .12s, box-shadow .12s;
+}
+.memo .tape{top:-8px;left:50%;margin-left:-37px}
+.memo:hover{box-shadow:3px 5px 10px rgba(90,60,20,.28)}
+.memo:active{transform:scale(.985) !important}
+.memo:focus-visible{outline:2px dashed #a3865a;outline-offset:3px}
+.row{display:flex;align-items:baseline;gap:8px}
+.ttl{font-size:15.5px;font-weight:700}
+.tag{
+  margin-left:auto;white-space:nowrap;font-family:"Klee One",sans-serif;
+  font-size:10.5px;font-weight:600;color:#7d7261;
+}
+.desc{font-size:12px;color:#7d7261;margin-top:4px;line-height:1.7}
+.meta{
+  display:flex;margin-top:8px;font-family:"Klee One",sans-serif;
+  font-size:10.5px;color:#9a8f7d;
+}
+.open{margin-left:auto;color:#43392c;font-weight:600}
+.empty{
+  background:#fffdf6;padding:26px;text-align:center;color:#7d7261;
+  font-family:"Klee One",sans-serif;transform:rotate(-.5deg);
+  box-shadow:2px 3px 6px rgba(90,60,20,.2);margin-top:26px;
+}
+footer{
+  margin-top:36px;text-align:center;font-family:"Klee One",sans-serif;
+  font-size:11px;color:#6e6250;line-height:1.9;
+}
+footer code{font-family:inherit;background:rgba(255,253,246,.55);padding:0 4px}
+@media (prefers-reduced-motion:reduce){.memo{transition:none}}
+</style>
+</head>
 <body>
+<div class="wrap">
 <header>
-  <h1>🛰️ viz-panels</h1>
-  <div class="sub">各プロジェクトの可視化をスマホで確認するハブ</div>
+  <div class="namecard">
+    <span class="tape"></span>
+    <h1>viz-panels</h1>
+    <div class="sub">かねどみ家の 可視化 工作机</div>
+  </div>
+  <div class="count" id="count"></div>
 </header>
-<input class="search" id="q" placeholder="🔍 検索（タイトル・説明・プロジェクト）">
+
+<input class="search" id="q" placeholder="検索 — タイトル・説明・プロジェクト">
 <div id="list"></div>
-<footer>publish: 各プロジェクトのHTMLを <code>&lt;project&gt;/</code> に置き manifest に追記 → push で自動公開<br>YukiKanedomi/viz-panels</footer>
+
+<footer>
+  つくったHTMLを <code>&lt;project&gt;/</code> に置いて manifest に追記 → push で公開<br>
+  YukiKanedomi / viz-panels
+</footer>
+</div>
 <script>
 const TYPE={panel:"設定パネル",chart:"グラフ",report:"レポート",dashboard:"ダッシュボード"};
+const TAPES=["rgba(240,205,80,.78)","rgba(120,180,220,.72)","rgba(235,150,170,.75)","rgba(150,200,140,.75)"];
+const TAPE_ROT=[-3,2,-2.5,1.5,3];
+const MEMO_ROT=[.7,-.9,.5,-.6,.8,-.4];
 let ITEMS=[];
-fetch('manifest.json?_='+Date.now()).then(r=>r.json()).then(d=>{ITEMS=d.items||[];render('')})
- .catch(()=>{document.getElementById('list').innerHTML='<div class="empty">manifest.json を読めませんでした</div>'});
+fetch('manifest.json?_='+Date.now()).then(r=>r.json()).then(d=>{
+  ITEMS=d.items||[];
+  document.getElementById('count').textContent='ぜんぶで '+ITEMS.length+' まい';
+  render('');
+}).catch(()=>{
+  document.getElementById('list').innerHTML='<div class="empty">manifest.json を読めませんでした</div>';
+});
 document.getElementById('q').oninput=e=>render(e.target.value.trim().toLowerCase());
 function render(q){
- const f=ITEMS.filter(it=>!q||[it.title,it.desc,it.project].join(' ').toLowerCase().includes(q));
- const byProj={};f.forEach(it=>{(byProj[it.project]=byProj[it.project]||[]).push(it)});
- const el=document.getElementById('list');
- if(!f.length){el.innerHTML='<div class="empty">該当なし</div>';return}
- el.innerHTML=Object.keys(byProj).sort().map(p=>{
-  const cards=byProj[p].map(it=>{
-   const t=(it.type||'panel');
-   return `<a class="card" href="${it.file}">
-     <div class="ct"><span class="ttl">${esc(it.title)}</span><span class="badge ${t}">${TYPE[t]||t}</span></div>
-     ${it.desc?`<div class="desc">${esc(it.desc)}</div>`:''}
-     <div class="meta">${it.added||''}</div></a>`}).join('');
-  return `<div class="grp"><div class="gh">${esc(p)}</div>${cards}</div>`}).join('');
+  const f=ITEMS.filter(it=>!q||[it.title,it.desc,it.project].join(' ').toLowerCase().includes(q));
+  const el=document.getElementById('list');
+  if(!f.length){el.innerHTML='<div class="empty">みつかりませんでした</div>';return}
+  const byProj={};
+  f.forEach(it=>{(byProj[it.project]=byProj[it.project]||[]).push(it)});
+  const projs=Object.keys(byProj).sort();
+  el.innerHTML=projs.map((p,pi)=>{
+    const cards=byProj[p].map((it,i)=>{
+      const t=it.type||'panel';
+      const tape=TAPES[(pi+i)%TAPES.length];
+      const trot=TAPE_ROT[(pi+i)%TAPE_ROT.length];
+      const mrot=MEMO_ROT[i%MEMO_ROT.length];
+      return '<a class="memo" href="'+it.file+'" style="transform:rotate('+mrot+'deg)">'
+        +'<span class="tape" style="background:'+tape+';transform:rotate('+trot+'deg)"></span>'
+        +'<div class="row"><span class="ttl">'+esc(it.title)+'</span><span class="tag">'+(TYPE[t]||esc(t))+'</span></div>'
+        +(it.desc?'<div class="desc">'+esc(it.desc)+'</div>':'')
+        +'<div class="meta">'+esc(it.added||'')+'<span class="open">ひらく →</span></div>'
+        +'</a>';
+    }).join('');
+    const ltape=TAPES[pi%TAPES.length];
+    return '<div class="grp"><span class="label" style="background:'+ltape+'">'
+      +esc(p)+'（'+byProj[p].length+'）</span>'+cards+'</div>';
+  }).join('');
 }
-function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 </script>
-</body></html>
+</body>
+</html>
