@@ -65,6 +65,14 @@
       "type": "panel",
       "added": "2026-07-03",
       "desc": "指で砂を撫でる小さな庭v2(WebGL)。高さの場を太陽で照らす実装——刻(昼/夕/夜)で影の長さが変わる。音は砂の声だけ"
+    },
+    {
+      "project": "weekend-planner",
+      "title": "週末の好み調査",
+      "file": "weekend-planner/weekend-taste.html",
+      "type": "panel",
+      "added": "2026-07-03",
+      "desc": "週末プランナーの初期設定。ジャンル20+食12+一問一答10+苦手・季節もの。お二人で回答→コピーで返送"
     }
   ]
 }

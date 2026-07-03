@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>週末の好み調査</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;background:#f5f0e6;color:#2b2620;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic",Meiryo,sans-serif;
+  font-size:15px;line-height:1.7;
+}
+header{padding:22px 16px 6px;max-width:640px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px;letter-spacing:.02em}
+.sub{font-size:13px;color:#6b6355;margin:0}
+main{max-width:640px;margin:0 auto;padding:0 12px 150px}
+h2{font-size:14px;letter-spacing:.12em;color:#7a6a4f;border-bottom:2px solid #d9d0bd;
+  padding:20px 4px 6px;margin:10px 0 4px}
+.note{font-size:12px;color:#8a8172;margin:0 4px 10px}
+.card{background:#fffdf8;border:1px solid #d9d0bd;border-radius:10px;
+  padding:10px 12px;margin-bottom:8px}
+.card.rated{border-color:#c9b98f}
+.row{display:flex;align-items:center;gap:8px}
+.t{font-weight:700;font-size:14.5px;flex:1}
+.btns3{display:flex;gap:6px}
+.btns3 button{min-height:40px;min-width:56px;border-radius:8px;border:1.5px solid #d9d0bd;
+  background:#fbf8f0;color:#5a5344;font-size:12.5px;font-weight:600;cursor:pointer;padding:4px 6px}
+.btns3 button.on-like{background:#b5502a;border-color:#b5502a;color:#fff}
+.btns3 button.on-meh{background:#8a8378;border-color:#8a8378;color:#fff}
+.btns3 button.on-dislike{background:#3d4a6b;border-color:#3d4a6b;color:#fff}
+.q{background:#fffdf8;border:1px solid #d9d0bd;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.q .qt{font-weight:700;font-size:14.5px;margin-bottom:8px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts button{min-height:42px;border-radius:8px;border:1.5px solid #d9d0bd;background:#fbf8f0;
+  color:#5a5344;font-size:13px;font-weight:600;cursor:pointer;padding:6px 12px}
+.opts button.on{background:#6b5f3f;border-color:#6b5f3f;color:#fff}
+.opts.multi button.on{background:#3d6b52;border-color:#3d6b52}
+textarea{width:100%;min-height:80px;border:1.5px solid #d9d0bd;border-radius:10px;
+  padding:10px;font:inherit;font-size:14px;background:#fffdf8;color:#2b2620}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(43,38,32,.96);color:#f5f0e6;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+.bar-in{max-width:640px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.count{font-size:12px;white-space:nowrap}
+#copy{flex:1;min-height:48px;border:none;border-radius:10px;background:#e8b84b;color:#2b2620;
+  font-size:15px;font-weight:700;cursor:pointer}
+#copy.done{background:#7da65e;color:#fff}
+#fallback{display:none;margin:8px 0 0;width:100%;height:120px;font-size:11px}
+</style>
+</head>
+<body>
+<header>
+  <h1>週末の好み調査</h1>
+  <p class="sub">週末プランナーの初期設定です。お二人でわいわい答えてください（二人の共通感覚でOK、割れたら最後のメモ欄へ）。全部で5分ほど。途中で閉じても回答は端末に残ります。</p>
+</header>
+<main id="main"></main>
+<div class="bar"><div class="bar-in">
+  <span class="count" id="count"></span>
+  <button id="copy">回答をコピー</button>
+</div>
+<textarea id="fallback" readonly></textarea>
+</div>
+<script>
+"use strict";
+const GENRES = [
+  ["hike","山歩き・ハイキング（高尾山級まで）"],["park","公園・庭園さんぽ"],
+  ["onsen","温泉・スパ"],["cafe","カフェ巡り"],["gourmet","食べ歩き・グルメ目的の外出"],
+  ["bakery","パン屋・スイーツ巡り"],["art","美術館・展覧会"],["museum","博物館・科学館"],
+  ["shrine","寺社・歴史さんぽ"],["street","商店街・街ぶら"],
+  ["mall","ショッピング（モール・百貨店）"],["outlet","アウトレット"],
+  ["zoo","動物園・水族館"],["cinema","映画館"],
+  ["workshop","体験もの（陶芸・工房・ワークショップ）"],["market","市場・朝市・道の駅"],
+  ["night","夜景・イルミネーション"],["drive","ドライブそのものを楽しむ"],
+  ["sports","スポーツ観戦"],["live","ライブ・舞台・寄席"]
+];
+const FOODS = [
+  ["ramen","ラーメン"],["soba","蕎麦・うどん"],["sushi","寿司・海鮮"],["meat","焼肉・肉料理"],
+  ["italian","イタリアン"],["chinese","中華"],["ethnic","エスニック（タイ・ベトナム等）"],
+  ["curry","カレー"],["washoku","定食・和食"],["bread","ベーカリーランチ"],
+  ["sweets","甘いもの・かき氷"],["beer","クラフトビール・お酒"]
+];
+const QUESTIONS = [
+  ["walk","歩く量は？",["たくさん歩きたい","ほどほど","のんびり優先"]],
+  ["crowd","人混みは？",["人気スポットの混雑もOK","できれば静かな場所","混雑は避けたい"]],
+  ["morning","出発は？",["早出できる","昼前が現実的","昼からゆっくり"]],
+  ["evening","帰りは？",["夕方には帰宅したい","夜ごはんまで外OK","夜景・遅めもあり"]],
+  ["budget","1回の予算（二人）は？",["〜5千円","〜1万円","〜2万円","こだわらない"]],
+  ["radius","行動半径は？",["近場（〜30分）中心","1時間圏が基本","2時間の遠出もどんどん"]],
+  ["repeat","行き先は？",["気に入った場所に何度も","半々くらい","常に新しい場所へ"]],
+  ["kaze","「風の枠」（冒険提案）はどれくらい攻める？",["安全寄りで","ほどほどに","かなり攻めて"]],
+  ["rain","雨の週末は？",["屋内プランに切替希望","家でのんびり（提案不要）","雨でも出かけたい"]],
+  ["car","車の出番は？",["遠出のときだけ","荷物・買い物のとき","あまり使わない","積極的に使いたい"]]
+];
+const AVOID = ["行列に並ぶ","人混み","虫","高いところ","早起き","長時間の運転","激しい運動","予定キツキツ","要予約の店","特になし"];
+const SEASONS = ["桜・花見","新緑","あじさい・花の名所","夏祭り・花火","紅葉","イルミネーション","雪景色","初詣・季節の行事"];
+
+const KEY = "weekend-taste-v1";
+let S = {};
+try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){}
+S.genres = S.genres || {}; S.foods = S.foods || {}; S.answers = S.answers || {};
+S.avoid = S.avoid || []; S.seasons = S.seasons || [];
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+const main = document.getElementById("main");
+function h2(t, note){
+  const e = document.createElement("h2"); e.textContent = t; main.appendChild(e);
+  if (note){ const n = document.createElement("p"); n.className="note"; n.textContent = note; main.appendChild(n); }
+}
+function triList(items, store){
+  items.forEach(([id, label]) => {
+    const card = document.createElement("div"); card.className = "card";
+    const row = document.createElement("div"); row.className = "row";
+    const t = document.createElement("span"); t.className = "t"; t.textContent = label;
+    const btns = document.createElement("div"); btns.className = "btns3";
+    [["like","好き"],["meh","ふつう"],["dislike","苦手"]].forEach(([k, lbl]) => {
+      const b = document.createElement("button"); b.textContent = lbl;
+      b.onclick = () => {
+        store[id] = (store[id] === k) ? null : k; save();
+        btns.querySelectorAll("button").forEach((x,i) => {
+          const kk = ["like","meh","dislike"][i];
+          x.className = (store[id] === kk) ? "on-" + kk : "";
+        });
+        card.classList.toggle("rated", !!store[id]);
+        counter();
+      };
+      if (store[id] === k) b.className = "on-" + k;
+      btns.appendChild(b);
+    });
+    if (store[id]) card.classList.add("rated");
+    row.appendChild(t); row.appendChild(btns); card.appendChild(row); main.appendChild(card);
+  });
+}
+function singleQ(id, title, opts){
+  const q = document.createElement("div"); q.className = "q";
+  const qt = document.createElement("div"); qt.className = "qt"; qt.textContent = title;
+  const wrap = document.createElement("div"); wrap.className = "opts";
+  opts.forEach(o => {
+    const b = document.createElement("button"); b.textContent = o;
+    b.onclick = () => {
+      S.answers[id] = (S.answers[id] === o) ? null : o; save();
+      wrap.querySelectorAll("button").forEach(x => x.classList.toggle("on", x.textContent === S.answers[id]));
+      counter();
+    };
+    if (S.answers[id] === o) b.classList.add("on");
+    wrap.appendChild(b);
+  });
+  q.appendChild(qt); q.appendChild(wrap); main.appendChild(q);
+}
+function multiQ(title, opts, arrName){
+  const q = document.createElement("div"); q.className = "q";
+  const qt = document.createElement("div"); qt.className = "qt"; qt.textContent = title;
+  const wrap = document.createElement("div"); wrap.className = "opts multi";
+  opts.forEach(o => {
+    const b = document.createElement("button"); b.textContent = o;
+    b.onclick = () => {
+      const arr = S[arrName];
+      const i = arr.indexOf(o);
+      if (i >= 0) arr.splice(i, 1); else arr.push(o);
+      save(); b.classList.toggle("on", arr.includes(o));
+    };
+    if (S[arrName].includes(o)) b.classList.add("on");
+    wrap.appendChild(b);
+  });
+  q.appendChild(qt); q.appendChild(wrap); main.appendChild(q);
+}
+
+h2("お出かけジャンル", "直感で。迷ったら「ふつう」");
+triList(GENRES, S.genres);
+h2("一問一答");
+QUESTIONS.forEach(([id, t, opts]) => singleQ(id, t, opts));
+h2("苦手・避けたいこと", "当てはまるもの全部（複数選択）");
+multiQ("これは避けたい", AVOID, "avoid");
+h2("季節もの", "毎年これは行きたい、というもの（複数選択）");
+multiQ("好きな季節もの", SEASONS, "seasons");
+h2("食の好み", "外食ジャンル。直感で");
+triList(FOODS, S.foods);
+h2("自由記述（任意）");
+const ta = document.createElement("textarea");
+ta.placeholder = "好きだった場所・また行きたい場所、二人で意見が割れた点、その他何でも";
+ta.value = S.memo || "";
+ta.oninput = () => { S.memo = ta.value; save(); };
+main.appendChild(ta);
+
+const TOTAL = GENRES.length + FOODS.length + QUESTIONS.length;
+function counter(){
+  const n = Object.values(S.genres).filter(Boolean).length
+          + Object.values(S.foods).filter(Boolean).length
+          + Object.values(S.answers).filter(Boolean).length;
+  document.getElementById("count").textContent = n + "/" + TOTAL;
+}
+counter();
+
+document.getElementById("copy").onclick = async () => {
+  const gLike = GENRES.filter(([id]) => S.genres[id] === "like").map(([,l]) => l);
+  const gNo   = GENRES.filter(([id]) => S.genres[id] === "dislike").map(([,l]) => l);
+  const fLike = FOODS.filter(([id]) => S.foods[id] === "like").map(([,l]) => l);
+  const payload = { panel: "weekend-taste", version: 1,
+    genres: S.genres, foods: S.foods, answers: S.answers,
+    avoid: S.avoid, seasons: S.seasons, memo: S.memo || "" };
+  const text = "【週末の好み調査 回答】\n"
+    + "ジャンル好き: " + (gLike.join("、") || "なし") + "\n"
+    + "ジャンル苦手: " + (gNo.join("、") || "なし") + "\n"
+    + "食の好き: " + (fLike.join("、") || "なし") + "\n"
+    + "避けたい: " + (S.avoid.join("、") || "なし") + "\n"
+    + "季節もの: " + (S.seasons.join("、") || "なし") + "\n"
+    + "メモ: " + (S.memo || "なし") + "\n"
+    + "----JSON----\n" + JSON.stringify(payload);
+  const btn = document.getElementById("copy");
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "コピーしました — チャットに貼ってください";
+    btn.classList.add("done");
+  } catch(e) {
+    const fb = document.getElementById("fallback");
+    fb.style.display = "block"; fb.value = text; fb.select();
+    btn.textContent = "下の欄を全選択してコピーしてください";
+  }
+};
+</script>
+</body>
+</html>
