@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>エンジンのなかみ 01 — ロケットは、すてながら とんでいく</title>
+<style>
+  :root{
+    --paper:#fdf9f0; --ink:#3a4550; --sub:#77808a; --line:#e5ddcc;
+    --acc:#c47a4f; --blue:#9cc0d4; --sand:#f6d9b8;
+    --note:#eef4ed; --note-line:#a9c4a4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--paper); color:var(--ink); line-height:2.0;
+    font-family:"Yu Gothic UI","Hiragino Kaku Gothic ProN",sans-serif; font-size:15px}
+  .page{max-width:560px; margin:0 auto; padding:20px 20px 90px}
+  .kyoka{font-family:"UD Digi Kyokasho NK-R","Yu Gothic UI",sans-serif}
+
+  .cover{text-align:center; padding:34px 0 12px; border-bottom:2px solid var(--ink); margin-bottom:22px}
+  .cover .series{font-size:.75rem; letter-spacing:.4em; color:var(--sub)}
+  .cover h1{font-size:1.9rem; letter-spacing:.12em; margin:8px 0 2px}
+  .cover .vol{display:inline-block; font-size:.85rem; border:1.5px solid var(--acc); color:var(--acc);
+    border-radius:999px; padding:1px 16px; margin-top:8px}
+  .cover .cap{font-size:.78rem; color:var(--sub); margin-top:12px}
+
+  .toc{margin:22px 0 30px}
+  .toc h2{font-size:.8rem; letter-spacing:.3em; color:var(--acc); margin-bottom:10px}
+  .toc ol{list-style:none}
+  .toc li{display:flex; align-items:baseline; gap:10px; padding:8px 4px; border-bottom:1px dashed var(--line); font-size:.9rem}
+  .toc li .no{font-family:ui-monospace,monospace; color:var(--acc); font-size:.78rem; width:26px; flex:none}
+  .toc li.now{background:#fff; border-radius:8px; border:1.5px solid var(--ink); padding:8px 10px}
+  .toc li.soon{color:#b6bcc2}
+  .toc li.soon .no{color:#cfc4ae}
+  .toc li .tag{margin-left:auto; font-size:.66rem; color:var(--sub); flex:none}
+  .toc li.now .tag{color:var(--acc)}
+  .toc .howto{font-size:.74rem; color:var(--sub); margin-top:10px; padding:8px 10px; background:#fff;
+    border-radius:8px; border:1px solid var(--line)}
+
+  .story .ep{font-size:.78rem; color:var(--sub); letter-spacing:.2em}
+  .story h1{font-size:1.5rem; letter-spacing:.06em; margin:4px 0 16px; line-height:1.5}
+  .story p.body{margin:14px 0; font-size:.94rem}
+  .story p.body b{background:linear-gradient(transparent 62%, #f3ddc3 62%)}
+
+  .fig{margin:26px 0 8px; text-align:center}
+  .fig svg{max-width:100%; height:auto}
+  .hot{cursor:pointer}
+  .hot .shape{transition:opacity .15s}
+  .hot.dim .shape{opacity:.35}
+  .partcard{background:#fff; border:1.5px solid var(--ink); border-radius:12px; padding:14px 16px;
+    margin:14px 0 22px; box-shadow:3px 3px 0 var(--line); min-height:120px}
+  .partcard .pname{font-weight:700; display:flex; align-items:center; gap:8px}
+  .partcard .pname .dot{width:12px; height:12px; border-radius:3px; border:1.5px solid var(--ink); display:inline-block}
+  .partcard p{font-size:.88rem; margin-top:6px}
+  .hint{font-size:.72rem; color:var(--acc); text-align:center}
+  .stroke{fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; filter:url(#wob)}
+
+  details.side{margin:18px 0; border:1.5px solid var(--line); border-radius:12px; background:#fff; overflow:hidden}
+  details.side summary{list-style:none; cursor:pointer; padding:12px 16px; font-size:.88rem; font-weight:700;
+    display:flex; align-items:center; gap:8px}
+  details.side summary::-webkit-details-marker{display:none}
+  details.side summary .badge{font-size:.68rem; color:var(--acc); border:1px solid var(--acc);
+    border-radius:999px; padding:0 10px; flex:none}
+  details.side summary::after{content:"＋"; margin-left:auto; color:var(--sub)}
+  details.side[open] summary::after{content:"−"}
+  details.side .inner{padding:2px 16px 16px; font-size:.88rem; border-top:1px dashed var(--line)}
+  details.side .eq{font-family:"Georgia","Times New Roman",serif; font-size:1.15rem; text-align:center; padding:10px 0}
+  details.note{border:1.5px dashed var(--note-line); background:var(--note)}
+  details.note summary{color:#4e6b49}
+
+  .next{margin-top:30px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 16px; font-size:.85rem}
+  .next b{color:var(--acc)}
+  .src{margin-top:22px; padding-top:10px; border-top:1px solid var(--line); font-size:.72rem; color:var(--sub)}
+  .src b{color:var(--ink)}
+  .pager{position:fixed; bottom:0; left:0; right:0; background:var(--ink); color:#fff;
+    display:flex; justify-content:space-between; padding:13px 22px; font-size:.85rem}
+  .pager .off{opacity:.45}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="cover kyoka">
+    <div class="series">育てる機械図鑑</div>
+    <h1>エンジンのなかみ</h1>
+    <div class="vol">第1巻 ロケット編</div>
+    <div class="cap">外がわから、内がわへ。ぜんたいから、細部へ。</div>
+  </div>
+
+  <div class="toc">
+    <h2>もくじ</h2>
+    <ol>
+      <li class="now"><span class="no">01</span><span class="kyoka">ロケットは、すてながら とんでいく</span><span class="tag">▶ このページ</span></li>
+      <li class="soon"><span class="no">02</span>「押す」のしくみ — 推力と比推力<span class="tag">じゅんびちゅう</span></li>
+      <li class="soon"><span class="no">03</span>燃料のえらびかた — 固体と液体<span class="tag">じゅんびちゅう</span></li>
+      <li class="soon"><span class="no">04</span>エンジンサイクル読み比べ<span class="tag">じゅんびちゅう</span></li>
+      <li class="soon"><span class="no">05</span>ターボポンプ — 心臓部の流体機械<span class="tag">じゅんびちゅう</span></li>
+      <li class="soon"><span class="no">06</span>ノズルと燃焼室<span class="tag">じゅんびちゅう</span></li>
+      <li class="soon"><span class="no">07</span>切り離しの機構学<span class="tag">じゅんびちゅう</span></li>
+      <li class="soon"><span class="no">08</span>音とふるえ — 爆音・振動・POGO<span class="tag">じゅんびちゅう</span></li>
+      <li class="soon"><span class="no">09</span>実機カタログ — H3・Falcon 9・LE-9<span class="tag">じゅんびちゅう</span></li>
+    </ol>
+    <div class="howto">この図鑑は、話が進むほど自然に深くなっていきます。本文だけなら3分、「よりみち」を開くと10分。数式やサイクル線図は中盤の章から本格的に登場します。</div>
+  </div>
+
+  <div class="story">
+    <div class="ep">だい1わ ── 全体像の章</div>
+    <h1 class="kyoka">ロケットは、すてながら とんでいく</h1>
+
+    <p class="body">宇宙にとどまる速さは、秒速7.9km。東京から大阪まで1分かからない速さです。ここまで加速するには大量の推進剤が必要ですが、積めば積むほどタンクが重くなって、また推進剤が必要になる——このいたちごっこへの人類の答えが、<b>使い終わった部分を途中で捨てて身軽になる</b>という発明でした。</p>
+
+    <p class="body">だからロケットは、飛びながらだんだん短くなります。まず一番大きな1段目が働いて空になり、切り離される。空気が薄くなったら、衛星を守っていたカバー（フェアリング）も捨てる。最後は小さな2段目だけが、衛星を軌道の速さまで運びます。</p>
+
+    <div class="fig">
+      <svg width="340" height="330" viewBox="0 0 340 330">
+        <defs>
+          <filter id="wob">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="3"/>
+          </filter>
+        </defs>
+        <g id="p-fair" class="hot">
+          <path class="shape stroke" style="fill:var(--sand)" d="M140 46 Q170 -6 200 46 L200 108 L140 108 Z"/>
+        </g>
+        <g id="p-s2" class="hot">
+          <rect class="shape stroke" style="fill:var(--blue)" x="140" y="108" width="60" height="74" rx="4"/>
+        </g>
+        <g id="p-s1" class="hot">
+          <rect class="shape stroke" style="fill:#eef1f4" x="140" y="182" width="60" height="112" rx="4"/>
+          <path class="shape stroke" d="M140 294 L122 322 L140 313 M200 294 L218 322 L200 313"/>
+        </g>
+        <text x="228" y="80" font-size="13" fill="#77808a">← フェアリング</text>
+        <text x="228" y="150" font-size="13" fill="#77808a">← 2段目</text>
+        <text x="228" y="240" font-size="13" fill="#77808a">← 1段目</text>
+      </svg>
+      <div class="hint">▲ 図をタップすると、その部分の解説にかわります</div>
+    </div>
+
+    <div class="partcard" id="card">
+      <div class="pname"><span class="dot" style="background:var(--sand)"></span><span id="card-name"></span></div>
+      <p id="card-text"></p>
+    </div>
+
+    <p class="body">では、なぜ「捨てる」とそんなに得なのでしょう。じつはロケットの到達速度は、積んだ推進剤の量そのものではなく、<b>燃やす前と後の質量の比</b>で決まります。空になったタンクを抱えたままでは、この比が伸びません。切り捨てて「燃やした後」を軽くすることが、そのまま速度になるのです。</p>
+
+    <details class="side">
+      <summary><span class="badge">よりみち</span>この理屈を1本の式で書くと</summary>
+      <div class="inner">
+        <div class="eq">Δv = v<sub>e</sub> · ln( m<sub>0</sub> / m<sub>f</sub> )</div>
+        <p>ツィオルコフスキーのロケット方程式です。v<sub>e</sub> は噴射速度、m<sub>0</sub>/m<sub>f</sub> は燃やす前後の質量比。対数（ln）が入っているのがポイントで、<b>推進剤を2倍積んでも速度は2倍になりません</b>。質量比10でも Δv は噴射速度の約2.3倍止まり。軌道投入には損失込みでおよそ9.5km/s必要なので、1段だけではどうしても届かない——多段式が「工夫」ではなく「必然」であることが、この式から見えてきます。</p>
+      </div>
+    </details>
+
+    <details class="side note">
+      <summary><span class="badge">🌀</span>流体屋のためのノート</summary>
+      <div class="inner">
+        <p>多段化の式そのものに流体は出てきませんが、<b>フェアリングをいつ捨てるか</b>は完全に流体の問題です。捨てるのが早すぎれば空力加熱で衛星が焼かれ、遅すぎれば無駄な質量でΔvを損する。この「動圧・加熱との駆け引き」は、打上げ全体では <b>max-Q（最大動圧点）</b>という言葉でも登場します。動圧と境界層の直感がそのまま通用する、最初の接点です。</p>
+      </div>
+    </details>
+
+    <div class="next">つぎの話 → <b>02 「押す」のしくみ</b>: そもそもロケットはなぜ前に進めるのか。「後ろに投げれば前に進む」を、推力の式と比推力という物差しで見ていきます。</div>
+
+    <div class="src">
+      <b>出典・もっと知りたい人へ</b><br>
+      ・G. P. Sutton & O. Biblarz, <i>Rocket Propulsion Elements</i>, 9th ed., ch.4<br>
+      ・NASA SP-8000シリーズ（設計基準書群・パブリックドメイン）
+    </div>
+  </div>
+</div>
+
+<div class="pager kyoka">
+  <span class="off">← もくじ</span>
+  <span>つぎ: 02 「押す」のしくみ →<small style="opacity:.6">（じゅんびちゅう）</small></span>
+</div>
+
+<script>
+const PARTS = {
+  "p-fair": { name:"フェアリング", color:"var(--sand)",
+    t:"衛星をつつむ保護カバーです。打上げ直後の空気との摩擦や、エンジンの猛烈な音から中身を守ります。空気が十分薄くなったら（高度100km台のあたり）、役目を終えてすぐに捨てられます。守る相手は空気——だから空気がなくなれば、いらなくなるのです。" },
+  "p-s2": { name:"2段目", color:"var(--blue)",
+    t:"宇宙に出てから本気を出す部分です。ここが衛星を軌道の速さ・秒速7.9kmまで運びます。真空の中で働くので、ノズルは大きくラッパ状に広がった「真空向き」の形。力の強さより効率を大切にする設計で、軌道を整えるためにエンジンをもう一度点火することもあります。" },
+  "p-s1": { name:"1段目", color:"#eef1f4",
+    t:"いちばん下の、いちばん大きな力もちです。ロケット全体を地面から持ち上げるため、推力最優先でエンジンを束ねます（H3は2〜3基、Falcon 9は9基）。数分間だけ働いて空になり、お別れ。ちなみにFalcon 9はこの1段目を逆噴射で着陸させて再利用します——「捨てる」の常識を変えた部分です。" }
+};
+let cur = "p-fair";
+function render(){
+  const p = PARTS[cur];
+  document.getElementById("card-name").textContent = p.name;
+  document.querySelector("#card .dot").style.background = p.color;
+  document.getElementById("card-text").textContent = p.t;
+  for (const id of Object.keys(PARTS)) document.getElementById(id).classList.toggle("dim", id !== cur);
+}
+for (const id of Object.keys(PARTS)) document.getElementById(id).addEventListener("click", () => { cur = id; render(); });
+render();
+</script>
+</body>
+</html>
