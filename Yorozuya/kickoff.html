@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI活用情報アプリ 創刊準備室</title>
+<style>
+  :root{
+    --paper:#f6f1e7; --ink:#2b2620; --sub:#7a6f5d; --line:#d8cdb8;
+    --accent:#c4452c; --accent-soft:#f3ddd6; --card:#fffdf8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+    font-size:15px; line-height:1.7;}
+  .wrap{max-width:640px; margin:0 auto; padding:20px 16px 90px;}
+  header{border-bottom:3px double var(--line); padding:8px 0 14px; margin-bottom:20px;}
+  .kicker{font-size:11px; letter-spacing:.25em; color:var(--accent); font-weight:700;}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif; font-size:24px; margin:4px 0 6px; letter-spacing:.06em;}
+  .lede{font-size:13px; color:var(--sub); margin:0;}
+  section{background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:16px 16px 14px; margin-bottom:16px;}
+  h2{font-size:13px; letter-spacing:.15em; color:var(--accent); margin:0 0 4px;
+    font-weight:700;}
+  .hint{font-size:12px; color:var(--sub); margin:0 0 12px;}
+  .opt{display:flex; gap:10px; align-items:flex-start; padding:10px 10px;
+    border:1px solid var(--line); border-radius:8px; margin-bottom:8px; cursor:pointer;
+    background:#fff;}
+  .opt.sel{border-color:var(--accent); background:var(--accent-soft);}
+  .opt input{margin-top:4px; accent-color:var(--accent); flex:none;}
+  .opt b{display:block; font-size:14px;}
+  .opt small{display:block; color:var(--sub); font-size:12px; line-height:1.5;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{border:1px solid var(--line); border-radius:999px; padding:7px 14px;
+    font-size:13px; background:#fff; cursor:pointer; user-select:none;}
+  .chip.sel{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .slider-row{display:flex; align-items:center; gap:12px; margin-top:4px;}
+  input[type=range]{flex:1; accent-color:var(--accent);}
+  .sval{font-family:"Hiragino Mincho ProN",serif; font-size:22px; min-width:2.2em; text-align:center;}
+  textarea{width:100%; min-height:72px; border:1px solid var(--line); border-radius:8px;
+    padding:10px; font:inherit; font-size:13px; background:#fff; resize:vertical;}
+  .summary{background:var(--ink); color:var(--paper); border-radius:10px;
+    padding:14px 16px; font-size:13px; line-height:1.8; margin-bottom:14px;}
+  .summary b{color:#f0c9a0;}
+  .copybar{position:fixed; left:0; right:0; bottom:0; background:rgba(246,241,231,.95);
+    border-top:1px solid var(--line); padding:10px 16px; backdrop-filter:blur(4px);}
+  .copybtn{display:block; width:100%; max-width:640px; margin:0 auto; padding:14px;
+    background:var(--accent); color:#fff; border:none; border-radius:10px;
+    font-size:16px; font-weight:700; letter-spacing:.1em; cursor:pointer;}
+  .copybtn:active{transform:scale(.98);}
+  #fallback{display:none; margin-top:8px; width:100%; height:90px; font-size:11px;}
+  .done{background:#2e7d4f !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">創刊準備室</div>
+  <h1>AI活用 総合情報アプリ</h1>
+  <p class="lede">探しに行かなくても、面白いAI活用ネタが手元に届く仕組みを作ります。分かれ道を選んでください（既定値のままでも成立します）。最後に一番下のボタンで設定をコピーして、チャットに貼り付けてください。</p>
+</header>
+
+<section id="s-name">
+  <h2>一、名前</h2>
+  <p class="hint">レーダー家の直球か、屋号らしい名か。</p>
+  <div id="names"></div>
+</section>
+
+<section>
+  <h2>二、収集源（初版）</h2>
+  <p class="hint">Xは自動収集の鬼門のため、良ネタが沈殿する場所を巡回します。後から増減できます。</p>
+  <div id="sources" class="chips"></div>
+</section>
+
+<section>
+  <h2>三、興味ジャンルの初期設定</h2>
+  <p class="hint">好み学習の種になります。読みたいものを選んでください。</p>
+  <div id="interests" class="chips"></div>
+</section>
+
+<section>
+  <h2>四、読む場所と頻度</h2>
+  <div id="reader"></div>
+  <p class="hint" style="margin-top:14px">更新頻度</p>
+  <div id="cadence" class="chips"></div>
+  <p class="hint" style="margin-top:14px">1号あたりの掲載本数（多いほど網羅的、少ないほど厳選）</p>
+  <div class="slider-row">
+    <input type="range" id="perIssue" min="3" max="15" value="8">
+    <div class="sval" id="perIssueVal">8</div>
+  </div>
+</section>
+
+<section>
+  <h2>五、うちへの引きつけ（翻訳の濃さ）</h2>
+  <p class="hint">ただのニュース一覧にしない、このアプリの差別化部分です。</p>
+  <div id="translate"></div>
+</section>
+
+<section>
+  <h2>六、育て方</h2>
+  <div id="taste"></div>
+  <p class="hint" style="margin-top:14px">週1の「試してみた」枠（気になるネタを実際に検証して報告）</p>
+  <div id="tryLab" class="chips"></div>
+</section>
+
+<section>
+  <h2>七、ひとこと（任意）</h2>
+  <p class="hint">名前の別案・欲しい機能・除外したい話題など、自由にどうぞ。</p>
+  <textarea id="note" placeholder="例: ○○系の話題は不要、こういう見た目がいい、など"></textarea>
+</section>
+
+<div class="summary" id="summary"></div>
+</div>
+
+<div class="copybar">
+  <button class="copybtn" id="copy">📋 設定をコピーする</button>
+  <textarea id="fallback" readonly></textarea>
+</div>
+
+<script>
+const S = {
+  name: "小耳（こみみ）",
+  sources: ["Reddit（r/ClaudeAI 等）","Hacker News","Zenn・Qiita","WebSearch横断（まとめ系含む）"],
+  interests: ["Claude Code・エージェント技法","自動化パイプライン","画像・動画生成","AI×ハードウェア・3Dプリント","AI×家庭・生活","新ツール・新サービス"],
+  reader: "Webアプリ（GitHub Pages・スマホで読む）",
+  cadence: "毎朝",
+  perIssue: 8,
+  translate: "上位3件は深掘り＋残りはひとことメモ",
+  taste: "いいね／スキップで学習＋初期プロフィール",
+  tryLab: "週1あり",
+  note: ""
+};
+
+const NAMES = [
+  ["小耳（こみみ）","「小耳に挟む」から。探しに行かず耳に入ってくる、この企画の思想そのもの"],
+  ["早耳帖（はやみみちょう）","早耳＋帖。情報の速さと蓄積ノートの両面"],
+  ["目利き（めきき）","収集より選別眼を看板にする名"],
+  ["AI活用レーダー","論文レーダー・QOLレーダーに続くレーダー家3号機の直球"]
+];
+const SOURCES = ["Reddit（r/ClaudeAI 等）","Hacker News","Zenn・Qiita","WebSearch横断（まとめ系含む）","GitHub トレンド","Gmailラベル投函（Xで見かけたら共有→自動回収）"];
+const INTERESTS = ["Claude Code・エージェント技法","プロンプト技法","自動化パイプライン","画像・動画生成","ローカルLLM","AI×ハードウェア・3Dプリント","AI×家庭・生活","新ツール・新サービス","研究動向"];
+const READERS = [
+  ["Webアプリ（GitHub Pages・スマホで読む）","いつもの型。号が溜まりアーカイブになる"],
+  ["メール配信（朝のGmail）","アプリを開かなくても届く。アーカイブ性は弱い"],
+  ["両方（アプリ本体＋朝メールに見出しだけ）","メールが玄関、アプリが本棚"]
+];
+const CADENCE = ["毎朝","平日のみ","週2回","週1回"];
+const TRANSLATE = [
+  ["全件にひとこと適用メモ","各ネタに「うちの○○に効きそう」を一行ずつ"],
+  ["上位3件は深掘り＋残りはひとことメモ","推し3件は具体的な適用案まで書く。おすすめ"],
+  ["まず収集と要約のみ","翻訳機能は運用が回ってから足す"]
+];
+const TASTE = [
+  ["いいね／スキップで学習＋初期プロフィール","号ごとの反応が taste-profile を育てる。週末プランナー方式"],
+  ["初期プロフィールのみ（手動更新）","学習機構なし。シンプル"]
+];
+const TRYLAB = ["週1あり","なし（後で検討）"];
+
+function radio(el, items, key){
+  const box = document.getElementById(el);
+  box.innerHTML = "";
+  items.forEach(([label, desc])=>{
+    const d = document.createElement("label");
+    d.className = "opt" + (S[key]===label ? " sel" : "");
+    d.innerHTML = `<input type="radio" name="${el}" ${S[key]===label?"checked":""}><span><b>${label}</b><small>${desc}</small></span>`;
+    d.onclick = ()=>{ S[key]=label; radio(el, items, key); update(); };
+    box.appendChild(d);
+  });
+}
+function chips(el, items, key, multi){
+  const box = document.getElementById(el);
+  box.innerHTML = "";
+  items.forEach(label=>{
+    const c = document.createElement("div");
+    const on = multi ? S[key].includes(label) : S[key]===label;
+    c.className = "chip" + (on ? " sel" : "");
+    c.textContent = label;
+    c.onclick = ()=>{
+      if(multi){
+        S[key] = on ? S[key].filter(x=>x!==label) : [...S[key], label];
+      } else { S[key]=label; }
+      chips(el, items, key, multi); update();
+    };
+    box.appendChild(c);
+  });
+}
+function update(){
+  document.getElementById("summary").innerHTML =
+    `<b>現在の設計</b><br>` +
+    `名前は<b>${S.name}</b>。<b>${S.sources.length}源</b>（${S.sources.map(s=>s.split("（")[0]).join("・")}）から<b>${S.cadence}</b>収集し、` +
+    `<b>${S.reader.split("（")[0]}</b>で1号<b>${S.perIssue}本</b>。` +
+    `引きつけは「${S.translate.split("＋")[0]}」方式、育て方は「${S.taste.split("＋")[0]}」。試してみた枠は<b>${S.tryLab}</b>。` +
+    `興味は ${S.interests.length}ジャンル。`;
+}
+radio("names", NAMES, "name");
+chips("sources", SOURCES, "sources", true);
+chips("interests", INTERESTS, "interests", true);
+radio("reader", READERS, "reader");
+chips("cadence", CADENCE, "cadence", false);
+radio("translate", TRANSLATE, "translate");
+radio("taste", TASTE, "taste");
+chips("tryLab", TRYLAB, "tryLab", false);
+document.getElementById("perIssue").oninput = e=>{
+  S.perIssue = +e.target.value;
+  document.getElementById("perIssueVal").textContent = S.perIssue;
+  update();
+};
+document.getElementById("note").oninput = e=>{ S.note = e.target.value; };
+update();
+
+document.getElementById("copy").onclick = async ()=>{
+  const payload = "【AI活用アプリ 創刊設定】\n" + JSON.stringify(S, null, 1);
+  const btn = document.getElementById("copy");
+  try{
+    await navigator.clipboard.writeText(payload);
+    btn.textContent = "✓ コピーしました — チャットに貼ってください";
+    btn.classList.add("done");
+  }catch(e){
+    const f = document.getElementById("fallback");
+    f.style.display = "block"; f.value = payload; f.select();
+    btn.textContent = "下の欄を長押しで全選択コピーしてください";
+  }
+  setTimeout(()=>{ btn.textContent="📋 設定をコピーする"; btn.classList.remove("done"); }, 4000);
+};
+</script>
+</body>
+</html>

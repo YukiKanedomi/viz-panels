@@ -81,6 +81,14 @@
       "type": "panel",
       "added": "2026-07-14",
       "desc": "育てる機械図鑑・ロケット編 第1話（タップ図解・よりみち折りたたみ）"
+    },
+    {
+      "project": "Yorozuya",
+      "title": "AI活用情報アプリ 創刊準備室",
+      "file": "Yorozuya/kickoff.html",
+      "type": "panel",
+      "added": "2026-07-18",
+      "desc": "AI活用の総合情報収集アプリの設計パネル（名前・収集源・興味・頻度・翻訳の濃さ・育て方）"
     }
   ]
 }
