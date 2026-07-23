@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pQマップ: 大気開放運転の運転ライン</title>
+<style>
+  body { margin: 0; padding: 16px; font-family: "Hiragino Sans", "Yu Gothic", sans-serif; background: #f5f6f8; color: #222; }
+  .card { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  h1 { font-size: 1.15rem; margin: 0 0 4px; }
+  .sub { font-size: .82rem; color: #667; margin: 0 0 12px; line-height: 1.5; }
+  svg { width: 100%; height: auto; display: block; }
+  .note { font-size: .8rem; color: #445; background: #eef3fa; border-left: 4px solid #2b6cb0; padding: 10px 12px; border-radius: 6px; margin-top: 14px; line-height: 1.7; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px 18px; font-size: .78rem; color: #334; margin-top: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { display: inline-block; width: 22px; height: 0; border-top: 3px solid; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>コンプレッサ pQ マップ上の運転ライン — 主流配管を大気開放した場合</h1>
+  <p class="sub">運転点は「速度線 × 系抵抗曲線」の交点。大気開放では系抵抗が出口吐き出し損失のみになり、
+  運転ラインは PR≈1 を這う浅い放物線（Δp ≈ K·Q²、K 極小）となって各速度線のチョーク側端をなぞる。</p>
+
+  <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="コンプレッサ性能マップ上の大気開放運転ライン">
+    <!-- 効率アイランド（参考・薄表示） -->
+    <g transform="rotate(-24 470 330)">
+      <ellipse cx="470" cy="330" rx="135" ry="80" fill="none" stroke="#c9d4e0" stroke-width="1.5"/>
+      <ellipse cx="470" cy="330" rx="72" ry="42" fill="none" stroke="#c9d4e0" stroke-width="1.5"/>
+    </g>
+    <text x="300" y="258" font-size="12" fill="#9aa8b8">効率アイランド</text>
+    <line x1="352" y1="266" x2="396" y2="298" stroke="#9aa8b8" stroke-width="1"/>
+
+    <!-- 軸 -->
+    <line x1="70" y1="540" x2="765" y2="540" stroke="#333" stroke-width="1.5"/>
+    <line x1="70" y1="540" x2="70" y2="40" stroke="#333" stroke-width="1.5"/>
+    <!-- y目盛 PR -->
+    <g font-size="13" fill="#333" text-anchor="end">
+      <text x="62" y="545">1.0</text>
+      <text x="62" y="452">1.5</text>
+      <text x="62" y="360">2.0</text>
+      <text x="62" y="268">2.5</text>
+      <text x="62" y="175">3.0</text>
+      <text x="62" y="83">3.5</text>
+    </g>
+    <g stroke="#ccc" stroke-width="0.7" stroke-dasharray="2 4">
+      <line x1="70" y1="447.7" x2="760" y2="447.7"/>
+      <line x1="70" y1="355.4" x2="760" y2="355.4"/>
+      <line x1="70" y1="263.1" x2="760" y2="263.1"/>
+      <line x1="70" y1="170.8" x2="760" y2="170.8"/>
+      <line x1="70" y1="78.5" x2="760" y2="78.5"/>
+    </g>
+    <text x="30" y="290" font-size="14" fill="#333" transform="rotate(-90 30 290)" text-anchor="middle">圧力比 PR</text>
+    <text x="420" y="578" font-size="14" fill="#333" text-anchor="middle">修正流量 Q（無次元）→</text>
+
+    <!-- サージ線 -->
+    <path d="M201,494 C240,470 260,455 289,429 C330,395 340,370 376,337 C410,300 430,262 464,226 C500,188 515,152 551,115"
+          fill="none" stroke="#d33" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="330" y="300" font-size="13" fill="#d33" transform="rotate(-46 330 300)">サージ線</text>
+
+    <!-- 速度線 N1〜N5 -->
+    <g fill="none" stroke="#555" stroke-width="2">
+      <path d="M201,494 C250,492 310,495 341,503 C360,509 370,518 376,532"/>
+      <path d="M289,429 C340,428 420,433 464,447 C485,455 500,490 508,524"/>
+      <path d="M376,337 C430,336 520,345 560,365 C585,378 605,460 613,515"/>
+      <path d="M464,226 C520,225 600,238 634,263 C655,280 675,430 683,508"/>
+      <path d="M551,115 C600,113 655,133 678,162 C695,185 712,420 718,505"/>
+    </g>
+    <g font-size="12" fill="#555">
+      <text x="185" y="482">N1</text>
+      <text x="273" y="417">N2</text>
+      <text x="360" y="325">N3</text>
+      <text x="448" y="214">N4</text>
+      <text x="535" y="103">N5(最高速)</text>
+    </g>
+
+    <!-- 通常運転の運転ライン（対比・絞りあり） -->
+    <path d="M70,540 C180,532 280,505 350,462 C420,420 480,340 530,270"
+          fill="none" stroke="#3a9a5c" stroke-width="2.5" stroke-dasharray="9 6"/>
+    <text x="395" y="415" font-size="13" fill="#3a9a5c" transform="rotate(-38 395 415)">通常運転の運転ライン（絞りあり）</text>
+
+    <!-- 大気開放の運転ライン（浅い放物線） -->
+    <path d="M70,540 C200,539 330,534 450,527 C550,521 650,512 735,503"
+          fill="none" stroke="#2b6cb0" stroke-width="4"/>
+
+    <!-- 運転点（各速度線との交点） -->
+    <g fill="#2b6cb0" stroke="#fff" stroke-width="1.5">
+      <circle cx="376" cy="532" r="6"/>
+      <circle cx="508" cy="524" r="6"/>
+      <circle cx="613" cy="515" r="6"/>
+      <circle cx="683" cy="508" r="6"/>
+      <circle cx="718" cy="505" r="6"/>
+    </g>
+
+    <!-- 注釈: 運転ライン -->
+    <text x="150" y="512" font-size="13.5" fill="#2b6cb0" font-weight="bold">運転ライン（大気開放）: PR ≈ 1 + K·Q²（K 極小）</text>
+    <line x1="255" y1="518" x2="290" y2="534" stroke="#2b6cb0" stroke-width="1.2"/>
+
+    <!-- 注釈: チョークピン留め -->
+    <path d="M700,455 C705,470 710,485 715,498" fill="none" stroke="#8a5" stroke-width="0" />
+    <text x="748" y="430" font-size="12.5" fill="#845" text-anchor="end">高速側は流量頭打ち</text>
+    <text x="748" y="447" font-size="12.5" fill="#845" text-anchor="end">（インデューサ M=1）</text>
+    <text x="748" y="464" font-size="12.5" fill="#845" text-anchor="end">→ 運転点はチョーク線上に</text>
+    <text x="748" y="481" font-size="12.5" fill="#845" text-anchor="end">ピン留め</text>
+    <line x1="712" y1="486" x2="716" y2="498" stroke="#845" stroke-width="1.2"/>
+  </svg>
+
+  <div class="legend">
+    <span><span class="sw" style="border-color:#2b6cb0"></span>大気開放の運転ライン（＝チョーク境界沿い）</span>
+    <span><span class="sw" style="border-color:#3a9a5c; border-top-style:dashed"></span>通常運転の運転ライン</span>
+    <span><span class="sw" style="border-color:#d33; border-top-style:dashed"></span>サージ線</span>
+    <span><span class="sw" style="border-color:#555"></span>速度線</span>
+  </div>
+
+  <div class="note">
+    <b>読み方</b>: 大気開放では系抵抗が出口ジェットの動圧のみ（出口流速 50〜100 m/s で PR≈1.02〜1.06 の概算）。
+    運転点●は各速度線の右端（チョーク側の垂直落ち）との交点になり、回転数を上げると浅い放物線に沿って右へ滑る。
+    インデューサが M=1 に達するとチョーク流量が頭打ちになり、以降は回しても運転点がほぼ動かず、追加動力は全て熱になる。
+    サージ線からは最遠＝サージ不発。圧力場が立たないため軸受のスラスト・空力ラジアル荷重はほぼ消える一方、
+    軽荷重×高速は安定性（サブシンクロナス）には最も厳しい条件になる。※マップ形状は説明用の模式図（実機マップではない）。
+  </div>
+</div>
+</body>
+</html>
