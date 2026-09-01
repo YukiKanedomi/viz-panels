@@ -89,7 +89,22 @@
 
   /* ---- full diagram view ---- */
   #diaWrap{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-top:4px;
-    padding:10px 6px 4px;box-shadow:0 2px 10px rgba(22,35,60,.06)}
+    padding:6px 6px 4px;box-shadow:0 2px 10px rgba(22,35,60,.06);position:relative}
+  .tdcard{margin:8px 6px 4px;border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px 12px}
+  .tdhead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .tdhead .dot{width:10px;height:10px;border-radius:50%}
+  .tdhead b{font-size:13px}
+  .tdx{margin-left:auto;border:1px solid var(--line2);background:#fff;border-radius:8px;
+    width:26px;height:24px;font-size:13px;cursor:pointer;color:var(--tx2);line-height:1}
+  .tdstops{display:flex;flex-wrap:wrap;gap:6px 4px;align-items:center}
+  .tdstops .stp{display:inline-flex;flex-direction:column;align-items:center;background:#fff;
+    border:1px solid var(--line);border-radius:8px;padding:3px 8px;min-width:52px}
+  .tdstops .stp small{font-size:9px;color:var(--tx3)}
+  .tdstops .stp b{font-size:12px}
+  .tdstops .stp.org{border-color:var(--acc);background:var(--accbg)}
+  .tdstops .arr2{color:var(--tx3);font-size:10px}
+  .tdnote{font-size:11px;color:var(--tx2);margin-top:8px;line-height:1.7}
+  .tdnote b{color:var(--acc)}
   .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:10.5px;color:var(--tx2);padding:8px 10px 10px}
   .legend span{display:flex;align-items:center;gap:5px}
   .legend i{display:inline-block;width:16px;height:3.5px;border-radius:2px}
@@ -135,9 +150,13 @@
     <div id="cards"></div>
   </section>
   <section id="viewDia" style="display:none">
-    <h2>ダイヤグラム — 指定時刻から約100分</h2>
+    <h2>ダイヤグラム 17:00−24:00</h2>
     <div id="diaWrap">
-      <div id="dia"></div>
+      <div class="minihead"><b>スジをタップで列車詳細</b><span>横スクロール／ピンチ拡大</span><span class="sp"></span>
+        <button class="mz" id="dzOut">−</button><button class="mz" id="dzIn">＋</button></div>
+      <div class="miniscroll" id="diaScroll"><div id="dia"></div></div>
+      <div class="minilabels" id="diaLabels"></div>
+      <div id="trainDetail"></div>
       <div class="legend">
         <span><i style="background:var(--c-isogo)"></i>磯子始発</span>
         <span><i style="background:var(--c-saku)"></i>桜木町始発</span>
@@ -339,37 +358,85 @@ function mzoom(dir,centerT){
   miniDia(mm(document.getElementById("t").value));
   sc.scrollLeft=Math.max(0,12+(t-17*60)*MZ-sc.clientWidth/2);
 }
-function diagram(T){
-  var w=612,h=560,L=76,R=10,TOP=20,B=28,t0=T-4,t1=T+96;
-  function X(t){return L+(w-L-R)*(t-t0)/(t1-t0);}
-  function Y(m){return TOP+(h-TOP-B)*m/70;}
+var DZ=8, DZLEVELS=[4,8,16], dsel=-1;  // フルダイヤの横スケールと選択列車
+var ORIGIN_NAME={isogo:"磯子始発",saku:"桜木町始発",hk:"東神奈川始発",thru:"大船方面から直通",unk:"根岸線方面から直通"};
+function diagram(T,keepScroll){
+  var pxm=DZ,t0=17*60,t1=24*60,PAD=14,H=470,TOP=10,B=22;
+  var W=Math.round((t1-t0)*pxm)+PAD*2;
+  function X(t){return PAD+(t-t0)*pxm;}
+  function Y(m){return TOP+(H-TOP-B)*m/70;}
+  var sc=document.getElementById("diaScroll"),keepX=keepScroll?sc.scrollLeft:null;
   var rows=[["新杉田",0],["磯子",3],["桜木町",16],["横浜",19],["東神奈川",23],["新横浜",32],["長津田",47],["町田",54],["橋本",70]];
-  var s='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;display:block">',i,t;
-  s+='<rect x="'+L+'" y="'+Y(0)+'" width="'+(w-L-R)+'" height="'+(Y(23)-Y(0))+'" fill="#00a0d6" opacity="0.05"/>';
-  s+='<rect x="'+L+'" y="'+Y(23)+'" width="'+(w-L-R)+'" height="'+(Y(70)-Y(23))+'" fill="#7cb518" opacity="0.05"/>';
-  for(t=Math.ceil(t0/10)*10;t<=t1;t+=10){
-    s+='<line x1="'+X(t)+'" y1="'+TOP+'" x2="'+X(t)+'" y2="'+(h-B)+'" stroke="#e3e9f2" stroke-width="0.8"/>';
-    s+='<text x="'+X(t)+'" y="'+(h-10)+'" fill="#5c6b84" font-size="12" text-anchor="middle" font-weight="600">'+hh(t)+'</text>';}
+  var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style="display:block">',i,t;
+  s+='<rect x="0" y="'+Y(0)+'" width="'+W+'" height="'+(Y(23)-Y(0))+'" fill="#00a0d6" opacity="0.045"/>';
+  s+='<rect x="0" y="'+Y(23)+'" width="'+W+'" height="'+(Y(70)-Y(23))+'" fill="#7cb518" opacity="0.045"/>';
+  var step=pxm<6?30:10;
+  for(t=Math.ceil(t0/step)*step;t<=t1;t+=step){var hr=(t%60===0);
+    s+='<line x1="'+X(t)+'" y1="'+TOP+'" x2="'+X(t)+'" y2="'+(H-B)+'" stroke="'+(hr?'#d6dfeb':'#e9eef5')+'" stroke-width="'+(hr?1.2:0.8)+'"/>';
+    s+='<text x="'+X(t)+'" y="'+(H-7)+'" fill="'+(hr?'#5c6b84':'#93a1b7')+'" font-size="11" text-anchor="middle" font-weight="'+(hr?'700':'500')+'">'+hh(t)+'</text>';}
   for(i=0;i<rows.length;i++){var y=Y(rows[i][1]);
-    s+='<line x1="'+L+'" y1="'+y+'" x2="'+(w-R)+'" y2="'+y+'" stroke="#e3e9f2" stroke-width="0.8"/>';
-    s+='<text x="'+(L-8)+'" y="'+(y+4)+'" fill="#16233c" font-size="13" text-anchor="end" font-weight="600">'+rows[i][0]+'</text>';}
-  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(h-B)+'" stroke="#ef7c1b" stroke-width="1.2" stroke-dasharray="4 3"/>';
+    s+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="#e3e9f2" stroke-width="0.8"/>';}
+  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(H-B)+'" stroke="#ef7c1b" stroke-width="1.3" stroke-dasharray="4 3"/>';
   s+='<text x="'+(X(T)+4)+'" y="'+(TOP+11)+'" fill="#ef7c1b" font-size="11" font-weight="700">'+hh(T)+'</text>';
-  for(i=0;i<NB.length;i++){var d=mm(NB[i]);if(d<t0-25||d>t1)continue;
-    s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#c3cedd" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"/>';}
+  for(i=0;i<NB.length;i++){var d=mm(NB[i]);
+    s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#d4dce8" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>';}
+  var hits="";
   for(i=0;i<YL.length;i++){
     if(YL[i][1]==="町田")continue;
-    var hk=mm(YL[i][0]),origin=YL[i][2];
-    if(hk<t0-47||hk-23>t1)continue;
-    var col=COL[origin],pts=trainPath(i);
-    var isSel=sel>=0&&cur[sel]&&cur[sel].hkM===hk&&COL[cur[sel].origin]===col;
+    var hk=mm(YL[i][0]),origin=YL[i][2],col=COL[origin],pts=trainPath(i);
+    var isCand=false;for(var j=0;j<cur.length;j++)if(cur[j].hkM===hk&&cur[j].origin===origin)isCand=true;
+    var isSel=(dsel===i);
+    var dim=(dsel>=0&&!isSel);
     var ps="";for(var q=0;q<pts.length;q++)ps+=X(pts[q][0])+","+Y(pts[q][1])+" ";
-    s+='<polyline points="'+ps+'" fill="none" stroke="'+col+'" stroke-width="'+(isSel?3.4:1.7)+'" opacity="'+(sel>=0&&!isSel?0.22:0.9)+'" stroke-linejoin="round" stroke-linecap="round"/>';
+    s+='<polyline points="'+ps+'" fill="none" stroke="'+col+'" stroke-width="'+(isSel?3.6:isCand?2.2:1.4)+'" opacity="'+(dim?0.18:isCand?0.95:0.55)+'" stroke-linejoin="round" stroke-linecap="round"/>';
     if(origin!=="unk"){var px=origin==="hk"?X(hk):X(pts[0][0]),py=origin==="hk"?Y(23):Y(pts[0][1]);
-      s+='<circle cx="'+px+'" cy="'+py+'" r="3" fill="'+col+'"'+(sel>=0&&!isSel?' opacity="0.22"':'')+'/>';}
+      s+='<circle cx="'+px+'" cy="'+py+'" r="3" fill="'+col+'"'+(dim?' opacity="0.18"':'')+'/>';
+      if(isSel||(!dim&&(isCand||pxm>=8)))s+='<text x="'+(px+4)+'" y="'+(py-4)+'" fill="'+col+'" font-size="10" font-weight="700"'+(dim?' opacity="0.18"':'')+'>'+hh(origin==="hk"?hk:mm(YL[i][3]))+'</text>';}
+    hits+='<polyline points="'+ps+'" fill="none" stroke="rgba(0,0,0,0)" stroke-width="16" data-ti="'+i+'" style="pointer-events:stroke;cursor:pointer" stroke-linejoin="round"/>';
   }
-  s+="</svg>";
+  s+=hits+"</svg>";
   document.getElementById("dia").innerHTML=s;
+  var lb=document.getElementById("diaLabels"),lh="";
+  for(i=0;i<rows.length;i++)lh+='<span style="top:'+(sc.offsetTop+Y(rows[i][1]))+'px">'+rows[i][0]+'</span>';
+  lb.innerHTML=lh;
+  if(keepX!==null)sc.scrollLeft=keepX;
+  else sc.scrollLeft=Math.max(0,X(T-10)-PAD);
+  trainDetail();
+}
+function trainDetail(){
+  var el=document.getElementById("trainDetail");
+  if(dsel<0){el.innerHTML="";return;}
+  var hk=mm(YL[dsel][0]),dest=YL[dsel][1],origin=YL[dsel][2],od=YL[dsel][3],col=COL[origin];
+  var stops=[];
+  if(origin==="isogo")stops=[["磯子",mm(od)],["桜木町",mm(od)+13],["横浜",mm(od)+16]];
+  else if(origin==="saku")stops=[["桜木町",mm(od)],["横浜",mm(od)+3]];
+  else if(origin==="thru")stops=[["新杉田",mm(od)],["磯子",mm(od)+3],["桜木町",mm(od)+16],["横浜",mm(od)+19]];
+  stops.push(["東神奈川",hk]);
+  var st;for(st in YSTOPS)stops.push([st,hk+YSTOPS[st]]);
+  var h='<div class="tdcard"><div class="tdhead"><span class="dot" style="background:'+col+'"></span>'
+    +'<b>'+ORIGIN_NAME[origin]+' '+dest+'行き</b>'
+    +((origin==="isogo"||origin==="saku"||origin==="hk")?'<span class="badge b0">始発●</span>':'<span class="badge b3">途中から</span>')
+    +'<button class="tdx" id="tdClose">×</button></div><div class="tdstops">';
+  for(var i=0;i<stops.length;i++){
+    if(i>0)h+='<span class="arr2">▶</span>';
+    h+='<span class="stp'+(i===0?' org':'')+'"><small>'+stops[i][0]+'</small><b class="num">'+hh(stops[i][1])+'</b></span>';}
+  h+='</div>';
+  var match=null;for(var j=0;j<cur.length;j++)if(cur[j].hkM===hk&&cur[j].origin===origin)match=cur[j];
+  if(match)h+='<div class="tdnote">候補 '+SEAT[match.seat].charAt(0)+' : 新杉田 <b class="num">'+hh(match.acc)+'</b> 発の根岸線に乗り、'
+    +(match.origin==="thru"?'そのまま直通。':match.boardAt+'で<b>待ち'+match.wait+'分</b>並んで乗車。')
+    +'橋本 <b class="num">'+hh(match.arr)+'</b> 着。</div>';
+  else h+='<div class="tdnote">この列車は現在の候補カードには入っていません（指定時刻からは間に合わないか、より良い候補があります）。</div>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+function dzoom(dir){
+  var idx=DZLEVELS.indexOf(DZ)+dir;
+  if(idx<0||idx>=DZLEVELS.length)return;
+  var sc=document.getElementById("diaScroll");
+  var t=17*60+(sc.scrollLeft+sc.clientWidth/2-14)/DZ;
+  DZ=DZLEVELS[idx];
+  diagram(mm(document.getElementById("t").value),false);
+  sc.scrollLeft=Math.max(0,14+(t-17*60)*DZ-sc.clientWidth/2);
 }
 function shift(d){var e=document.getElementById("t"),v=mm(e.value)+d;
   if(v<0)v=0;if(v>1439)v=1439;
@@ -377,9 +444,11 @@ function shift(d){var e=document.getElementById("t"),v=mm(e.value)+d;
 function showTab(dia){
   document.getElementById("viewCards").style.display=dia?"none":"";
   document.getElementById("viewDia").style.display=dia?"":"none";
+  document.getElementById("mini").style.display=dia?"none":"";
   document.getElementById("tabC").className=dia?"":"on";
   document.getElementById("tabD").className=dia?"on":"";
   window.scrollTo(0,0);
+  if(dia)diagram(mm(document.getElementById("t").value),false);
 }
 document.getElementById("t").addEventListener("change",function(){sel=-1;render();});
 document.getElementById("m5").onclick=function(){shift(-5);};
@@ -392,20 +461,32 @@ document.getElementById("tabC").onclick=function(){showTab(false);};
 document.getElementById("tabD").onclick=function(){showTab(true);};
 document.getElementById("mzIn").onclick=function(){mzoom(1);};
 document.getElementById("mzOut").onclick=function(){mzoom(-1);};
-// ピンチで拡大縮小
-(function(){
-  var sc=document.getElementById("miniScroll"),d0=0;
+document.getElementById("dzIn").onclick=function(){dzoom(1);};
+document.getElementById("dzOut").onclick=function(){dzoom(-1);};
+// スジのタップで列車詳細
+document.getElementById("dia").addEventListener("click",function(e){
+  var el=e.target.closest?e.target.closest("[data-ti]"):null;
+  if(el){dsel=+el.getAttribute("data-ti");diagram(mm(document.getElementById("t").value),true);}
+});
+document.getElementById("trainDetail").addEventListener("click",function(e){
+  if(e.target.id==="tdClose"){dsel=-1;diagram(mm(document.getElementById("t").value),true);}
+});
+// ピンチで拡大縮小（ミニ・フル共通）
+function attachPinch(id,zoomFn,dblFn){
+  var sc=document.getElementById(id),d0=0;
   function dist(e){var a=e.touches[0],b=e.touches[1];
     return Math.sqrt(Math.pow(a.clientX-b.clientX,2)+Math.pow(a.clientY-b.clientY,2));}
   sc.addEventListener("touchstart",function(e){if(e.touches.length===2)d0=dist(e);},{passive:true});
   sc.addEventListener("touchmove",function(e){
     if(e.touches.length!==2||!d0)return;
     var d=dist(e);
-    if(d>d0*1.35){mzoom(1);d0=d;e.preventDefault();}
-    else if(d<d0*0.74){mzoom(-1);d0=d;e.preventDefault();}
+    if(d>d0*1.35){zoomFn(1);d0=d;e.preventDefault();}
+    else if(d<d0*0.74){zoomFn(-1);d0=d;e.preventDefault();}
   },{passive:false});
-  sc.addEventListener("dblclick",function(){mzoom(MZ<12?1:-1);});
-})();
+  sc.addEventListener("dblclick",dblFn);
+}
+attachPinch("miniScroll",mzoom,function(){mzoom(MZ<12?1:-1);});
+attachPinch("diaScroll",dzoom,function(){dzoom(DZ<16?1:-1);});
 render();
 </script>
 </body>
