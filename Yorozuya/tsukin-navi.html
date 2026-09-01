@@ -7,67 +7,81 @@
 <style>
   :root{
     --bg:#f4f6f9; --panel:#ffffff; --line:#e3e9f2; --line2:#cbd6e4;
-    --tx:#16233c; --tx2:#5c6b84; --tx3:#93a1b7; --acc:#0f8a4d; --accbg:#e6f5ec;
+    --tx:#16233c; --tx2:#526078; --tx3:#93a1b7; --acc:#0f8a4d; --accbg:#e6f5ec;
     --jr-neg:#00a0d6; --jr-yok:#7cb518;
-    --c-isogo:#0284c7; --c-saku:#7c3aed; --c-hk:#059669; --c-thru:#ea580c; --c-negishi:#c3cedd;
-    --now:#ef7c1b;
+    --now:#e05d00; --alert:#d92c2c;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
   body{background:var(--bg);color:var(--tx);
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif;
-    max-width:560px;margin:0 auto;padding-bottom:76px;min-height:100vh}
+    max-width:560px;margin:0 auto;padding-bottom:132px;min-height:100vh}
   .num{font-variant-numeric:tabular-nums;letter-spacing:.01em}
 
-  /* ---- sticky header ---- */
-  header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:12px 16px 10px;
-    box-shadow:0 1px 8px rgba(22,35,60,.05)}
-  .route{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .route .stpill{font-size:15px;font-weight:800;letter-spacing:.02em}
-  .route .arw{color:var(--tx3);font-size:11px}
-  .route .tag{margin-left:auto;font-size:10px;color:var(--tx2);background:var(--bg);
-    padding:3px 9px;border-radius:99px;letter-spacing:.05em}
-  .ctrl{display:flex;gap:8px;align-items:stretch}
-  .ctrl input[type=time]{flex:1;background:#fff;border:1.5px solid var(--line2);color:var(--tx);
-    font-size:22px;font-weight:700;padding:5px 12px;border-radius:12px;text-align:center;
-    font-variant-numeric:tabular-nums;min-width:0;color-scheme:light}
-  .btn{background:#fff;border:1.5px solid var(--line2);color:var(--tx);padding:0 13px;
-    border-radius:12px;font-size:15px;cursor:pointer;display:flex;align-items:center;font-weight:600}
-  .btn:active{background:var(--bg)}
-  .btn.acc{color:#fff;background:var(--acc);border-color:var(--acc);font-weight:700}
-  /* mini diagram strip */
-  #mini{margin:10px -4px 0;border:1px solid var(--line);border-radius:10px;background:#fdfefe;overflow:hidden;position:relative}
-  .minihead{display:flex;align-items:center;gap:8px;font-size:9.5px;color:var(--tx3);padding:4px 8px 2px;letter-spacing:.04em}
-  .minihead b{color:var(--tx2);font-weight:700}
-  .minihead .sp{flex:1}
-  .mz{width:26px;height:21px;border:1px solid var(--line2);background:#fff;border-radius:6px;
-    font-size:13px;cursor:pointer;color:var(--tx);line-height:1;font-weight:700}
+  /* ---- slim sticky header ---- */
+  header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.93);backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:11px 16px;
+    display:flex;align-items:center;gap:8px}
+  .stpill{font-size:16px;font-weight:800}
+  .arw{color:var(--tx3);font-size:11px}
+  .tag{margin-left:auto;font-size:12px;font-weight:700;color:var(--tx2);background:var(--bg);
+    padding:5px 11px;border-radius:99px}
+  .tag.live{color:#fff;background:var(--acc)}
+  .banner{background:#fdf3d7;color:#8a6407;font-size:12px;font-weight:600;padding:8px 16px;
+    border-bottom:1px solid #f0e3b5}
+
+  /* ---- collapsible full-night strip ---- */
+  #miniBox{margin:10px 14px 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  #miniToggle{width:100%;background:none;border:none;padding:11px 14px;font-size:12.5px;font-weight:700;
+    color:var(--tx2);cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px}
+  #miniToggle .cv{margin-left:auto;color:var(--tx3);transition:transform .15s}
+  #miniBox.open #miniToggle .cv{transform:rotate(180deg)}
+  #miniBody{display:none;position:relative;border-top:1px solid var(--line)}
+  #miniBox.open #miniBody{display:block}
+  .zrow{position:absolute;right:8px;top:6px;z-index:2;display:flex;gap:10px}
+  .mz{width:44px;height:44px;border:1px solid var(--line2);background:rgba(255,255,255,.94);border-radius:12px;
+    font-size:20px;cursor:pointer;color:var(--tx);line-height:1;font-weight:700}
   .miniscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x}
   .miniscroll::-webkit-scrollbar{display:none}
   .minilabels{position:absolute;left:0;top:0;pointer-events:none;width:100%;height:0}
-  .minilabels span{position:absolute;left:4px;transform:translateY(-50%);font-size:9.5px;font-weight:700;
-    color:var(--tx2);background:rgba(253,254,254,.88);padding:0 5px;border-radius:4px;line-height:1.5}
+  .minilabels span{position:absolute;left:4px;transform:translateY(-50%);font-size:10px;font-weight:700;
+    color:var(--tx2);background:rgba(255,255,255,.9);padding:1px 6px;border-radius:4px;line-height:1.5}
 
-  main{padding:14px 14px 0}
-  h2{font-size:11px;color:var(--tx3);margin:8px 2px 10px;letter-spacing:.18em;font-weight:700}
+  main{padding:12px 14px 0}
+  h2{font-size:11px;color:var(--tx2);margin:8px 2px 10px;letter-spacing:.18em;font-weight:700}
 
   /* ---- itinerary card ---- */
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
-    padding:12px 14px 10px;margin-bottom:12px;cursor:pointer;
+    padding:14px 16px 10px;margin-bottom:12px;cursor:pointer;
     box-shadow:0 2px 10px rgba(22,35,60,.06)}
-  .card.sel{border-color:var(--acc);box-shadow:0 3px 14px rgba(15,138,77,.14)}
-  .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-  .badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+  .card.best{border:2px solid var(--acc);box-shadow:0 4px 16px rgba(15,138,77,.14)}
+  .bestbar{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--acc);
+    border-radius:6px;padding:2px 8px;letter-spacing:.12em;margin-bottom:8px}
+  .hero{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .hero .dep{font-size:30px;font-weight:800;line-height:1}
+  .hero .u{font-size:12px;color:var(--tx2);font-weight:700}
+  .hero .ar{color:var(--tx3);font-size:15px}
+  .hero .arr{font-size:21px;font-weight:700}
+  .cd{margin-left:auto;font-size:15px;font-weight:800;color:var(--now);white-space:nowrap}
+  .cd.soon{color:var(--alert)}
+  .cd small{font-weight:600;font-size:11px}
+  .sub{font-size:13.5px;color:var(--tx);margin-top:9px;line-height:1.6}
+  .sub b{font-weight:800}
+  .badge{font-size:11.5px;font-weight:700;padding:2.5px 9px;border-radius:99px;white-space:nowrap;margin-left:4px}
   .b0{background:var(--accbg);color:var(--acc)}
   .b1{background:#eef7dc;color:#5d8f0a}
   .b2{background:#fdf3d7;color:#a87b0c}
   .b3{background:#fde8e8;color:#c04343}
-  .strat{font-size:12px;color:var(--tx2);font-weight:600}
-  .count{margin-left:auto;font-size:12px;color:var(--now);font-weight:800;white-space:nowrap}
-  .count small{font-weight:500;color:var(--tx3)}
+  .alt{font-size:12px;color:var(--tx2);margin-top:8px}
+  .alt b{font-weight:700;color:var(--tx)}
+  .meta{display:flex;gap:14px;font-size:12px;color:var(--tx2);margin-top:9px;padding-top:9px;
+    border-top:1px solid var(--line);align-items:center}
+  .meta .cv{margin-left:auto;color:var(--tx3);font-size:11px}
+  .card.open .meta .cv .chev{display:inline-block;transform:rotate(180deg)}
 
-  /* vertical timeline */
+  /* vertical timeline (展開時のみ) */
+  .tlwrap{display:none;margin-top:11px}
+  .card.open .tlwrap{display:block}
   .tl{display:grid;grid-template-columns:46px 14px 1fr}
   .tm{font-size:14px;font-weight:700;text-align:right;padding-right:8px;line-height:20px}
   .nd{position:relative}
@@ -76,104 +90,121 @@
   .nd.start i{border-color:var(--acc);width:11px;height:11px}
   .nd.goal i{background:var(--tx);border-color:var(--tx)}
   .lbl{font-size:13.5px;line-height:20px;padding-left:6px}
-  .lbl small{color:var(--tx2);font-size:11px;margin-left:6px}
-  .lbl .chip{display:inline-block;font-size:9.5px;font-weight:700;padding:1.5px 7px;border-radius:4px;
+  .lbl small{color:var(--tx2);font-size:11.5px;margin-left:6px}
+  .lbl .chip{display:inline-block;font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:4px;
     margin-left:6px;vertical-align:1px;color:#fff}
-  .seg{grid-column:2;position:relative;min-height:26px}
+  .seg{grid-column:2;position:relative;min-height:24px}
   .seg i{position:absolute;left:50%;top:0;bottom:0;transform:translateX(-50%);width:3.5px;border-radius:2px;background:var(--segc,#ccc)}
   .seg.walk i{background:repeating-linear-gradient(180deg,var(--tx3) 0 3px,transparent 3px 7px);width:2.5px}
-  .segtxt{grid-column:3;font-size:11px;color:var(--tx2);padding-left:6px;display:flex;align-items:center;min-height:26px}
+  .segtxt{grid-column:3;font-size:12px;color:var(--tx2);padding-left:6px;display:flex;align-items:center;min-height:24px}
   .segtxt b{color:var(--tx);font-weight:700}
-  .meta{display:flex;gap:14px;font-size:11px;color:var(--tx3);margin-top:9px;padding-top:8px;border-top:1px solid var(--line)}
-  .meta b{color:var(--tx2);font-weight:700}
 
   /* ---- full diagram view ---- */
   #diaWrap{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-top:4px;
     padding:6px 6px 4px;box-shadow:0 2px 10px rgba(22,35,60,.06);position:relative}
-  .tdcard{margin:8px 6px 4px;border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px 12px}
-  .tdhead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .tdhead .dot{width:10px;height:10px;border-radius:50%}
-  .tdhead b{font-size:13px}
-  .tdx{margin-left:auto;border:1px solid var(--line2);background:#fff;border-radius:8px;
-    width:26px;height:24px;font-size:13px;cursor:pointer;color:var(--tx2);line-height:1}
-  .tdstops{display:flex;flex-wrap:wrap;gap:6px 4px;align-items:center}
-  .tdstops .stp{display:inline-flex;flex-direction:column;align-items:center;background:#fff;
-    border:1px solid var(--line);border-radius:8px;padding:3px 8px;min-width:52px}
-  .tdstops .stp small{font-size:9px;color:var(--tx3)}
-  .tdstops .stp b{font-size:12px}
-  .tdstops .stp.org{border-color:var(--acc);background:var(--accbg)}
-  .tdstops .arr2{color:var(--tx3);font-size:10px}
-  .tdnote{font-size:11px;color:var(--tx2);margin-top:8px;line-height:1.7}
-  .tdnote b{color:var(--acc)}
-  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:10.5px;color:var(--tx2);padding:8px 10px 10px}
+  .diahead{display:flex;align-items:center;padding:6px 10px 4px;font-size:12px;color:var(--tx2);font-weight:700}
+  .diahead .zrow2{margin-left:auto;display:flex;gap:10px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:11px;color:var(--tx2);padding:8px 10px 10px}
   .legend span{display:flex;align-items:center;gap:5px}
-  .legend i{display:inline-block;width:16px;height:3.5px;border-radius:2px}
-  details{margin:16px 2px 0;font-size:11px;color:var(--tx2)}
+  .legend i{display:inline-block;width:16px;height:4px;border-radius:2px}
+  details{margin:16px 2px 0;font-size:11.5px;color:var(--tx2)}
   details summary{cursor:pointer;color:var(--tx3);font-size:11px;letter-spacing:.05em}
   details p{margin:8px 0 0;line-height:1.8}
   .empty{background:var(--panel);border:1px dashed var(--line2);border-radius:16px;padding:22px;
     text-align:center;color:var(--tx2);font-size:13px;line-height:1.8}
 
-  /* ---- bottom tab bar ---- */
-  nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:rgba(255,255,255,.95);
+  /* ---- train detail bottom sheet ---- */
+  #trainDetail{position:fixed;left:0;right:0;bottom:0;z-index:30;max-width:560px;margin:0 auto;
+    padding-bottom:env(safe-area-inset-bottom)}
+  .tdcard{background:#fff;border:1px solid var(--line);border-bottom:none;border-radius:18px 18px 0 0;
+    box-shadow:0 -8px 28px rgba(22,35,60,.18);padding:14px 16px 18px}
+  .tdhead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .tdhead .dot{width:11px;height:11px;border-radius:50%}
+  .tdhead b{font-size:14.5px}
+  .tdx{margin-left:auto;border:1px solid var(--line2);background:#fff;border-radius:12px;
+    width:44px;height:44px;font-size:18px;cursor:pointer;color:var(--tx2);line-height:1}
+  .tdstops{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .tdstops .stp{display:flex;flex-direction:column;align-items:center;background:#f8fafc;
+    border:1px solid var(--line);border-radius:8px;padding:4px 2px}
+  .tdstops .stp small{font-size:10px;color:var(--tx2)}
+  .tdstops .stp b{font-size:13px}
+  .tdstops .stp.org{border-color:var(--acc);background:var(--accbg)}
+  .tdnote{font-size:12.5px;color:var(--tx2);margin-top:10px;line-height:1.7}
+  .tdnote b{color:var(--acc)}
+
+  /* ---- bottom controls + tab bar ---- */
+  #bottomCtrl{position:fixed;left:0;right:0;bottom:58px;z-index:20;max-width:560px;margin:0 auto;
+    display:flex;gap:8px;padding:8px 12px;background:rgba(244,246,249,.94);backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  #bottomCtrl input[type=time]{flex:1;background:#fff;border:1.5px solid var(--line2);color:var(--tx);
+    font-size:21px;font-weight:700;padding:5px 10px;border-radius:12px;text-align:center;
+    font-variant-numeric:tabular-nums;min-width:0;color-scheme:light;height:46px}
+  .btn{background:#fff;border:1.5px solid var(--line2);color:var(--tx);min-width:48px;height:46px;
+    border-radius:12px;font-size:15px;cursor:pointer;font-weight:700}
+  .btn:active{background:var(--bg)}
+  .btn.acc{color:#fff;background:var(--acc);border-color:var(--acc)}
+  nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:rgba(255,255,255,.97);
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
-    display:flex;max-width:560px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom)}
-  nav button{flex:1;background:none;border:none;padding:9px 0 10px;cursor:pointer;
-    font-size:11px;color:var(--tx3);font-weight:700;letter-spacing:.08em}
-  nav button .ic{display:block;font-size:17px;margin-bottom:2px}
+    display:flex;max-width:560px;margin:0 auto;height:58px;padding-bottom:env(safe-area-inset-bottom)}
+  nav button{flex:1;background:none;border:none;cursor:pointer;
+    font-size:11.5px;color:var(--tx3);font-weight:700;letter-spacing:.08em}
   nav button.on{color:var(--acc)}
-  nav button.on .ic{color:var(--acc)}
+  .tabic{display:block;width:25px;height:25px;margin:0 auto 3px;background:currentColor;
+    -webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+  #tabC .tabic{--icon:url(data:image/png;base64,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)}
+  #tabD .tabic{--icon:url(data:image/png;base64,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)}
 </style>
 </head>
 <body>
 <header>
-  <div class="route">
-    <span class="stpill">新杉田</span><span class="arw">▶</span><span class="stpill">橋本</span>
-    <span class="tag">平日夜・着席重視</span>
-  </div>
-  <div class="ctrl">
-    <button class="btn num" id="m5">−5</button>
-    <input type="time" id="t" value="18:15">
-    <button class="btn num" id="p5">＋5</button>
-    <button class="btn acc" id="now">いま</button>
-  </div>
-  <div id="mini">
-    <div class="minihead"><b>スジ全景 17:00−24:00</b><span>横スクロール／ピンチ拡大・色付き＝候補</span><span class="sp"></span>
-      <button class="mz" id="mzOut">−</button><button class="mz" id="mzIn">＋</button></div>
+  <span class="stpill">新杉田</span><span class="arw">▶</span><span class="stpill">橋本</span>
+  <span class="tag num" id="baseTag">--:--</span>
+</header>
+<div class="banner" id="banner" style="display:none"></div>
+<div id="miniBox">
+  <button id="miniToggle">ダイヤ全景 17:00−24:00<span class="cv">▾</span></button>
+  <div id="miniBody">
+    <div class="zrow"><button class="mz" id="mzOut">−</button><button class="mz" id="mzIn">＋</button></div>
     <div class="miniscroll" id="miniScroll"><div id="miniDia"></div></div>
     <div class="minilabels" id="miniLabels"></div>
   </div>
-</header>
+</div>
 <main>
   <section id="viewCards">
-    <h2>候補 — 着席しやすさ順</h2>
+    <h2>座って帰る候補</h2>
     <div id="cards"></div>
   </section>
   <section id="viewDia" style="display:none">
     <h2>ダイヤグラム 17:00−24:00</h2>
     <div id="diaWrap">
-      <div class="minihead"><b>スジをタップで列車詳細</b><span>横スクロール／ピンチ拡大</span><span class="sp"></span>
-        <button class="mz" id="dzOut">−</button><button class="mz" id="dzIn">＋</button></div>
+      <div class="diahead">列車をタップで詳細
+        <span class="zrow2"><button class="mz" id="dzOut">−</button><button class="mz" id="dzIn">＋</button></span></div>
       <div class="miniscroll" id="diaScroll"><div id="dia"></div></div>
       <div class="minilabels" id="diaLabels"></div>
-      <div id="trainDetail"></div>
       <div class="legend">
-        <span><i style="background:var(--c-isogo)"></i>磯子始発</span>
-        <span><i style="background:var(--c-saku)"></i>桜木町始発</span>
-        <span><i style="background:var(--c-hk)"></i>東神奈川始発</span>
-        <span><i style="background:var(--c-thru)"></i>大船方面直通</span>
-        <span><i style="background:var(--c-negishi)"></i>根岸線</span>
+        <span><i style="background:#0284c7"></i>磯子始発</span>
+        <span><i style="background:#7c3aed"></i>桜木町始発</span>
+        <span><i style="background:#059669"></i>東神奈川始発</span>
+        <span><i style="background:#ea580c"></i>大船方面直通</span>
+        <span><i style="background:#c3cedd"></i>根岸線</span>
       </div>
     </div>
   </section>
   <details>
     <summary>データと前提について</summary>
-    <p>データ: JR東日本公式時刻表 2026年9月版・平日（2026-09-01取得）。所要の目安: 新杉田→磯子3分/桜木町16分/東神奈川23分、東神奈川→橋本47分。八王子行きも橋本に停車します。●印はその駅の始発（＝並べば座れる）。ダイヤ改正（例年3月）後は要更新。遅延・運休は反映しません。</p>
+    <p>データ: JR東日本公式時刻表 2026年9月版・平日（2026-09-01取得）。所要の目安: 新杉田→磯子3分/桜木町16分/東神奈川23分、東神奈川→橋本47分。八王子行きも橋本に停車します。●印はその駅の始発（＝並べば座れる）。着席評価は並べる時間からの推定で、混雑・遅延・イベントは反映しません。ダイヤ改正（例年3月）後は要更新。</p>
   </details>
 </main>
+<div id="trainDetail"></div>
+<div id="bottomCtrl">
+  <button class="btn num" id="m5">−5</button>
+  <input type="time" id="t" value="18:15">
+  <button class="btn num" id="p5">+5</button>
+  <button class="btn acc" id="now">いま</button>
+</div>
 <nav>
-  <button id="tabC" class="on"><span class="ic">🚃</span>候補</button>
-  <button id="tabD"><span class="ic">📈</span>ダイヤ</button>
+  <button id="tabC" class="on"><span class="tabic"></span>候補</button>
+  <button id="tabD"><span class="tabic"></span>ダイヤ</button>
 </nav>
 <script>
 // ---- data (JR東日本公式 2026-09版 平日) ----
@@ -206,12 +237,13 @@ function mm(s){var p=s.split(":");return (+p[0])*60+(+p[1]);}
 function hh(m){var h=Math.floor(m/60)%24,x=m%60;return (h<10?"0":"")+h+":"+(x<10?"0":"")+x;}
 
 // ---- itinerary engine ----
-function latestNB(T,limit){ // T以降に新杉田を出て limit までに着ける最も遅い北行
+function latestNB(T,limit){
   var best=null;
   for(var i=0;i<NB.length;i++){var d=mm(NB[i]);
     if(d>=T&&d<=limit&&(best===null||d>best))best=d;}
   return best;
 }
+var PRI={isogo:0,saku:0,hk:1,thru:2,unk:2}; // 乗換後に長く座れる順（磯子・桜木町 > 東神奈川 > 直通）
 function plan(T){
   var out=[];
   for(var i=0;i<YL.length;i++){
@@ -221,7 +253,6 @@ function plan(T){
     var arr=hk+HASHIMOTO,o=null;
     if(origin==="isogo"||origin==="saku"){
       var ofs=origin==="isogo"?OFF.isogo:OFF.saku,odM=mm(od);
-      // 並び3分を確保できる便を優先。無理ならギリギリ便(○)
       var acc=latestNB(T,odM-3-ofs),tight=false;
       if(acc===null){acc=latestNB(T,odM-1-ofs);tight=true;}
       if(acc===null)continue;
@@ -229,13 +260,13 @@ function plan(T){
       o={origin:origin,dest:dest,hkM:hk,arr:arr,od:odM,acc:acc,wait:wait,
          seat:tight?1:0,boardAt:origin==="isogo"?"磯子":"桜木町"};
     }else if(origin==="hk"){
-      // 並び6分を確保できる便を優先。無理なら2分乗換(△)
+      // 東神奈川始発は列が読めないため上限○（並び6分未満は△）
       var acc2=latestNB(T,hk-6-OFF.hk),tight2=false;
       if(acc2===null){acc2=latestNB(T,hk-2-OFF.hk);tight2=true;}
       if(acc2===null)continue;
       var w2=hk-(acc2+OFF.hk);
       o={origin:origin,dest:dest,hkM:hk,arr:arr,od:hk,acc:acc2,wait:w2,
-         seat:tight2?2:0,boardAt:"東神奈川"};
+         seat:tight2?2:1,boardAt:"東神奈川"};
     }else if(origin==="thru"){
       var dep=hk-OFF.hk;
       if(dep<T)continue;
@@ -243,63 +274,87 @@ function plan(T){
     }
     if(o)out.push(o);
   }
-  // 同じ横浜線列車×作戦は最遅出発だけ残し、着席優先→到着順で上位7件
-  var best={},k;
+  // 同じ列車×作戦は最遅アクセスのみ残す
+  var perTrain={},k;
   for(var j=0;j<out.length;j++){k=out[j].hkM+"_"+out[j].origin;
-    if(!best[k]||out[j].acc>best[k].acc)best[k]=out[j];}
-  var arr2=Object.keys(best).map(function(x){return best[x];});
-  arr2.sort(function(a,b){return a.seat-b.seat||a.arr-b.arr;});
-  return arr2.slice(0,7);
+    if(!perTrain[k]||out[j].acc>perTrain[k].acc)perTrain[k]=out[j];}
+  // 同じアクセス電車×作戦は最先着を主案に、次便は「乗り遅れ保険」として footer 化
+  var groups={};
+  Object.keys(perTrain).forEach(function(x){var o=perTrain[x],g=o.acc+"_"+o.origin;
+    (groups[g]=groups[g]||[]).push(o);});
+  var list=[];
+  Object.keys(groups).forEach(function(g){
+    var arr2=groups[g].sort(function(a,b){return a.arr-b.arr;});
+    var p=arr2[0];
+    if(arr2.length>1)p.next=arr2[1];
+    list.push(p);
+  });
+  list.sort(function(a,b){return PRI[a.origin]-PRI[b.origin]||a.seat-b.seat||a.arr-b.arr;});
+  return list.slice(0,5);
 }
 // ---- UI ----
-var SN={isogo:"磯子始発ねらい",saku:"桜木町始発ねらい",hk:"東神奈川で並び直し",thru:"新杉田から直通",unk:"直通"};
-var SEAT=["◎ 着席ほぼ確実","○ 始発・並び短め","△ 当駅始発・列次第","× 着席困難"];
+var SN={isogo:"磯子始発",saku:"桜木町始発",hk:"東神奈川始発",thru:"直通（大船方面から）",unk:"直通"};
+var SEAT=["◎ 始発・並び十分","○ 始発・並び短め","△ 当駅始発・列次第","× 着席困難"];
 var COL={isogo:"#0284c7",saku:"#7c3aed",hk:"#059669",thru:"#ea580c",unk:"#ea580c"};
 var NEG='<span class="chip" style="background:var(--jr-neg)">根岸線</span>';
 var YOK='<span class="chip" style="background:var(--jr-yok)">横浜線</span>';
-var sel=-1,cur=[];
+var cur=[],nowMode=false,lastMiniT=null;
 function cardHTML(o,i,T){
-  var h='<div class="chead"><span class="badge b'+o.seat+'">'+SEAT[o.seat]+'</span>'
-    +'<span class="strat">'+SN[o.origin]+'</span>';
   var lead=o.acc-T;
-  h+='<span class="count num">'+(lead<=0?'まもなく発車':'あと'+lead+'分')+'<small>で出発</small></span></div>';
-  h+='<div class="tl">';
+  var h='';
+  if(i===0)h+='<div class="bestbar">おすすめ</div>';
+  h+='<div class="hero"><span class="dep num">'+hh(o.acc)+'</span><span class="u">新杉田発</span>'
+    +'<span class="ar">→</span><span class="arr num">'+hh(o.arr)+'</span><span class="u">橋本着</span>'
+    +'<span class="cd num'+(lead<=3?' soon':'')+'">'+(lead<=0?'まもなく':'あと'+lead+'分')+'</span></div>';
+  var subj=o.origin==="thru"
+    ?'乗換なし直通（<b>着席は困難</b>）'
+    :o.boardAt+'で <b>'+hh(o.od)+'発'+(o.origin==="hk"?'当駅始発':'始発')+'</b> に乗換・待ち'+o.wait+'分';
+  h+='<div class="sub">'+subj+'<span class="badge b'+o.seat+'">'+SEAT[o.seat]+'</span></div>';
+  // 展開時タイムライン
+  h+='<div class="tlwrap"><div class="tl">';
   function row(time,cls,label){h+='<span class="tm num">'+time+'</span>'
     +'<span class="nd '+cls+'"><i></i></span><div class="lbl">'+label+'</div>';}
   function seg(color,walk,txt){h+='<div class="seg'+(walk?' walk':'')+'" style="--segc:'+color+'"><i></i></div>'
     +'<div class="segtxt">'+txt+'</div>';}
   if(o.origin==="thru"){
-    row(hh(o.od),'start','新杉田 <b>発</b>'+YOK+'<small>'+o.dest+'行き・大船方面から直通</small>');
-    seg('var(--jr-yok)',false,'乗換なし '+(o.arr-o.od)+'分 <b>ただし着席は困難</b>');
+    row(hh(o.od),'start','新杉田 <b>発</b>'+YOK+'<small>'+o.dest+'行き</small>');
+    seg('var(--jr-yok)',false,(o.arr-o.od)+'分 立ち席前提');
     row(hh(o.arr),'goal','橋本 <b>着</b>');
   }else{
     var ofs=o.origin==="isogo"?OFF.isogo:o.origin==="saku"?OFF.saku:OFF.hk;
     row(hh(o.acc),'start','新杉田 <b>発</b>'+NEG+'<small>横浜方面 各駅停車</small>');
     seg('var(--jr-neg)',false,(o.origin==="isogo"?'1駅 ':'')+ofs+'分');
     row(hh(o.acc+ofs),'',o.boardAt+' <b>着</b>');
-    seg('transparent',true,'ホームで<b>待ち'+o.wait+'分</b> — 列に並んで席を確保');
-    row(hh(o.od),'start',o.boardAt+' <b>発</b>'+YOK+'<small>'+o.dest+'行き'+(o.origin==="hk"?'（当駅始発●）':'（始発●）')+'</small>');
-    seg('var(--jr-yok)',false,(o.arr-o.od)+'分・座って寝てOK');
+    seg('transparent',true,'<b>待ち'+o.wait+'分</b> — 列に並ぶ');
+    row(hh(o.od),'start',o.boardAt+' <b>発</b>'+YOK+'<small>'+o.dest+'行き●</small>');
+    seg('var(--jr-yok)',false,(o.arr-o.od)+'分 着席');
     row(hh(o.arr),'goal','橋本 <b>着</b>');
   }
-  h+='</div>';
-  h+='<div class="meta"><span>所要 <b class="num">'+(o.arr-T)+'分</b></span><span>乗換 <b>'+(o.origin==="thru"?"0回":"1回")+'</b></span>'
-    +'<span>橋本 <b class="num">'+hh(o.arr)+'</b> 着</span></div>';
+  h+='</div></div>';
+  if(o.next)h+='<div class="alt">乗り遅れても次: <b class="num">'+hh(o.next.od)+'発 → '+hh(o.next.arr)+'着</b></div>';
+  h+='<div class="meta"><span>所要 <b class="num">'+(o.arr-T)+'分</b></span><span>乗換 '+(o.origin==="thru"?"0回":"1回")+'</span><span>'+SN[o.origin]+'</span>'
+    +'<span class="cv"><span class="chev">▾</span> 詳細</span></div>';
   return h;
 }
 function render(){
   var T=mm(document.getElementById("t").value);cur=plan(T);
+  document.getElementById("baseTag").textContent=nowMode?"いま追従中":hh(T)+" 基準";
+  document.getElementById("baseTag").className="tag num"+(nowMode?" live":"");
   var el=document.getElementById("cards");el.innerHTML="";
   if(!cur.length)el.innerHTML='<div class="empty">この時間帯の候補が見つかりません。<br>データ範囲は 17:00〜23:59 です。</div>';
   cur.forEach(function(o,i){
-    var d=document.createElement("div");d.className="card"+(i===sel?" sel":"");
+    var d=document.createElement("div");
+    d.className="card"+(i===0?" best open":"");
     d.innerHTML=cardHTML(o,i,T);
-    d.onclick=function(){sel=(sel===i?-1:i);render();};
+    d.onclick=function(){d.classList.toggle("open");};
     el.appendChild(d);
   });
-  miniDia(T);diagram(T);
+  var mb=document.getElementById("miniBox");
+  if(mb.classList.contains("open"))miniDia(T,T===lastMiniT);
+  lastMiniT=T;
+  if(document.getElementById("viewDia").style.display!=="none")diagram(T,true);
 }
-// 列車のスジ座標（分,駅位置）列を作る共通関数
+// 列車のスジ座標（分,駅位置）列
 function trainPath(idx){
   var hk=mm(YL[idx][0]),origin=YL[idx][2],od=YL[idx][3],pts=[];
   if(origin==="isogo")pts=[[mm(od),3],[mm(od)+13,16],[mm(od)+16,19],[hk,23]];
@@ -309,12 +364,13 @@ function trainPath(idx){
   var st;for(st in YSTOPS)pts.push([hk+YSTOPS[st],23+YSTOPS[st]]);
   return pts;
 }
-var MZ=6, MZLEVELS=[3,6,12];  // px/分（ミニダイヤの横スケール）
-function miniDia(T){
-  var pxm=MZ,t0=17*60,t1=24*60,PAD=12,H=176,TOP=8,B=18;
+var MZ=6, MZLEVELS=[3,6,12];
+function miniDia(T,keepScroll){
+  var pxm=MZ,t0=17*60,t1=24*60,PAD=12,H=190,TOP=8,B=20;
   var W=Math.round((t1-t0)*pxm)+PAD*2;
   function X(t){return PAD+(t-t0)*pxm;}
   function Y(m){return TOP+(H-TOP-B)*m/70;}
+  var sc=document.getElementById("miniScroll"),keepX=keepScroll?sc.scrollLeft:null;
   var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style="display:block">',i,t;
   var rows=[["新杉田",0],["磯子",3],["桜木町",16],["東神奈川",23],["橋本",70]];
   for(i=0;i<rows.length;i++){var y=Y(rows[i][1]);
@@ -322,43 +378,40 @@ function miniDia(T){
   var step=pxm<5?30:10;
   for(t=Math.ceil(t0/step)*step;t<=t1;t+=step){var hr=(t%60===0);
     s+='<line x1="'+X(t)+'" y1="'+TOP+'" x2="'+X(t)+'" y2="'+(H-B)+'" stroke="'+(hr?'#dbe3ee':'#edf1f7')+'" stroke-width="'+(hr?1.1:0.8)+'"/>';
-    s+='<text x="'+X(t)+'" y="'+(H-5)+'" fill="'+(hr?'#5c6b84':'#93a1b7')+'" font-size="10" text-anchor="middle" font-weight="'+(hr?'700':'500')+'">'+hh(t)+'</text>';}
-  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(H-B)+'" stroke="#ef7c1b" stroke-width="1.3" stroke-dasharray="3 3"/>';
-  s+='<text x="'+(X(T)+3)+'" y="'+(TOP+9)+'" fill="#ef7c1b" font-size="9.5" font-weight="700">'+hh(T)+'</text>';
+    s+='<text x="'+X(t)+'" y="'+(H-5)+'" fill="'+(hr?'#526078':'#93a1b7')+'" font-size="11" text-anchor="middle" font-weight="'+(hr?'700':'500')+'">'+hh(t)+'</text>';}
+  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(H-B)+'" stroke="#e05d00" stroke-width="1.3" stroke-dasharray="3 3"/>';
+  s+='<text x="'+(X(T)+3)+'" y="'+(TOP+10)+'" fill="#e05d00" font-size="10" font-weight="700">'+hh(T)+'</text>';
   for(i=0;i<NB.length;i++){var d=mm(NB[i]);
     s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#d4dce8" stroke-width="1" stroke-linejoin="round"/>';}
   for(i=0;i<YL.length;i++){
     if(YL[i][1]==="町田")continue;
     var hk=mm(YL[i][0]),origin=YL[i][2],col=COL[origin],pts=trainPath(i);
-    var isCand=false,isSel=false,c;
-    for(var j=0;j<cur.length;j++){c=cur[j];
-      if(c.hkM===hk&&c.origin===origin){isCand=true;if(j===sel)isSel=true;}}
+    var isCand=false;for(var j=0;j<cur.length;j++)if(cur[j].hkM===hk&&cur[j].origin===origin)isCand=true;
     var ps="";for(var q=0;q<pts.length;q++)ps+=X(pts[q][0])+","+Y(pts[q][1])+" ";
-    s+='<polyline points="'+ps+'" fill="none" stroke="'+(isCand?col:'#9fb0c6')+'" stroke-width="'+(isSel?3.2:isCand?2.4:1)+'" opacity="'+(isCand?0.95:0.35)+'" stroke-linejoin="round" stroke-linecap="round"/>';
+    s+='<polyline points="'+ps+'" fill="none" stroke="'+(isCand?col:'#9fb0c6')+'" stroke-width="'+(isCand?2.4:1)+'" opacity="'+(isCand?0.95:0.35)+'" stroke-linejoin="round" stroke-linecap="round"/>';
     if(isCand){var p0=pts[0];
       s+='<circle cx="'+X(p0[0])+'" cy="'+Y(p0[1])+'" r="3" fill="'+col+'"/>';
-      s+='<text x="'+(X(p0[0])+4)+'" y="'+(Y(p0[1])-4)+'" fill="'+col+'" font-size="9.5" font-weight="700">'+hh(origin==="hk"?hk:mm(YL[i][3]))+'</text>';}
+      s+='<text x="'+(X(p0[0])+4)+'" y="'+(Y(p0[1])-4)+'" fill="'+col+'" font-size="10" font-weight="700">'+hh(origin==="hk"?hk:mm(YL[i][3]))+'</text>';}
   }
   s+="</svg>";
   document.getElementById("miniDia").innerHTML=s;
-  // 左端の駅名ラベル（スクロールしても固定のオーバーレイ）
-  var sc=document.getElementById("miniScroll"),lb=document.getElementById("miniLabels"),lh="";
+  var lb=document.getElementById("miniLabels"),lh="";
   for(i=0;i<rows.length;i++){var dy=rows[i][1]===0?-5:rows[i][1]===3?5:0;
     lh+='<span style="top:'+(sc.offsetTop+Y(rows[i][1])+dy)+'px">'+rows[i][0]+'</span>';}
   lb.innerHTML=lh;
-  // 指定時刻の少し手前へ自動スクロール
-  sc.scrollLeft=Math.max(0,X(T-8)-PAD);
+  if(keepX!==null)sc.scrollLeft=keepX;
+  else sc.scrollLeft=Math.max(0,X(T-8)-PAD);
 }
-function mzoom(dir,centerT){
+function mzoom(dir){
   var idx=MZLEVELS.indexOf(MZ)+dir;
   if(idx<0||idx>=MZLEVELS.length)return;
   var sc=document.getElementById("miniScroll");
-  var t=centerT||(17*60+(sc.scrollLeft+sc.clientWidth/2-12)/MZ);
+  var t=17*60+(sc.scrollLeft+sc.clientWidth/2-12)/MZ;
   MZ=MZLEVELS[idx];
-  miniDia(mm(document.getElementById("t").value));
+  miniDia(mm(document.getElementById("t").value),false);
   sc.scrollLeft=Math.max(0,12+(t-17*60)*MZ-sc.clientWidth/2);
 }
-var DZ=8, DZLEVELS=[4,8,16], dsel=-1;  // フルダイヤの横スケールと選択列車
+var DZ=8, DZLEVELS=[4,8,16], dsel=-1;
 var ORIGIN_NAME={isogo:"磯子始発",saku:"桜木町始発",hk:"東神奈川始発",thru:"大船方面から直通",unk:"根岸線方面から直通"};
 function diagram(T,keepScroll){
   var pxm=DZ,t0=17*60,t1=24*60,PAD=14,H=470,TOP=10,B=22;
@@ -373,11 +426,11 @@ function diagram(T,keepScroll){
   var step=pxm<6?30:10;
   for(t=Math.ceil(t0/step)*step;t<=t1;t+=step){var hr=(t%60===0);
     s+='<line x1="'+X(t)+'" y1="'+TOP+'" x2="'+X(t)+'" y2="'+(H-B)+'" stroke="'+(hr?'#d6dfeb':'#e9eef5')+'" stroke-width="'+(hr?1.2:0.8)+'"/>';
-    s+='<text x="'+X(t)+'" y="'+(H-7)+'" fill="'+(hr?'#5c6b84':'#93a1b7')+'" font-size="11" text-anchor="middle" font-weight="'+(hr?'700':'500')+'">'+hh(t)+'</text>';}
+    s+='<text x="'+X(t)+'" y="'+(H-7)+'" fill="'+(hr?'#526078':'#93a1b7')+'" font-size="11" text-anchor="middle" font-weight="'+(hr?'700':'500')+'">'+hh(t)+'</text>';}
   for(i=0;i<rows.length;i++){var y=Y(rows[i][1]);
     s+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="#e3e9f2" stroke-width="0.8"/>';}
-  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(H-B)+'" stroke="#ef7c1b" stroke-width="1.3" stroke-dasharray="4 3"/>';
-  s+='<text x="'+(X(T)+4)+'" y="'+(TOP+11)+'" fill="#ef7c1b" font-size="11" font-weight="700">'+hh(T)+'</text>';
+  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(H-B)+'" stroke="#e05d00" stroke-width="1.3" stroke-dasharray="4 3"/>';
+  s+='<text x="'+(X(T)+4)+'" y="'+(TOP+11)+'" fill="#e05d00" font-size="11" font-weight="700">'+hh(T)+'</text>';
   for(i=0;i<NB.length;i++){var d=mm(NB[i]);
     s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#d4dce8" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>';}
   var hits="";
@@ -392,7 +445,7 @@ function diagram(T,keepScroll){
     if(origin!=="unk"){var px=origin==="hk"?X(hk):X(pts[0][0]),py=origin==="hk"?Y(23):Y(pts[0][1]);
       s+='<circle cx="'+px+'" cy="'+py+'" r="3" fill="'+col+'"'+(dim?' opacity="0.18"':'')+'/>';
       if(isSel||(!dim&&(isCand||pxm>=8)))s+='<text x="'+(px+4)+'" y="'+(py-4)+'" fill="'+col+'" font-size="10" font-weight="700"'+(dim?' opacity="0.18"':'')+'>'+hh(origin==="hk"?hk:mm(YL[i][3]))+'</text>';}
-    hits+='<polyline points="'+ps+'" fill="none" stroke="rgba(0,0,0,0)" stroke-width="16" data-ti="'+i+'" style="pointer-events:stroke;cursor:pointer" stroke-linejoin="round"/>';
+    hits+='<polyline points="'+ps+'" fill="none" stroke="rgba(0,0,0,0)" stroke-width="18" data-ti="'+i+'" style="pointer-events:stroke;cursor:pointer" stroke-linejoin="round"/>';
   }
   s+=hits+"</svg>";
   document.getElementById("dia").innerHTML=s;
@@ -417,15 +470,14 @@ function trainDetail(){
     +'<b>'+ORIGIN_NAME[origin]+' '+dest+'行き</b>'
     +((origin==="isogo"||origin==="saku"||origin==="hk")?'<span class="badge b0">始発●</span>':'<span class="badge b3">途中から</span>')
     +'<button class="tdx" id="tdClose">×</button></div><div class="tdstops">';
-  for(var i=0;i<stops.length;i++){
-    if(i>0)h+='<span class="arr2">▶</span>';
-    h+='<span class="stp'+(i===0?' org':'')+'"><small>'+stops[i][0]+'</small><b class="num">'+hh(stops[i][1])+'</b></span>';}
+  for(var i=0;i<stops.length;i++)
+    h+='<span class="stp'+(i===0?' org':'')+'"><small>'+stops[i][0]+'</small><b class="num">'+hh(stops[i][1])+'</b></span>';
   h+='</div>';
   var match=null;for(var j=0;j<cur.length;j++)if(cur[j].hkM===hk&&cur[j].origin===origin)match=cur[j];
-  if(match)h+='<div class="tdnote">候補 '+SEAT[match.seat].charAt(0)+' : 新杉田 <b class="num">'+hh(match.acc)+'</b> 発の根岸線に乗り、'
+  if(match)h+='<div class="tdnote">候補'+SEAT[match.seat].charAt(0)+' : 新杉田 <b class="num">'+hh(match.acc)+'</b> 発の根岸線に乗り、'
     +(match.origin==="thru"?'そのまま直通。':match.boardAt+'で<b>待ち'+match.wait+'分</b>並んで乗車。')
     +'橋本 <b class="num">'+hh(match.arr)+'</b> 着。</div>';
-  else h+='<div class="tdnote">この列車は現在の候補カードには入っていません（指定時刻からは間に合わないか、より良い候補があります）。</div>';
+  else h+='<div class="tdnote">この列車は現在の候補には入っていません（間に合わないか、より良い候補があります）。</div>';
   h+='</div>';
   el.innerHTML=h;
 }
@@ -440,30 +492,37 @@ function dzoom(dir){
 }
 function shift(d){var e=document.getElementById("t"),v=mm(e.value)+d;
   if(v<0)v=0;if(v>1439)v=1439;
-  e.value=hh(v);sel=-1;render();}
+  e.value=hh(v);nowMode=false;render();}
+function setNow(){
+  var n=new Date(Date.now()+9*3600*1000);
+  document.getElementById("t").value=(n.getUTCHours()<10?"0":"")+n.getUTCHours()+":"+(n.getUTCMinutes()<10?"0":"")+n.getUTCMinutes();
+}
 function showTab(dia){
   document.getElementById("viewCards").style.display=dia?"none":"";
   document.getElementById("viewDia").style.display=dia?"":"none";
-  document.getElementById("mini").style.display=dia?"none":"";
+  document.getElementById("miniBox").style.display=dia?"none":"";
   document.getElementById("tabC").className=dia?"":"on";
   document.getElementById("tabD").className=dia?"on":"";
+  if(!dia){dsel=-1;trainDetail();}
   window.scrollTo(0,0);
   if(dia)diagram(mm(document.getElementById("t").value),false);
 }
-document.getElementById("t").addEventListener("change",function(){sel=-1;render();});
+document.getElementById("t").addEventListener("change",function(){nowMode=false;render();});
 document.getElementById("m5").onclick=function(){shift(-5);};
 document.getElementById("p5").onclick=function(){shift(5);};
-document.getElementById("now").onclick=function(){
-  var n=new Date(Date.now()+9*3600*1000);
-  document.getElementById("t").value=(n.getUTCHours()<10?"0":"")+n.getUTCHours()+":"+(n.getUTCMinutes()<10?"0":"")+n.getUTCMinutes();
-  sel=-1;render();};
+document.getElementById("now").onclick=function(){nowMode=true;setNow();render();};
+setInterval(function(){if(nowMode){setNow();render();}},30000);
 document.getElementById("tabC").onclick=function(){showTab(false);};
 document.getElementById("tabD").onclick=function(){showTab(true);};
 document.getElementById("mzIn").onclick=function(){mzoom(1);};
 document.getElementById("mzOut").onclick=function(){mzoom(-1);};
 document.getElementById("dzIn").onclick=function(){dzoom(1);};
 document.getElementById("dzOut").onclick=function(){dzoom(-1);};
-// スジのタップで列車詳細
+document.getElementById("miniToggle").onclick=function(){
+  var mb=document.getElementById("miniBox");
+  mb.classList.toggle("open");
+  if(mb.classList.contains("open"))miniDia(mm(document.getElementById("t").value),false);
+};
 document.getElementById("dia").addEventListener("click",function(e){
   var el=e.target.closest?e.target.closest("[data-ti]"):null;
   if(el){dsel=+el.getAttribute("data-ti");diagram(mm(document.getElementById("t").value),true);}
@@ -471,7 +530,6 @@ document.getElementById("dia").addEventListener("click",function(e){
 document.getElementById("trainDetail").addEventListener("click",function(e){
   if(e.target.id==="tdClose"){dsel=-1;diagram(mm(document.getElementById("t").value),true);}
 });
-// ピンチで拡大縮小（ミニ・フル共通）
 function attachPinch(id,zoomFn,dblFn){
   var sc=document.getElementById(id),d0=0;
   function dist(e){var a=e.touches[0],b=e.touches[1];
@@ -487,6 +545,16 @@ function attachPinch(id,zoomFn,dblFn){
 }
 attachPinch("miniScroll",mzoom,function(){mzoom(MZ<12?1:-1);});
 attachPinch("diaScroll",dzoom,function(){dzoom(DZ<16?1:-1);});
+// 平日ダイヤ前提の警告
+(function(){
+  var n=new Date(Date.now()+9*3600*1000),b=document.getElementById("banner"),msgs=[];
+  if(n.getUTCDay()===0||n.getUTCDay()===6)msgs.push("本日は土休日です。このアプリは平日ダイヤのみ対応しています。");
+  if(n.getUTCFullYear()>2027||(n.getUTCFullYear()===2027&&n.getUTCMonth()>=2))msgs.push("ダイヤ改正時期を過ぎている可能性があります（データ2026年9月版）。");
+  if(msgs.length){b.textContent=msgs.join(" ");b.style.display="";}
+})();
+setNow();nowMode=true;
+var _h=new Date(Date.now()+9*3600*1000).getUTCHours();
+if(_h<16||_h>=24){document.getElementById("t").value="18:15";nowMode=false;}
 render();
 </script>
 </body>
