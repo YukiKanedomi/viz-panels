@@ -6,60 +6,121 @@
 <title>帰宅ナビ 新杉田→橋本</title>
 <style>
   :root{
-    --bg:#0d1321; --panel:#161d2e; --panel2:#1d2639; --line:#2a3550;
-    --tx:#e7ecf5; --tx2:#8b97ad; --amber:#ffb454;
-    --c-isogo:#38bdf8; --c-saku:#a78bfa; --c-hk:#34d399; --c-thru:#fb923c; --c-negishi:#475569;
+    --bg:#0b1020; --bg2:#0e1428; --panel:#151d33; --panel2:#1b2442; --line:#27324f; --line2:#344160;
+    --tx:#eef2fa; --tx2:#93a0ba; --tx3:#5f6c88; --amber:#ffb454;
+    --jr-neg:#00b2e5; --jr-yok:#9ee022;
+    --c-isogo:#38bdf8; --c-saku:#b195fa; --c-hk:#34d399; --c-thru:#fb923c;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--tx);font-family:"Hiragino Sans","Yu Gothic UI",sans-serif;padding:14px 12px 40px;max-width:640px;margin:0 auto}
-  h1{font-size:18px;letter-spacing:.05em;display:flex;align-items:baseline;gap:8px}
-  h1 .sub{font-size:11px;color:var(--tx2);font-weight:normal}
-  .ctrl{display:flex;gap:8px;margin:12px 0;align-items:center}
-  .ctrl input[type=time]{background:var(--panel);border:1px solid var(--line);color:var(--tx);
-    font-size:20px;padding:6px 10px;border-radius:10px;font-variant-numeric:tabular-nums}
-  .btn{background:var(--panel);border:1px solid var(--line);color:var(--amber);padding:8px 14px;
-    border-radius:10px;font-size:14px;cursor:pointer}
+  html{-webkit-text-size-adjust:100%}
+  body{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif;
+    max-width:560px;margin:0 auto;padding-bottom:48px;min-height:100vh}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+
+  /* ---- sticky header ---- */
+  header{position:sticky;top:0;z-index:10;background:rgba(11,16,32,.82);backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:12px 16px 12px}
+  .route{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .route .stpill{font-size:15px;font-weight:700;letter-spacing:.02em}
+  .route .arw{color:var(--tx3);font-size:12px}
+  .route .tag{margin-left:auto;font-size:10px;color:var(--tx2);border:1px solid var(--line2);
+    padding:3px 8px;border-radius:99px;letter-spacing:.06em}
+  .ctrl{display:flex;gap:8px;align-items:stretch}
+  .ctrl input[type=time]{flex:1;background:var(--panel);border:1px solid var(--line2);color:var(--tx);
+    font-size:22px;font-weight:700;padding:6px 12px;border-radius:12px;text-align:center;
+    font-variant-numeric:tabular-nums;min-width:0;color-scheme:dark}
+  .btn{background:var(--panel);border:1px solid var(--line2);color:var(--tx);padding:0 14px;
+    border-radius:12px;font-size:15px;cursor:pointer;display:flex;align-items:center;font-weight:600}
   .btn:active{background:var(--panel2)}
-  .note{font-size:11px;color:var(--tx2);line-height:1.6;margin:6px 0 14px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
-  .card.sel{border-color:var(--amber)}
-  .card .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px}
-  .strat{font-size:13px;font-weight:bold}
-  .seat{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid;white-space:nowrap}
-  .s0{color:#34d399;border-color:#34d399}.s1{color:#a3e635;border-color:#a3e635}
-  .s2{color:#facc15;border-color:#facc15}.s3{color:#f87171;border-color:#f87171}
-  .path{font-size:13px;line-height:1.9;color:var(--tx)}
-  .path b{font-variant-numeric:tabular-nums}
-  .path .st{color:var(--tx2)}
-  .meta{font-size:11px;color:var(--tx2);margin-top:4px;display:flex;gap:12px;align-items:baseline}
-  .meta .arr{color:var(--amber);font-weight:bold;font-size:13px}
-  #dia{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-top:16px;padding:8px 4px}
-  .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10px;color:var(--tx2);padding:6px 10px 8px}
-  .legend span{display:flex;align-items:center;gap:4px}
-  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px}
-  h2{font-size:13px;color:var(--tx2);margin:18px 0 8px;letter-spacing:.1em}
-  footer{font-size:10px;color:var(--tx2);margin-top:18px;line-height:1.7}
+  .btn.acc{color:#0b1020;background:var(--amber);border-color:var(--amber);font-weight:700}
+  .hint{font-size:10.5px;color:var(--tx3);margin-top:8px;letter-spacing:.02em}
+
+  main{padding:14px 14px 0}
+  h2{font-size:11px;color:var(--tx3);margin:10px 2px 10px;letter-spacing:.18em;font-weight:600}
+
+  /* ---- itinerary card ---- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:12px 14px 10px;margin-bottom:12px;cursor:pointer;
+    box-shadow:0 4px 16px rgba(0,0,0,.28)}
+  .card.sel{border-color:var(--amber);box-shadow:0 4px 20px rgba(255,180,84,.12)}
+  .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+  .b0{background:rgba(52,211,153,.16);color:#4ade9d}
+  .b1{background:rgba(163,230,53,.14);color:#b8e34c}
+  .b2{background:rgba(250,204,21,.14);color:#f5d34a}
+  .b3{background:rgba(248,113,113,.14);color:#f79090}
+  .strat{font-size:12px;color:var(--tx2);font-weight:600}
+  .count{margin-left:auto;font-size:12px;color:var(--amber);font-weight:700;white-space:nowrap}
+  .count small{font-weight:500;color:var(--tx2)}
+
+  /* vertical timeline */
+  .tl{display:grid;grid-template-columns:46px 14px 1fr;row-gap:0}
+  .tm{font-size:14px;font-weight:700;text-align:right;padding-right:8px;line-height:20px}
+  .tm.sub{color:var(--tx2);font-weight:500}
+  .nd{position:relative}
+  .nd i{position:absolute;left:50%;top:10px;transform:translate(-50%,-50%);width:9px;height:9px;
+    border-radius:50%;background:var(--bg);border:2.5px solid var(--tx2)}
+  .nd.start i{border-color:var(--amber);width:11px;height:11px}
+  .nd.goal i{background:var(--amber);border-color:var(--amber)}
+  .lbl{font-size:13.5px;line-height:20px;padding-left:6px}
+  .lbl small{color:var(--tx2);font-size:11px;margin-left:6px}
+  .lbl .chip{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;
+    margin-left:6px;vertical-align:1px;color:#0b1020}
+  .seg{grid-column:2;position:relative;min-height:26px}
+  .seg i{position:absolute;left:50%;top:0;bottom:0;transform:translateX(-50%);width:3.5px;border-radius:2px;background:var(--segc,#334)}
+  .seg.walk i{background:repeating-linear-gradient(180deg,var(--tx3) 0 3px,transparent 3px 7px);width:2.5px}
+  .segtxt{grid-column:3;font-size:11px;color:var(--tx2);padding-left:6px;display:flex;align-items:center;min-height:26px}
+  .segtxt b{color:var(--tx);font-weight:600}
+  .meta{display:flex;gap:14px;font-size:11px;color:var(--tx3);margin-top:9px;padding-top:8px;border-top:1px solid var(--line)}
+  .meta b{color:var(--tx2);font-weight:600}
+
+  /* ---- diagram ---- */
+  #diaWrap{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-top:4px;
+    padding:10px 6px 4px;box-shadow:0 4px 16px rgba(0,0,0,.28)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:10.5px;color:var(--tx2);padding:8px 10px 10px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend i{display:inline-block;width:16px;height:3.5px;border-radius:2px}
+  details{margin:16px 2px 0;font-size:11px;color:var(--tx2)}
+  details summary{cursor:pointer;color:var(--tx3);font-size:11px;letter-spacing:.05em}
+  details p{margin:8px 0 0;line-height:1.8}
+  .empty{background:var(--panel);border:1px dashed var(--line2);border-radius:16px;padding:22px;
+    text-align:center;color:var(--tx2);font-size:13px;line-height:1.8}
 </style>
 </head>
 <body>
-<h1>帰宅ナビ<span class="sub">新杉田 → 橋本｜平日夜・着席重視</span></h1>
-<div class="ctrl">
-  <input type="time" id="t" value="18:15">
-  <button class="btn" id="now">いま</button>
-</div>
-<div class="note">指定時刻に新杉田駅ホームに立っている前提で、「座って帰る」作戦順に候補を出します。◎=始発待機で着席ほぼ確実 / ○=始発だが並び時間短め / △=当駅始発だが列次第 / ×=着席困難。</div>
-<h2>候補（着席しやすさ優先順）</h2>
-<div id="cards"></div>
-<h2>ダイヤグラム（スジ）</h2>
-<div id="dia"></div>
-<div class="legend">
-  <span><i style="background:var(--c-isogo)"></i>磯子始発</span>
-  <span><i style="background:var(--c-saku)"></i>桜木町始発</span>
-  <span><i style="background:var(--c-hk)"></i>東神奈川始発</span>
-  <span><i style="background:var(--c-thru)"></i>大船方面直通</span>
-  <span><i style="background:var(--c-negishi)"></i>根岸線(京浜東北)</span>
-</div>
-<footer>データ: JR東日本公式時刻表 2026年9月版・平日（2026-09-01取得）。所要の目安: 新杉田→磯子3分/桜木町16分/東神奈川23分、東神奈川→橋本47分。八王子行きも橋本に停車します。ダイヤ改正(例年3月)後は要更新。遅延は反映しません。●印はその駅の始発（＝並べば座れる）。</footer>
+<header>
+  <div class="route">
+    <span class="stpill">新杉田</span><span class="arw">▶</span><span class="stpill">橋本</span>
+    <span class="tag">平日夜・着席重視</span>
+  </div>
+  <div class="ctrl">
+    <button class="btn num" id="m5">−5</button>
+    <input type="time" id="t" value="18:15">
+    <button class="btn num" id="p5">＋5</button>
+    <button class="btn acc" id="now">いま</button>
+  </div>
+  <div class="hint">この時刻に新杉田ホーム着の前提。◎=始発に並んで着席ほぼ確実 ○=始発だが並び短め △=列次第 ×=着席困難</div>
+</header>
+<main>
+  <h2>候補 — 着席しやすさ順</h2>
+  <div id="cards"></div>
+  <h2>ダイヤグラム</h2>
+  <div id="diaWrap">
+    <div id="dia"></div>
+    <div class="legend">
+      <span><i style="background:var(--c-isogo)"></i>磯子始発</span>
+      <span><i style="background:var(--c-saku)"></i>桜木町始発</span>
+      <span><i style="background:var(--c-hk)"></i>東神奈川始発</span>
+      <span><i style="background:var(--c-thru)"></i>大船方面直通</span>
+      <span><i style="background:#42506e"></i>根岸線</span>
+    </div>
+  </div>
+  <details>
+    <summary>データと前提について</summary>
+    <p>データ: JR東日本公式時刻表 2026年9月版・平日（2026-09-01取得）。所要の目安: 新杉田→磯子3分/桜木町16分/東神奈川23分、東神奈川→橋本47分。八王子行きも橋本に停車します。●印はその駅の始発（＝並べば座れる）。ダイヤ改正（例年3月）後は要更新。遅延・運休は反映しません。</p>
+  </details>
+</main>
 <script>
 // ---- data (JR東日本公式 2026-09版 平日) ----
 var NB = ["17:01","17:08","17:20","17:29","17:41","17:47","17:58","18:06","18:14","18:23","18:34","18:40","18:49","18:59","19:06","19:14","19:18","19:25","19:34","19:40","19:48","19:56","20:00","20:08","20:20","20:29","20:37","20:50","21:01","21:05","21:16","21:20","21:29","21:42","21:48","21:55","22:05","22:15","22:25","22:35","22:48","23:00"];
@@ -137,45 +198,72 @@ function plan(T){
   return arr2.slice(0,7);
 }
 // ---- UI ----
-var SN={isogo:"磯子始発に乗り換え",saku:"桜木町始発に乗り換え",hk:"東神奈川で並び直し",thru:"新杉田から直通",unk:"直通"};
-var SC={isogo:"var(--c-isogo)",saku:"var(--c-saku)",hk:"var(--c-hk)",thru:"var(--c-thru)",unk:"var(--c-thru)"};
+var SN={isogo:"磯子始発ねらい",saku:"桜木町始発ねらい",hk:"東神奈川で並び直し",thru:"新杉田から直通",unk:"直通"};
 var SEAT=["◎ 着席ほぼ確実","○ 始発・並び短め","△ 当駅始発・列次第","× 着席困難"];
+var NEG='<span class="chip" style="background:var(--jr-neg)">根岸線</span>';
+var YOK='<span class="chip" style="background:var(--jr-yok)">横浜線</span>';
 var sel=-1,cur=[];
+function esc(s){return s;}
+function cardHTML(o,i,T){
+  var h='<div class="chead"><span class="badge b'+o.seat+'">'+SEAT[o.seat]+'</span>'
+    +'<span class="strat">'+SN[o.origin]+'</span>';
+  var lead=o.acc-T;
+  h+='<span class="count num">'+(lead<=0?'まもなく発車':'あと'+lead+'分')+'<small>で出発</small></span></div>';
+  h+='<div class="tl">';
+  function row(time,cls,label){h+='<span class="tm num'+(cls.indexOf('sub')>=0?' sub':'')+'">'+time+'</span>'
+    +'<span class="nd '+cls+'"><i></i></span><div class="lbl">'+label+'</div>';}
+  function seg(color,walk,txt){h+='<div class="seg'+(walk?' walk':'')+'" style="--segc:'+color+'"><i></i></div>'
+    +'<div class="segtxt">'+txt+'</div>';}
+  if(o.origin==="thru"){
+    row(hh(o.od),'start','新杉田 <b>発</b>'+YOK+'<small>'+o.dest+'行き・大船方面から直通</small>');
+    seg('var(--jr-yok)',false,'乗換なし '+(o.arr-o.od)+'分 <b>ただし着席は困難</b>');
+    row(hh(o.arr),'goal','橋本 <b>着</b>');
+  }else{
+    var ofs=o.origin==="isogo"?OFF.isogo:o.origin==="saku"?OFF.saku:OFF.hk;
+    row(hh(o.acc),'start','新杉田 <b>発</b>'+NEG+'<small>横浜方面 各駅停車</small>');
+    seg('var(--jr-neg)',false,(o.origin==="isogo"?'1駅':'')+' '+ofs+'分');
+    row(hh(o.acc+ofs),'','' +o.boardAt+' <b>着</b>');
+    seg('transparent',true,'ホームで<b>待ち'+o.wait+'分</b> — 列に並んで席を確保');
+    row(hh(o.od),'start',o.boardAt+' <b>発</b>'+YOK+'<small>'+o.dest+'行き'+(o.origin==="hk"?'（当駅始発●）':'（始発●）')+'</small>');
+    seg('var(--jr-yok)',false,(o.arr-o.od)+'分・座って寝てOK');
+    row(hh(o.arr),'goal','橋本 <b>着</b>');
+  }
+  h+='</div>';
+  h+='<div class="meta"><span>所要 <b class="num">'+(o.arr-T)+'分</b></span><span>乗換 <b>'+(o.origin==="thru"?"0回":"1回")+'</b></span>'
+    +'<span>橋本 <b class="num">'+hh(o.arr)+'</b> 着</span></div>';
+  return h;
+}
 function render(){
   var T=mm(document.getElementById("t").value);cur=plan(T);
   var el=document.getElementById("cards");el.innerHTML="";
-  if(!cur.length)el.innerHTML='<div class="note">この時間帯の候補が見つかりません（データは17:00〜23:59）。</div>';
+  if(!cur.length)el.innerHTML='<div class="empty">この時間帯の候補が見つかりません。<br>データ範囲は 17:00〜23:59 です。</div>';
   cur.forEach(function(o,i){
     var d=document.createElement("div");d.className="card"+(i===sel?" sel":"");
-    var via='<span class="st">新杉田</span> <b>'+hh(o.acc)+'</b>';
-    if(o.origin!=="thru")via+=' → <span class="st">'+o.boardAt+'</span> <b>'+hh(o.acc+(o.origin==="isogo"?OFF.isogo:o.origin==="saku"?OFF.saku:OFF.hk))+'</b> <span class="st">(待'+o.wait+'分・並ぶ)</span>';
-    via+=' → <b>'+hh(o.od)+'</b> <span class="st">発 '+o.dest+'行き●</span>';
-    if(o.origin==="thru")via='<span class="st">新杉田</span> <b>'+hh(o.od)+'</b> <span class="st">発 '+o.dest+'行き(大船方面から直通)</span>';
-    d.innerHTML='<div class="top"><span class="strat" style="color:'+SC[o.origin]+'">'+SN[o.origin]+'</span>'
-      +'<span class="seat s'+o.seat+'">'+SEAT[o.seat]+'</span></div>'
-      +'<div class="path">'+via+'</div>'
-      +'<div class="meta"><span class="arr">橋本 '+hh(o.arr)+'着</span><span>所要'+(o.arr-T)+'分</span><span>乗換'+(o.origin==="thru"?0:1)+'回</span></div>';
+    d.innerHTML=cardHTML(o,i,T);
     d.onclick=function(){sel=(sel===i?-1:i);render();};
     el.appendChild(d);
   });
   diagram(T);
 }
 function diagram(T){
-  var w=612,h=560,L=74,R=8,TOP=18,B=24,t0=T-4,t1=T+96;
+  var w=612,h=560,L=76,R=10,TOP=20,B=28,t0=T-4,t1=T+96;
   function X(t){return L+(w-L-R)*(t-t0)/(t1-t0);}
   function Y(m){return TOP+(h-TOP-B)*m/70;}
   var rows=[["新杉田",0],["磯子",3],["桜木町",16],["横浜",19],["東神奈川",23],["新横浜",32],["長津田",47],["町田",54],["橋本",70]];
-  var s='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%">',i,t;
-  for(i=0;i<rows.length;i++){var y=Y(rows[i][1]);
-    s+='<line x1="'+L+'" y1="'+y+'" x2="'+(w-R)+'" y2="'+y+'" stroke="#2a3550" stroke-width="0.6"/>';
-    s+='<text x="'+(L-6)+'" y="'+(y+3)+'" fill="#8b97ad" font-size="13" text-anchor="end">'+rows[i][0]+'</text>';}
+  var s='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;display:block">',i,t;
+  s+='<rect x="'+L+'" y="'+Y(0)+'" width="'+(w-L-R)+'" height="'+(Y(23)-Y(0))+'" fill="#00b2e5" opacity="0.045"/>';
+  s+='<rect x="'+L+'" y="'+Y(23)+'" width="'+(w-L-R)+'" height="'+(Y(70)-Y(23))+'" fill="#9ee022" opacity="0.04"/>';
   for(t=Math.ceil(t0/10)*10;t<=t1;t+=10){
-    s+='<line x1="'+X(t)+'" y1="'+TOP+'" x2="'+X(t)+'" y2="'+(h-B)+'" stroke="#2a3550" stroke-width="0.6"/>';
-    s+='<text x="'+X(t)+'" y="'+(h-8)+'" fill="#8b97ad" font-size="12" text-anchor="middle">'+hh(t)+'</text>';}
-  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(h-B)+'" stroke="#ffb454" stroke-width="1" stroke-dasharray="3 3"/>';
+    s+='<line x1="'+X(t)+'" y1="'+TOP+'" x2="'+X(t)+'" y2="'+(h-B)+'" stroke="#27324f" stroke-width="0.7"/>';
+    s+='<text x="'+X(t)+'" y="'+(h-10)+'" fill="#93a0ba" font-size="12" text-anchor="middle" font-weight="600">'+hh(t)+'</text>';}
+  for(i=0;i<rows.length;i++){var y=Y(rows[i][1]);
+    s+='<line x1="'+L+'" y1="'+y+'" x2="'+(w-R)+'" y2="'+y+'" stroke="#27324f" stroke-width="0.7"/>';
+    s+='<text x="'+(L-8)+'" y="'+(y+4)+'" fill="#c7d0e2" font-size="13" text-anchor="end" font-weight="600">'+rows[i][0]+'</text>';}
+  s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(h-B)+'" stroke="#ffb454" stroke-width="1.2" stroke-dasharray="4 3"/>';
+  s+='<text x="'+(X(T)+4)+'" y="'+(TOP+11)+'" fill="#ffb454" font-size="11" font-weight="700">'+hh(T)+'</text>';
   for(i=0;i<NB.length;i++){var d=mm(NB[i]);if(d<t0-25||d>t1)continue;
-    s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#475569" stroke-width="1"/>';}
-  var COL={isogo:"#38bdf8",saku:"#a78bfa",hk:"#34d399",thru:"#fb923c",unk:"#fb923c"};
+    s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#42506e" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"/>';}
+  var COL={isogo:"#38bdf8",saku:"#b195fa",hk:"#34d399",thru:"#fb923c",unk:"#fb923c"};
   for(i=0;i<YL.length;i++){
     var hk=mm(YL[i][0]),dest=YL[i][1],origin=YL[i][2],od=YL[i][3];
     if(dest==="町田")continue;
@@ -188,14 +276,19 @@ function diagram(T){
     var st;for(st in YSTOPS)pts.push([hk+YSTOPS[st],23+YSTOPS[st]]);
     var isSel=sel>=0&&cur[sel]&&cur[sel].hkM===hk&&COL[cur[sel].origin]===col;
     var ps="";for(var q=0;q<pts.length;q++)ps+=X(pts[q][0])+","+Y(pts[q][1])+" ";
-    s+='<polyline points="'+ps+'" fill="none" stroke="'+col+'" stroke-width="'+(isSel?3:1.3)+'" opacity="'+(sel>=0&&!isSel?0.3:0.95)+'"/>';
-    if(origin!=="hk"&&origin!=="unk")s+='<circle cx="'+X(pts[0][0])+'" cy="'+Y(pts[0][1])+'" r="2.6" fill="'+col+'"/>';
-    if(origin==="hk")s+='<circle cx="'+X(hk)+'" cy="'+Y(23)+'" r="2.6" fill="'+col+'"/>';
+    s+='<polyline points="'+ps+'" fill="none" stroke="'+col+'" stroke-width="'+(isSel?3.4:1.6)+'" opacity="'+(sel>=0&&!isSel?0.25:0.95)+'" stroke-linejoin="round" stroke-linecap="round"/>';
+    if(origin!=="unk"){var px=origin==="hk"?X(hk):X(pts[0][0]),py=origin==="hk"?Y(23):Y(pts[0][1]);
+      s+='<circle cx="'+px+'" cy="'+py+'" r="3" fill="'+col+'"'+(sel>=0&&!isSel?' opacity="0.25"':'')+'/>';}
   }
   s+="</svg>";
   document.getElementById("dia").innerHTML=s;
 }
+function shift(d){var e=document.getElementById("t"),v=mm(e.value)+d;
+  if(v<0)v=0;if(v>1439)v=1439;
+  e.value=hh(v);sel=-1;render();}
 document.getElementById("t").addEventListener("change",function(){sel=-1;render();});
+document.getElementById("m5").onclick=function(){shift(-5);};
+document.getElementById("p5").onclick=function(){shift(5);};
 document.getElementById("now").onclick=function(){
   var n=new Date(Date.now()+9*3600*1000);
   document.getElementById("t").value=(n.getUTCHours()<10?"0":"")+n.getUTCHours()+":"+(n.getUTCMinutes()<10?"0":"")+n.getUTCMinutes();
