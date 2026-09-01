@@ -1,0 +1,13 @@
+{
+  "name": "帰宅ナビ 新杉田→橋本",
+  "short_name": "帰宅ナビ",
+  "start_url": "./tsukin-navi.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#0f8a4d",
+  "icons": [
+    {"src": "tsukin-navi-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "tsukin-navi-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

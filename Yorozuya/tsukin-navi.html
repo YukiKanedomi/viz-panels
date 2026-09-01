@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>帰宅ナビ 新杉田→橋本</title>
+<meta name="theme-color" content="#0f8a4d">
+<link rel="manifest" href="tsukin-navi.webmanifest">
+<link rel="apple-touch-icon" href="tsukin-navi-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="帰宅ナビ">
 <style>
   :root{
     --bg:#f4f6f9; --panel:#ffffff; --line:#e3e9f2; --line2:#cbd6e4;
@@ -74,6 +80,19 @@
   .b3{background:#fde8e8;color:#c04343}
   .alt{font-size:12px;color:var(--tx2);margin-top:8px}
   .alt b{font-weight:700;color:var(--tx)}
+  /* 最終便リミット */
+  #limits{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:6px 14px;box-shadow:0 2px 10px rgba(22,35,60,.06);margin-bottom:12px}
+  .lim{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:13px;border-bottom:1px solid var(--line)}
+  .lim:last-child{border-bottom:none}
+  .lim .ldot{width:9px;height:9px;border-radius:50%;flex:none}
+  .lim .lname{font-weight:700;min-width:96px}
+  .lim .ltime{color:var(--tx2)}
+  .lim .ltime b{color:var(--tx);font-weight:800}
+  .lim .lleft{margin-left:auto;font-size:12px;font-weight:800;color:var(--tx2);white-space:nowrap}
+  .lim.warn .lleft{color:var(--alert)}
+  .lim.gone{opacity:.45}
+  .lim.gone .lleft{color:var(--tx3)}
   .meta{display:flex;gap:14px;font-size:12px;color:var(--tx2);margin-top:9px;padding-top:9px;
     border-top:1px solid var(--line);align-items:center}
   .meta .cv{margin-left:auto;color:var(--tx3);font-size:11px}
@@ -173,6 +192,8 @@
   <section id="viewCards">
     <h2>座って帰る候補</h2>
     <div id="cards"></div>
+    <h2>各作戦のリミット — 座れる最終便</h2>
+    <div id="limits"></div>
   </section>
   <section id="viewDia" style="display:none">
     <h2>ダイヤグラム 17:00−24:00</h2>
@@ -349,10 +370,37 @@ function render(){
     d.onclick=function(){d.classList.toggle("open");};
     el.appendChild(d);
   });
+  renderLimits(T);
   var mb=document.getElementById("miniBox");
   if(mb.classList.contains("open"))miniDia(T,T===lastMiniT);
   lastMiniT=T;
   if(document.getElementById("viewDia").style.display!=="none")diagram(T,true);
+}
+// 各作戦の「座れる最終便」= その出自の最終列車に、始発発車1分前までに着ける最後の新杉田発
+function renderLimits(T){
+  var defs=[["isogo","磯子始発",OFF.isogo],["saku","桜木町始発",OFF.saku],["hk","東神奈川始発",OFF.hk]];
+  var h="";
+  for(var d=0;d<defs.length;d++){
+    var org=defs[d][0],name=defs[d][1],ofs=defs[d][2],last=null;
+    for(var i=0;i<YL.length;i++){
+      if(YL[i][2]!==org||YL[i][1]==="町田")continue;
+      var odM=org==="hk"?mm(YL[i][0]):mm(YL[i][3]);
+      var dep=null;
+      for(var j=0;j<NB.length;j++){var n=mm(NB[j]);
+        if(n+ofs<=odM-1&&(dep===null||n>dep))dep=n;}
+      if(dep!==null&&(last===null||dep>last.dep))last={dep:dep,od:odM,arr:mm(YL[i][0])+HASHIMOTO};
+    }
+    if(!last)continue;
+    var left=last.dep-T,cls="",ltxt="";
+    if(left<0){cls=" gone";ltxt="本日終了";}
+    else if(left<=15){cls=" warn";ltxt="あと"+left+"分!";}
+    else ltxt=left>=60?("あと"+Math.floor(left/60)+"時間"+(left%60)+"分"):("あと"+left+"分");
+    h+='<div class="lim'+cls+'"><span class="ldot" style="background:'+COL[org]+'"></span>'
+      +'<span class="lname">'+name+'</span>'
+      +'<span class="ltime num">新杉田 <b>'+hh(last.dep)+'</b> 発まで（橋本 '+hh(last.arr)+' 着）</span>'
+      +'<span class="lleft num">'+ltxt+'</span></div>';
+  }
+  document.getElementById("limits").innerHTML=h;
 }
 // 列車のスジ座標（分,駅位置）列
 function trainPath(idx){
@@ -552,6 +600,8 @@ attachPinch("diaScroll",dzoom,function(){dzoom(DZ<16?1:-1);});
   if(n.getUTCFullYear()>2027||(n.getUTCFullYear()===2027&&n.getUTCMonth()>=2))msgs.push("ダイヤ改正時期を過ぎている可能性があります（データ2026年9月版）。");
   if(msgs.length){b.textContent=msgs.join(" ");b.style.display="";}
 })();
+if("serviceWorker" in navigator && location.protocol==="https:")
+  navigator.serviceWorker.register("tsukin-navi-sw.js").catch(function(){});
 setNow();nowMode=true;
 var _h=new Date(Date.now()+9*3600*1000).getUTCHours();
 if(_h<16||_h>=24){document.getElementById("t").value="18:15";nowMode=false;}
