@@ -229,7 +229,7 @@
 </nav>
 <script>
 // ---- data (JR東日本公式 2026-09版 平日) ----
-var NB = ["17:01","17:08","17:20","17:29","17:41","17:47","17:58","18:06","18:14","18:23","18:34","18:40","18:49","18:59","19:06","19:14","19:18","19:25","19:34","19:40","19:48","19:56","20:00","20:08","20:20","20:29","20:37","20:50","21:01","21:05","21:16","21:20","21:29","21:42","21:48","21:55","22:05","22:15","22:25","22:35","22:48","23:00"];
+var NB = [["17:01","大宮"],["17:08","大宮"],["17:20","南浦和"],["17:29","大宮"],["17:41","大宮"],["17:47","大宮"],["17:58","南浦和"],["18:06","南浦和"],["18:14","大宮"],["18:23","大宮"],["18:34","大宮"],["18:40","南浦和"],["18:49","大宮"],["18:59","南浦和"],["19:06","大宮"],["19:14","南浦和"],["19:18","大宮"],["19:25","大宮"],["19:34","大宮"],["19:40","大宮"],["19:48","大宮"],["19:56","大宮"],["20:00","南浦和"],["20:08","南浦和"],["20:20","大宮"],["20:29","大宮"],["20:37","大宮"],["20:50","南浦和"],["21:01","大宮"],["21:05","八王子"],["21:16","大宮"],["21:20","南浦和"],["21:29","大宮"],["21:42","大宮"],["21:48","八王子"],["21:55","大宮"],["22:05","大宮"],["22:15","大宮"],["22:25","大宮"],["22:35","大宮"],["22:48","大宮"],["23:00","大宮"]];
 // 横浜線列車: [東神奈川発, 行き先, 出自, 始発駅発時刻]  出自: isogo/saku/hk/thru/unk
 var YL = [
  ["17:04","八王子","unk",null],["17:12","八王子","hk",null],["17:20","八王子","isogo","17:01"],
@@ -260,7 +260,7 @@ function hh(m){var h=Math.floor(m/60)%24,x=m%60;return (h<10?"0":"")+h+":"+(x<10
 // ---- itinerary engine ----
 function latestNB(T,limit){
   var best=null;
-  for(var i=0;i<NB.length;i++){var d=mm(NB[i]);
+  for(var i=0;i<NB.length;i++){var d=mm(NB[i][0]);
     if(d>=T&&d<=limit&&(best===null||d>best))best=d;}
   return best;
 }
@@ -386,7 +386,7 @@ function renderLimits(T){
       if(YL[i][2]!==org||YL[i][1]==="町田")continue;
       var odM=org==="hk"?mm(YL[i][0]):mm(YL[i][3]);
       var dep=null;
-      for(var j=0;j<NB.length;j++){var n=mm(NB[j]);
+      for(var j=0;j<NB.length;j++){var n=mm(NB[j][0]);
         if(n+ofs<=odM-1&&(dep===null||n>dep))dep=n;}
       if(dep!==null&&(last===null||dep>last.dep))last={dep:dep,od:odM,arr:mm(YL[i][0])+HASHIMOTO};
     }
@@ -429,7 +429,7 @@ function miniDia(T,keepScroll){
     s+='<text x="'+X(t)+'" y="'+(H-5)+'" fill="'+(hr?'#526078':'#93a1b7')+'" font-size="11" text-anchor="middle" font-weight="'+(hr?'700':'500')+'">'+hh(t)+'</text>';}
   s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(H-B)+'" stroke="#e05d00" stroke-width="1.3" stroke-dasharray="3 3"/>';
   s+='<text x="'+(X(T)+3)+'" y="'+(TOP+10)+'" fill="#e05d00" font-size="10" font-weight="700">'+hh(T)+'</text>';
-  for(i=0;i<NB.length;i++){var d=mm(NB[i]);
+  for(i=0;i<NB.length;i++){var d=mm(NB[i][0]);
     s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#d4dce8" stroke-width="1" stroke-linejoin="round"/>';}
   for(i=0;i<YL.length;i++){
     if(YL[i][1]==="町田")continue;
@@ -459,7 +459,7 @@ function mzoom(dir){
   miniDia(mm(document.getElementById("t").value),false);
   sc.scrollLeft=Math.max(0,12+(t-17*60)*MZ-sc.clientWidth/2);
 }
-var DZ=8, DZLEVELS=[4,8,16], dsel=-1;
+var DZ=8, DZLEVELS=[4,8,16], dsel=-1, dselKind=null;
 var ORIGIN_NAME={isogo:"磯子始発",saku:"桜木町始発",hk:"東神奈川始発",thru:"大船方面から直通",unk:"根岸線方面から直通"};
 function diagram(T,keepScroll){
   var pxm=DZ,t0=17*60,t1=24*60,PAD=14,H=470,TOP=10,B=22;
@@ -479,14 +479,22 @@ function diagram(T,keepScroll){
     s+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="#e3e9f2" stroke-width="0.8"/>';}
   s+='<line x1="'+X(T)+'" y1="'+TOP+'" x2="'+X(T)+'" y2="'+(H-B)+'" stroke="#e05d00" stroke-width="1.3" stroke-dasharray="4 3"/>';
   s+='<text x="'+(X(T)+4)+'" y="'+(TOP+11)+'" fill="#e05d00" font-size="11" font-weight="700">'+hh(T)+'</text>';
-  for(i=0;i<NB.length;i++){var d=mm(NB[i]);
-    s+='<polyline points="'+X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23)+'" fill="none" stroke="#d4dce8" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>';}
   var hits="";
+  for(i=0;i<NB.length;i++){var d=mm(NB[i][0]);
+    var isSelN=(dselKind==="nb"&&dsel===i);
+    var dimN=(dsel>=0&&!isSelN);
+    var psn=X(d)+','+Y(0)+' '+X(d+3)+','+Y(3)+' '+X(d+16)+','+Y(16)+' '+X(d+19)+','+Y(19)+' '+X(d+23)+','+Y(23);
+    s+='<polyline points="'+psn+'" fill="none" stroke="'+(isSelN?'#475569':'#c7d2e0')+'" stroke-width="'+(isSelN?3:1.1)+'" opacity="'+(dimN?0.25:1)+'" stroke-linejoin="round" stroke-linecap="round"/>';
+    if(pxm>=8){
+      s+='<circle cx="'+X(d)+'" cy="'+Y(0)+'" r="2.4" fill="'+(isSelN?'#475569':'#8895ab')+'"'+(dimN?' opacity="0.3"':'')+'/>';
+      s+='<text x="'+(X(d)+3)+'" y="'+(Y(0)+13)+'" fill="'+(isSelN?'#475569':'#8895ab')+'" font-size="9.5" font-weight="600"'+(dimN?' opacity="0.3"':'')+'>'+hh(d)+'</text>';}
+    hits+='<polyline points="'+psn+'" fill="none" stroke="rgba(0,0,0,0)" stroke-width="12" data-nb="'+i+'" style="pointer-events:stroke;cursor:pointer" stroke-linejoin="round"/>';
+  }
   for(i=0;i<YL.length;i++){
     if(YL[i][1]==="町田")continue;
     var hk=mm(YL[i][0]),origin=YL[i][2],col=COL[origin],pts=trainPath(i);
     var isCand=false;for(var j=0;j<cur.length;j++)if(cur[j].hkM===hk&&cur[j].origin===origin)isCand=true;
-    var isSel=(dsel===i);
+    var isSel=(dselKind==="yl"&&dsel===i);
     var dim=(dsel>=0&&!isSel);
     var ps="";for(var q=0;q<pts.length;q++)ps+=X(pts[q][0])+","+Y(pts[q][1])+" ";
     s+='<polyline points="'+ps+'" fill="none" stroke="'+col+'" stroke-width="'+(isSel?3.6:isCand?2.2:1.4)+'" opacity="'+(dim?0.18:isCand?0.95:0.55)+'" stroke-linejoin="round" stroke-linecap="round"/>';
@@ -504,9 +512,37 @@ function diagram(T,keepScroll){
   else sc.scrollLeft=Math.max(0,X(T-10)-PAD);
   trainDetail();
 }
+// 新杉田発depの根岸線から、各乗換先の「次の始発」への接続を計算
+function connInfo(dep){
+  var defs=[["isogo","磯子",OFF.isogo],["saku","桜木町",OFF.saku],["hk","東神奈川",OFF.hk]],lines=[];
+  for(var d=0;d<defs.length;d++){
+    var org=defs[d][0],nm=defs[d][1],ofs=defs[d][2],best=null;
+    for(var i=0;i<YL.length;i++){
+      if(YL[i][2]!==org||YL[i][1]==="町田")continue;
+      var odM=org==="hk"?mm(YL[i][0]):mm(YL[i][3]);
+      if(odM>=dep+ofs+1&&(best===null||odM<best.od))best={od:odM,arr:mm(YL[i][0])+HASHIMOTO};
+    }
+    if(best&&best.od-(dep+ofs)<=45)lines.push(nm+' <b class="num">'+hh(best.od)+'発</b>（待ち'+(best.od-(dep+ofs))+'分・橋本'+hh(best.arr)+'着）');
+  }
+  return lines;
+}
 function trainDetail(){
   var el=document.getElementById("trainDetail");
   if(dsel<0){el.innerHTML="";return;}
+  if(dselKind==="nb"){ // 根岸線（グレーのスジ）の詳細
+    var dep=mm(NB[dsel][0]),dst=NB[dsel][1];
+    var h2='<div class="tdcard"><div class="tdhead"><span class="dot" style="background:#8895ab"></span>'
+      +'<b>根岸線・京浜東北線 '+dst+'行き</b>'
+      +'<span class="badge b1">新杉田 '+hh(dep)+'発</span>'
+      +'<button class="tdx" id="tdClose">×</button></div><div class="tdstops">';
+    var st2=[["新杉田",dep],["磯子",dep+3],["桜木町",dep+16],["横浜",dep+19],["東神奈川",dep+23]];
+    for(var q=0;q<st2.length;q++)
+      h2+='<span class="stp'+(q===0?' org':'')+'"><small>'+st2[q][0]+'</small><b class="num">'+hh(st2[q][1])+'</b></span>';
+    h2+='</div>';
+    var cn=connInfo(dep);
+    h2+='<div class="tdnote">この電車からの始発接続:<br>'+(cn.length?cn.join('<br>'):'この後の始発接続はありません')+'</div></div>';
+    el.innerHTML=h2;return;
+  }
   var hk=mm(YL[dsel][0]),dest=YL[dsel][1],origin=YL[dsel][2],od=YL[dsel][3],col=COL[origin];
   var stops=[];
   if(origin==="isogo")stops=[["磯子",mm(od)],["桜木町",mm(od)+13],["横浜",mm(od)+16]];
@@ -525,7 +561,18 @@ function trainDetail(){
   if(match)h+='<div class="tdnote">候補'+SEAT[match.seat].charAt(0)+' : 新杉田 <b class="num">'+hh(match.acc)+'</b> 発の根岸線に乗り、'
     +(match.origin==="thru"?'そのまま直通。':match.boardAt+'で<b>待ち'+match.wait+'分</b>並んで乗車。')
     +'橋本 <b class="num">'+hh(match.arr)+'</b> 着。</div>';
-  else h+='<div class="tdnote">この列車は現在の候補には入っていません（間に合わないか、より良い候補があります）。</div>';
+  else{
+    // 候補外でも「新杉田を何時に出れば乗れるか」を示す
+    if(origin==="thru")h+='<div class="tdnote">新杉田 <b class="num">'+hh(mm(od))+'</b> 発（この列車自体に乗車・着席は困難）。</div>';
+    else{
+      var ofs2=origin==="isogo"?OFF.isogo:origin==="saku"?OFF.saku:OFF.hk;
+      var odM2=origin==="hk"?hk:mm(od);
+      var req=latestNB(0,odM2-1-ofs2);
+      if(req!==null)h+='<div class="tdnote">乗るなら新杉田 <b class="num">'+hh(req)+'</b> 発の根岸線 → '
+        +(origin==="hk"?"東神奈川":origin==="isogo"?"磯子":"桜木町")+'で待ち'+(odM2-(req+ofs2))+'分。橋本 <b class="num">'+hh(hk+HASHIMOTO)+'</b> 着。</div>';
+      else h+='<div class="tdnote">接続できる根岸線がありません。</div>';
+    }
+  }
   h+='</div>';
   el.innerHTML=h;
 }
@@ -551,7 +598,7 @@ function showTab(dia){
   document.getElementById("miniBox").style.display=dia?"none":"";
   document.getElementById("tabC").className=dia?"":"on";
   document.getElementById("tabD").className=dia?"on":"";
-  if(!dia){dsel=-1;trainDetail();}
+  if(!dia){dsel=-1;dselKind=null;trainDetail();}
   window.scrollTo(0,0);
   if(dia)diagram(mm(document.getElementById("t").value),false);
 }
@@ -572,11 +619,14 @@ document.getElementById("miniToggle").onclick=function(){
   if(mb.classList.contains("open"))miniDia(mm(document.getElementById("t").value),false);
 };
 document.getElementById("dia").addEventListener("click",function(e){
-  var el=e.target.closest?e.target.closest("[data-ti]"):null;
-  if(el){dsel=+el.getAttribute("data-ti");diagram(mm(document.getElementById("t").value),true);}
+  var el=e.target.closest?e.target.closest("[data-ti],[data-nb]"):null;
+  if(!el)return;
+  if(el.hasAttribute("data-nb")){dsel=+el.getAttribute("data-nb");dselKind="nb";}
+  else{dsel=+el.getAttribute("data-ti");dselKind="yl";}
+  diagram(mm(document.getElementById("t").value),true);
 });
 document.getElementById("trainDetail").addEventListener("click",function(e){
-  if(e.target.id==="tdClose"){dsel=-1;diagram(mm(document.getElementById("t").value),true);}
+  if(e.target.id==="tdClose"){dsel=-1;dselKind=null;diagram(mm(document.getElementById("t").value),true);}
 });
 function attachPinch(id,zoomFn,dblFn){
   var sc=document.getElementById(id),d0=0;
