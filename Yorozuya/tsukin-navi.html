@@ -213,7 +213,7 @@
   </section>
   <details>
     <summary>データと前提について</summary>
-    <p>データ: JR東日本公式時刻表 2026年9月版・平日（2026-09-01取得）。所要の目安: 新杉田→磯子3分/桜木町16分/東神奈川23分、東神奈川→橋本47分。八王子行きも橋本に停車します。●印はその駅の始発（＝並べば座れる）。着席評価は並べる時間からの推定で、混雑・遅延・イベントは反映しません。ダイヤ改正（例年3月）後は要更新。</p>
+    <p>データ: JR東日本公式時刻表 2026年9月版・平日（2026-09-01取得）。所要の目安: 新杉田→磯子3分/桜木町16分/東神奈川23分、東神奈川→橋本47分。八王子行きも橋本に停車します。●印はその駅の始発（＝並べば座れる）。着席評価は並べる時間からの推定（直通◎は利用者の経験則）で、混雑・遅延・イベントは反映しません。ダイヤ改正（例年3月）後は要更新。</p>
   </details>
 </main>
 <div id="trainDetail"></div>
@@ -268,7 +268,7 @@ function latestNB(T,limit){
     if(d>=T&&d<=limit&&(best===null||d>best))best=d;}
   return best;
 }
-var PRI={isogo:0,saku:0,hk:1,thru:2,unk:2}; // 乗換後に長く座れる順（磯子・桜木町 > 東神奈川 > 直通）
+var PRI={thru:0,isogo:0,saku:0,hk:1,unk:2}; // 直通=経験上ほぼ座れる(利用者実測)・磯子/桜木町 > 東神奈川
 function plan(T){
   var out=[];
   for(var i=0;i<YL.length;i++){
@@ -293,9 +293,9 @@ function plan(T){
       o={origin:origin,dest:dest,hkM:hk,arr:arr,od:hk,acc:acc2,wait:w2,
          seat:tight2?2:1,boardAt:"東神奈川"};
     }else if(origin==="thru"){
-      var dep=hk-OFF.hk;
+      var dep=mm(od);  // 実測の新杉田発時刻（東神奈川発-23分の推定だと21:48発が21:47になる）
       if(dep<T)continue;
-      o={origin:origin,dest:dest,hkM:hk,arr:arr,od:dep,acc:dep,wait:0,seat:3,boardAt:"新杉田"};
+      o={origin:origin,dest:dest,hkM:hk,arr:arr,od:dep,acc:dep,wait:0,seat:0,boardAt:"新杉田"};
     }
     if(o)out.push(o);
   }
@@ -335,9 +335,10 @@ function cardHTML(o,i,T){
     +'<span class="ar">→</span><span class="arr num">'+hh(o.arr)+'</span><span class="u">橋本着</span>'
     +'<span class="cd num'+(lead<=3?' soon':'')+'">'+(lead<=0?'まもなく':'あと'+lead+'分')+'</span></div>';
   var subj=o.origin==="thru"
-    ?'乗換なし直通（<b>着席は困難</b>）'
+    ?'乗換なし・新杉田から座って直行'
     :o.boardAt+'で <b>'+hh(o.od)+'発'+(o.origin==="hk"?'当駅始発':'始発')+'</b> に乗換・待ち'+o.wait+'分';
-  h+='<div class="sub">'+subj+'<span class="badge b'+o.seat+'">'+SEAT[o.seat]+'</span></div>';
+  var btxt=o.origin==="thru"?'◎ 経験上ほぼ座れる':SEAT[o.seat];
+  h+='<div class="sub">'+subj+'<span class="badge b'+o.seat+'">'+btxt+'</span></div>';
   // 展開時タイムライン
   h+='<div class="tlwrap"><div class="tl">';
   function row(time,cls,label){h+='<span class="tm num">'+time+'</span>'
@@ -346,7 +347,7 @@ function cardHTML(o,i,T){
     +'<div class="segtxt">'+txt+'</div>';}
   if(o.origin==="thru"){
     row(hh(o.od),'start','新杉田 <b>発</b>'+YOK+'<small>'+o.dest+'行き</small>');
-    seg('var(--jr-yok)',false,(o.arr-o.od)+'分 立ち席前提');
+    seg('var(--jr-yok)',false,(o.arr-o.od)+'分・座って直行');
     row(hh(o.arr),'goal','橋本 <b>着</b>');
   }else{
     var ofs=o.origin==="isogo"?OFF.isogo:o.origin==="saku"?OFF.saku:OFF.hk;
@@ -385,16 +386,18 @@ function render(){
 }
 // 各作戦の「座れる最終便」= その出自の最終列車に、始発発車1分前までに着ける最後の新杉田発
 function renderLimits(T){
-  var defs=[["isogo","磯子始発",OFF.isogo],["saku","桜木町始発",OFF.saku],["hk","東神奈川始発",OFF.hk]];
+  var defs=[["thru","直通そのまま",0],["isogo","磯子始発",OFF.isogo],["saku","桜木町始発",OFF.saku],["hk","東神奈川始発",OFF.hk]];
   var h="";
   for(var d=0;d<defs.length;d++){
     var org=defs[d][0],name=defs[d][1],ofs=defs[d][2],last=null;
     for(var i=0;i<YL.length;i++){
       if(YL[i][2]!==org||YL[i][1]==="町田")continue;
       var odM=org==="hk"?mm(YL[i][0]):mm(YL[i][3]);
-      var dep=null;
-      for(var j=0;j<NB.length;j++){var n=mm(NB[j][0]);
-        if(n+ofs<=odM-1&&(dep===null||n>dep))dep=n;}
+      var dep;
+      if(org==="thru")dep=odM;
+      else{dep=null;
+        for(var j=0;j<NB.length;j++){var n=mm(NB[j][0]);
+          if(n+ofs<=odM-1&&(dep===null||n>dep))dep=n;}}
       if(dep!==null&&(last===null||dep>last.dep))last={dep:dep,od:odM,arr:mm(YL[i][0])+HASHIMOTO};
     }
     if(!last)continue;
@@ -551,7 +554,7 @@ function trainDetail(){
       var thruArr=null;
       for(var w=0;w<YL.length;w++)if(YL[w][2]==="thru"&&mm(YL[w][3])===dep)thruArr=mm(YL[w][0])+HASHIMOTO;
       h2+='<div class="tdnote"><b>この電車は横浜線直通です。</b>乗ったままで橋本 '
-        +(thruArr!==null?'<b class="num">'+hh(thruArr)+'</b> 着':'まで直行')+'（乗換ゼロ・着席は困難）。</div></div>';
+        +(thruArr!==null?'<b class="num">'+hh(thruArr)+'</b> 着':'まで直行')+'（乗換ゼロ・経験上ほぼ座れる）。</div></div>';
     }else{
       h2+='<div class="tdnote">この電車からの始発接続:<br>'+(cn.length?cn.join('<br>'):'この後の始発接続はありません')+'</div></div>';
     }
@@ -566,7 +569,7 @@ function trainDetail(){
   var st;for(st in YSTOPS)stops.push([st,hk+YSTOPS[st]]);
   var h='<div class="tdcard"><div class="tdhead"><span class="dot" style="background:'+col+'"></span>'
     +'<b>'+ORIGIN_NAME[origin]+' '+dest+'行き</b>'
-    +((origin==="isogo"||origin==="saku"||origin==="hk")?'<span class="badge b0">始発●</span>':'<span class="badge b3">途中から</span>')
+    +((origin==="isogo"||origin==="saku"||origin==="hk")?'<span class="badge b0">始発●</span>':'<span class="badge b0">直通◎</span>')
     +'<button class="tdx" id="tdClose">×</button></div><div class="tdstops">';
   for(var i=0;i<stops.length;i++)
     h+='<span class="stp'+(i===0?' org':'')+'"><small>'+stops[i][0]+'</small><b class="num">'+hh(stops[i][1])+'</b></span>';
@@ -577,7 +580,7 @@ function trainDetail(){
     +'橋本 <b class="num">'+hh(match.arr)+'</b> 着。</div>';
   else{
     // 候補外でも「新杉田を何時に出れば乗れるか」を示す
-    if(origin==="thru")h+='<div class="tdnote">新杉田 <b class="num">'+hh(mm(od))+'</b> 発（この列車自体に乗車・着席は困難）。</div>';
+    if(origin==="thru")h+='<div class="tdnote">新杉田 <b class="num">'+hh(mm(od))+'</b> 発にそのまま乗車（経験上ほぼ座れる）。</div>';
     else{
       var ofs2=origin==="isogo"?OFF.isogo:origin==="saku"?OFF.saku:OFF.hk;
       var odM2=origin==="hk"?hk:mm(od);
