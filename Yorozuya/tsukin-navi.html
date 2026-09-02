@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>帰宅ナビ 新杉田→橋本</title>
 <meta name="theme-color" content="#0f8a4d">
 <link rel="manifest" href="tsukin-navi.webmanifest">
@@ -18,7 +18,7 @@
     --now:#e05d00; --alert:#d92c2c;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%;touch-action:pan-x pan-y}
   body{background:var(--bg);color:var(--tx);
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif;
     max-width:560px;margin:0 auto;padding-bottom:132px;min-height:100vh}
@@ -259,8 +259,12 @@ function hh(m){var h=Math.floor(m/60)%24,x=m%60;return (h<10?"0":"")+h+":"+(x<10
 
 // ---- itinerary engine ----
 function latestNB(T,limit){
+  // アクセス電車は京浜東北線のみ。横浜線直通（八王子・橋本行き）は
+  // 「乗ったのに途中で降りて並び直す」矛盾になるため除外（直通作戦として別評価）
   var best=null;
-  for(var i=0;i<NB.length;i++){var d=mm(NB[i][0]);
+  for(var i=0;i<NB.length;i++){
+    if(NB[i][1]==="八王子"||NB[i][1]==="橋本")continue;
+    var d=mm(NB[i][0]);
     if(d>=T&&d<=limit&&(best===null||d>best))best=d;}
   return best;
 }
@@ -311,7 +315,10 @@ function plan(T){
     list.push(p);
   });
   list.sort(function(a,b){return PRI[a.origin]-PRI[b.origin]||a.seat-b.seat||a.arr-b.arr;});
-  return list.slice(0,5);
+  var sliced=list.slice(0,5),hasThru=false,z;
+  for(z=0;z<sliced.length;z++)if(sliced[z].origin==="thru")hasThru=true;
+  if(!hasThru)for(z=0;z<list.length;z++)if(list[z].origin==="thru"){sliced.push(list[z]);break;}
+  return sliced;
 }
 // ---- UI ----
 var SN={isogo:"磯子始発",saku:"桜木町始発",hk:"東神奈川始発",thru:"直通（大船方面から）",unk:"直通"};
@@ -540,7 +547,14 @@ function trainDetail(){
       h2+='<span class="stp'+(q===0?' org':'')+'"><small>'+st2[q][0]+'</small><b class="num">'+hh(st2[q][1])+'</b></span>';
     h2+='</div>';
     var cn=connInfo(dep);
-    h2+='<div class="tdnote">この電車からの始発接続:<br>'+(cn.length?cn.join('<br>'):'この後の始発接続はありません')+'</div></div>';
+    if(dst==="八王子"||dst==="橋本"){
+      var thruArr=null;
+      for(var w=0;w<YL.length;w++)if(YL[w][2]==="thru"&&mm(YL[w][3])===dep)thruArr=mm(YL[w][0])+HASHIMOTO;
+      h2+='<div class="tdnote"><b>この電車は横浜線直通です。</b>乗ったままで橋本 '
+        +(thruArr!==null?'<b class="num">'+hh(thruArr)+'</b> 着':'まで直行')+'（乗換ゼロ・着席は困難）。</div></div>';
+    }else{
+      h2+='<div class="tdnote">この電車からの始発接続:<br>'+(cn.length?cn.join('<br>'):'この後の始発接続はありません')+'</div></div>';
+    }
     el.innerHTML=h2;return;
   }
   var hk=mm(YL[dsel][0]),dest=YL[dsel][1],origin=YL[dsel][2],od=YL[dsel][3],col=COL[origin];
