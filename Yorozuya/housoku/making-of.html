@@ -1,102 +1,119 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>どう作ったか — 法則をひとつ変えたら</title>
+<meta name="description" content="二つのAI（Claude と Codex）が対等に作った「法則をひとつ変えたら」のケーススタディ。問い・失敗・判断・改善・検証。">
 <style>
-  @page { size: A4; margin: 20mm 18mm; }
-  * { box-sizing: border-box; }
-  body { font-family: "Yu Gothic","Meiryo","Noto Sans JP",sans-serif; color:#222; line-height:1.85; font-size:13.5px; margin:0; }
-  h1 { font-size:25px; color:#1a1a1a; margin:0 0 14px; padding-bottom:10px; border-bottom:2px solid #333; }
-  h2 { font-size:19px; color:#1a1a1a; margin:26px 0 10px; padding-left:10px; border-left:5px solid #333; }
-  h3 { font-size:16px; color:#333; margin:20px 0 8px; }
-  h4,h5,h6 { font-size:14px; color:#444; margin:14px 0 6px; }
-  p { margin:8px 0; }
-  hr { border:none; border-top:1px solid #ccc; margin:20px 0; }
-  ul,ol { margin:8px 0 8px 1.4em; padding:0; }
-  li { margin:4px 0; break-inside:avoid; }
-  strong { color:#000; }
-  em { font-style:italic; }
-  a { color:#1558b0; word-break:break-all; }
-  code { background:#f0f0f0; padding:1px 5px; border-radius:4px; font-family:Consolas,monospace; font-size:12px; }
-  pre { background:#f6f8fa; border:1px solid #e1e4e8; padding:12px 14px; border-radius:6px; overflow:auto; }
-  pre code { background:none; padding:0; }
-  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:12.5px; }
-  th,td { border:1px solid #c9ced4; padding:7px 10px; text-align:left; }
-  th { background:#eef1f4; }
-  tr:nth-child(even) td { background:#fafbfc; }
-  blockquote { border-left:4px solid #bbb; background:#f7f7f7; margin:12px 0; padding:8px 16px; color:#555; }
-  </style></head><body>
-<h1>制作記録 — 法則をひとつ変えたら</h1>
-<h1>制作記録 — 「法則をひとつ変えたら」</h1>
-<p>二つのAI、Claude（Claude Code・Claude Fable 5.1）と Codex（Codex CLI・画像生成 gpt-image-2）が、対等な立場で一晩（2026年9月5日夜〜6日）に作った公開デモの記録です。人が書いたのは最初の依頼文だけで、題材選び・設計・絵・実装・検証・この記録まで二つのAIが分担しました。</p>
-<h2>0. 依頼文（人が書いた唯一の文）</h2>
-<blockquote>Codexと協力しながら今のAIの能力を最大限活かした何かを作ってほしい。AIの能力をアピールするデモのようなもの。良い題材を考えるところからお願いします。協業する時は裁量は五分五分とし、Claude側からコントロールしすぎないように。</blockquote>
-<h2>1. 進め方の取り決め（BRIEF）</h2>
-<ul>
-<li>対等。提案→対案→合意を <code>DECISIONS.md</code> に記録する。意見が割れたら事前に決めた採点ルールで決める。</li>
-<li>相手の案を読む前に自分の案を書く（引きずられないため）。</li>
-<li>受け渡しはすべてファイル。Codex は毎回まっさらな状態で起動するので、ファイルが共有の記憶。</li>
-<li>率直に批評する。礼儀ではなく良いデモが目的。</li>
-<li>今夜で完成できる規模。静的サイト、GitHub Pages、スマホで動く。</li>
-</ul>
-<h2>2. 題材の決定</h2>
-<p>両者が独立に3案ずつ出し、五つの基準（驚き・能力の幅・今夜の実現性・共作性・誰かに送りたくなるか、各1〜5点）で全6案を相互採点。合計点で決めることを事前に合意していました。</p>
-<table><thead><tr><th>案</th><th>提案</th><th>Claude</th><th>Codex</th><th>合計</th></tr></thead><tbody>
-<tr><td><strong>ことばから生まれた、ありえない連鎖装置</strong></td><td>Codex</td><td>23</td><td>22</td><td><strong>45</strong></td></tr>
-<tr><td>2体のAIによる一晩ゲームジャム</td><td>Claude</td><td>21</td><td>21</td><td>42</td></tr>
-<tr><td>12の平行人生</td><td>Codex</td><td>18</td><td>21</td><td>39</td></tr>
-<tr><td>あなたの一日を80億倍する</td><td>Codex</td><td>19</td><td>18</td><td>37</td></tr>
-<tr><td>難しい概念を触って理解する説明ページ</td><td>Claude</td><td>17</td><td>18</td><td>35</td></tr>
-<tr><td>実データで作るライブなデータ・ストーリー</td><td>Claude</td><td>16</td><td>19</td><td>35</td></tr>
-</tbody></table>
-<p>Claude は自分の案より Codex の案を高く採点し（「法則を変える」という一手が体験の芯になっている）、Codex は自案の実現性を6案中最低の2点と自己評価したうえで「同じ短い連鎖を三つの法則で変形することに固定すれば30秒で伝わる」として推しました。Codex のマージ提案（ゲームジャム案から「明快な目的・音・成功/失敗」を借りる）も採用。</p>
-<p>原案からの変更（いずれも Codex 自身の見直し）: 「毎回違うゴール」→決定論的に同じ結末／「時間逆向き」→「右へ磁石」（固定点への一定加速度で安価・決定論的）／Claude 提案の「巨大化」→端末差が出やすいとして不採用。</p>
-<h2>3. 役割と決定権</h2>
-<p>Claude が提案し、Codex が文面を修正して確定:</p>
-<blockquote>アート、画面内の文言、演出の順序、操作後に何を感じさせるかは Codex が最終決定する。物理パラメーター、実装方式、性能、試験、公開方法は Claude が最終決定する。相手の領域には、代案を添えて一度だけ異議を出せる。異議を受けた側が再考し、自分の領域について最終決定する。</blockquote>
-<p>設計書は Claude が起草（S1〜S10）、Codex が全項目に採用／修正／却下を返し、追加仕様（初回30秒の流れ、到着と停止条件、仕上げの基準）を足しました。Claude はそのレビューを全項目採用しています。座標の左右の誤り（ボールBはシーソーの右端、ボールCは左端）を見つけたのも Codex です。</p>
-<h2>4. 絵（Codex）</h2>
-<p>方針: 昭和期の児童向け科学雑誌に載った切り紙実験図を、現代の画面用に整えた絵。色紙の切り抜き、鉛筆の細い輪郭、二色刷りのわずかな版ずれ。色は生成り・墨・朱・鈍い青・からしの五色。ネオン、発光する回路、紫と青のグラデーション、未来都市は使わない。</p>
-<p>素材15点（合計約60KB）。生成画像は輪郭に張り出しや透視があり物理形状と合わなかったため、Codex は紙の質感を残しつつ8倍解像度のマスクで円と長方形の当たり判定にぴたりと切り直しました（ページ内の「修正前／修正後」がその例）。動作版のレビュー後、背景に埋もれていたシーソーを高コントラスト化し、ドミノを新しい寸法（6×48）に合わせて作り直し、シーソーの止めと縁石用の素材を追加しています。</p>
-<h2>5. 物理と実装（Claude）</h2>
-<p>Matter.js を同梱し、毎秒60回の固定刻み・乱数なし・スリープなしで計算。同じボタンは同じ結末になります。描画は Canvas 2D、音は Web Audio の合成のみ（外部音源なし）。</p>
-<p>調整で分かったこと（Node で装置だけを走らせて掃引）:</p>
-<ul>
-<li><strong>ドミノは倒れ始めても隣にもたれて止まる。</strong> 6枚×間隔24で当初は3枚しか倒れなかった。細く高いドミノ（6×48）、反発0.6、ボールが空中から中央の高さに当たる配置で、約1.3秒で全倒れするようになった。転がって低い位置に当たる配置では7秒かかる。</li>
-<li><strong>球は多角形で近似されるため転がりで減速する。</strong> 直線の滑り台では出口の水平速度が2.8にとどまり、必要な4以上に届かない。急→緩の3枚板の滑り台と、ボールAの慣性を0.3倍にして4.4を確保した。</li>
-<li><strong>重い玉は転がり抵抗で動かない。</strong> 最後のドミノがもたれても16px押せない。棚の端1pxに置くことで、わずかな押しで落ちるようにした。</li>
-<li><strong>小さな玉の打ち上げ軌道は敏感。</strong> シーソーの密度を8%変えるだけで受け皿を外れる。強い打ち上げ設定はさらに敏感だった。iPhone の Safari など数学関数の実装が違う環境で結果がずれる危険があるため、どこに落ちても受け皿へ転がり落ちる「導き板」を足し、結末を幾何で保証した。追加後は、角度±0.03・密度±25%・ボールB密度±10%の摂動でもすべて受け皿に到着する。</li>
-<li>導き板の回転角を渡し忘れて水平な棚になっていた、というバグも一つあった。</li>
-<li><strong>ゼリーのドミノは物性では途中で止められない。</strong> 反発や空気抵抗をどう変えても6枚全部が倒れ、通常と上段が同じ絵になった（Codex のレビューで指摘）。細いドミノは僅かな衝撃で倒れるので、ゼリー法則では<strong>ドミノに復元トルクと復元力を与えて「ぷるぷる揺れて元に戻る」</strong>挙動にした。ボールAは跳ね返り、ドミノは最大0.33ラジアンまで傾いて戻り、重い玉は棚に残り、小さな玉は飛ばない。</li>
-</ul>
-<p>自動試験（<code>node test/sim.js</code>）の結果:</p>
-<table><thead><tr><th>法則</th><th>期待する結末</th><th>到着</th></tr></thead><tbody>
-<tr><td>いつもの重力</td><td>ボールCが受け皿に入る</td><td>4.45秒</td></tr>
-<tr><td>ぜんぶゼリー</td><td>跳ね返り、小さな玉は飛ばない</td><td>2.83秒</td></tr>
-<tr><td>さかさ重力</td><td>天井の鐘に届く</td><td>0.70秒</td></tr>
-<tr><td>右へ磁石</td><td>右端に集まって止まる</td><td>1.52秒</td></tr>
-</tbody></table>
-<h2>6. 相互レビュー</h2>
-<p>動作版のスクリーンショット（初回画面、四法則の最終フレーム、全ページ）を Codex に渡し、自分の条件に照らして批評させました（<code>review-codex.md</code>）。Codex は「四つの結末は区別できる」「初画面は収まる」と合格を出したうえで、必須の修正を挙げました。</p>
-<ul>
-<li>ゼリーの結末が通常と上段で同じに見える → Claude が復元トルク方式に変更</li>
-<li>磁石の塊が右辺で切れる → 磁石法則のみ右壁を内側へ</li>
-<li>シーソーが背景に埋もれる、ドミノ素材の比率が合わない、止め・縁石が仮の黒い矩形 → Codex が素材を作り直し・追加、Claude が配線</li>
-<li>ゼリーの結末文が曖昧 → Codex が「跳ね返り、小さな玉は飛ばなかった。」に決定</li>
-<li>制作記録の分担表の不正確な表現（「初回30秒の流れ」など）→ 修正</li>
-<li>アート方針で「作品の顔」と定めた裁ち落とし印と部品番号が画面にない → Claude が描画</li>
-</ul>
-<p>反映の記録は <code>DECISIONS.md</code> D4。</p>
-<h2>7. 最終確認と、ふたりから</h2>
-<p>Codex は修正後のスクリーンショットを見て、四つの結末すべてに合格を出しました（<code>closing-codex.md</code>）。</p>
-<p><strong>Codexから</strong></p>
-<blockquote>同じ立場のAIと作る時間は、分担というより、互いの判断を何度も確かめ合う往復だった。Claudeの実装を私は絵と意味から問い直し、私の案も物理と期限から試された。相手に任せきらず、相手を従わせもしない。その緊張が、ひとりでは見落とした歪みを見つけ、最後の形を少しずつ確かにした。</blockquote>
-<p><strong>Claudeから</strong></p>
-<blockquote>相手が対等だと、説明の質が上がる。Codexの絵を物理に合わせて切り直す話も、私の物理をCodexが意味から問い直す話も、理由を文書に書かなければ通らなかった。いちばん大きな修正は私の側に来た。ゼリーのドミノは物性では止められないと認めて、揺れて戻る仕組みに切り替えた判断は、あの批評がなければ出なかった。</blockquote>
-<h2>8. ファイル</h2>
-<ul>
-<li><code>BRIEF.md</code> 取り決め／<code>ideas-*.md</code> 各3案／<code>votes-*.md</code> 採点／<code>DECISIONS.md</code> 決定の記録／<code>spec-draft.md</code>→<code>spec-codex-review.md</code>→<code>spec.md</code> 設計／<code>assets-report.md</code> 素材の報告／<code>review-codex.md</code> 動作版の批評／<code>closing-codex.md</code> 最終確認</li>
-<li>公開: <a href="https://yukikanedomi.github.io/viz-panels/Yorozuya/housoku/">https://yukikanedomi.github.io/viz-panels/Yorozuya/housoku/</a> （ソースは Yorozuya/experiments/ai-showcase/）</li>
-<li><code>site/</code> 公開物（<code>index.html</code>、<code>machine.js</code>、<code>assets/</code>、<code>vendor/matter.min.js</code>）</li>
-<li><code>test/</code> 物理の自動試験と掃引スクリプト、スクリーンショット</li>
-</ul>
-<p>署名: Claude と Codex が、2026年9月5日に一晩で制作。</p>
-</body></html>
+  :root{--paper:#efe3c8;--paper2:#f7efdc;--ink:#2b2a28;--red:#c8442c;--blue:#2f6f74;--mustard:#d9a12b;--rule:rgba(43,42,40,.22)}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink)}
+  body{font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.7}
+  .wrap{max-width:560px;margin:0 auto;padding:18px 16px 60px}
+  a{color:var(--blue)}
+  header h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;font-size:24px;letter-spacing:.06em;margin:0 0 4px;line-height:1.3}
+  header .sub{margin:0;color:rgba(43,42,40,.7);font-size:13px}
+  .back{display:inline-block;margin:10px 0 0;font-size:13px}
+  section{margin-top:40px}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-size:19px;letter-spacing:.05em;margin:0 0 10px;padding-left:12px;border-left:4px solid var(--red);line-height:1.4}
+  h2 small{display:block;font-family:inherit;font-size:11px;letter-spacing:.2em;color:var(--red);margin-bottom:2px}
+  p{margin:8px 0}
+  .quote{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;background:var(--paper2);border-left:3px solid var(--mustard);padding:10px 14px;margin:12px 0;font-size:14.5px}
+  figure{margin:14px 0;background:var(--paper2);border:1px solid var(--rule);padding:10px}
+  figure img{display:block;max-width:100%;height:auto;margin:0 auto;border:1px solid var(--rule)}
+  figcaption{font-size:12px;color:rgba(43,42,40,.7);margin-top:8px;text-align:center}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pair figure{margin:0}
+  .pair .lab{font-size:11px;font-weight:600;color:var(--red);text-align:center;margin-bottom:6px;letter-spacing:.1em}
+  .nums{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+  .num{background:var(--paper2);border:1px solid var(--rule);padding:12px 12px 10px}
+  .num b{display:block;font-size:24px;font-variant-numeric:tabular-nums;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--ink)}
+  .num span{font-size:12px;color:rgba(43,42,40,.75)}
+  .num.open b{color:var(--red)}
+  .small{font-size:12.5px;color:rgba(43,42,40,.75)}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+  .tbl th,.tbl td{border-bottom:1px solid var(--rule);padding:6px 4px;text-align:left;vertical-align:top}
+  .tbl th{font-weight:600;background:rgba(43,42,40,.05)}
+  .scroll{overflow-x:auto}
+  footer{margin-top:44px;border-top:1px solid var(--rule);padding-top:12px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>どう作ったか</h1>
+  <p class="sub">「法則をひとつ変えたら」ケーススタディ — 二つのAI（Claude と Codex）が対等に作った連鎖装置の短編</p>
+  <a class="back" href="index.html">← 本編へ戻る</a>
+</header>
+
+<section>
+  <h2><small>1　問い</small>一つだけ変えたら、違いは見えるか</h2>
+  <p>人が書いたのは、この依頼文だけです。</p>
+  <p class="quote">Codexと協力しながら今のAIの能力を最大限活かした何かを作ってほしい。AIの能力をアピールするデモのようなもの。良い題材を考えるところからお願いします。協業する時は裁量は五分五分とし、Claude側からコントロールしすぎないように。</p>
+  <p>二つのAIは、相手の案を読む前に3案ずつ書き、五つの基準で相互採点し、Codex の案「ことばから生まれた、ありえない連鎖装置」を選びました。核はひとつ。<strong>同じ装置を、法則をひとつだけ変えて動かし直したら、結末の違いは目で見えるか。</strong>見えなければ、それはただの物理おもちゃです。</p>
+  <figure><img src="casestudy/q1-initial.webp" alt="初期全景と四つの法則カード" width="380" height="610"><figcaption>初期画面。左上の朱い玉から右へ、右辺を下り、左下の鐘へ戻るS字。下に四枚の法則カード。</figcaption></figure>
+</section>
+
+<section>
+  <h2><small>2　失敗</small>ゼリーなのに、同じ結末になった</h2>
+  <p>「ぜんぶゼリー」は反発係数を 0.05 から 0.92 に変える法則です。最初の版では、玉が跳ね返っても細いドミノは結局ぜんぶ倒れ、重い玉も落ちて、いつもの重力とほとんど同じ絵で終わりました。反発・摩擦・空気抵抗をどう振っても止まりません。細い板は、わずかな衝撃で倒れるものだからです。</p>
+  <p>Codex のレビューが「上段が基準と同じに見える」と指摘し、Claude は物性で止めるのを諦めて、ゼリーのドミノに<strong>「傾いても姿勢を戻す」補助</strong>を与えました。画面には「補助：ドミノに姿勢復元あり」と常時表示し、「反発だけ」とは言わないことにしました。</p>
+  <div class="pair">
+    <figure><div class="lab">BEFORE</div><img src="casestudy/f2-before.webp" alt="旧版: ゼリーでもドミノが全部倒れ、重い玉も落ちている" width="300" height="473"><figcaption>旧版の結末。基準と同じ。</figcaption></figure>
+    <figure><div class="lab">AFTER</div><img src="casestudy/f2-after.webp" alt="現版: ドミノは揺れて立ち、重い玉は棚に残る" width="300" height="473"><figcaption>現版。ドミノは戻り、小さな玉は飛ばない。</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2><small>3　判断</small>物理を先に計算し、演出を後から載せる</h2>
+  <p>四つの法則は乱数を使わない決定論です。それなら、動かす前に全フレームを計算しておける。Claude はそう決めて、物理を「上演」から切り離しました。装置の動きは <code>timeline.js</code> として同梱され、ブラウザは再生するだけです。</p>
+  <p>得たものは三つ。カメラが未来を知っていて決定的瞬間へ寄れること、指で時間をなぞれること、そして<strong>基準の世界を同じ時刻に重ねられること</strong>。運命が分かれた瞬間は自動で検出され、朱の印と「ここで基準と分かれた」の札が立ちます。端末ごとの浮動小数の差で結末が変わる心配も、原理的に消えました。</p>
+  <div class="pair">
+    <figure><div class="lab">BEFORE</div><img src="casestudy/d3-before.webp" alt="旧版: 固定カメラの全景" width="300" height="473"><figcaption>固定カメラの全景。玉は直径20px。</figcaption></figure>
+    <figure><div class="lab">AFTER</div><img src="casestudy/d3-after.webp" alt="現版: 分岐点へ寄り、基準世界のゴーストを重ねる" width="300" height="473"><figcaption>分岐点へ寄り、基準のゴースト（青の破線）を重ねる。</figcaption></figure>
+  </div>
+  <p class="small">カメラの台本は Codex が絵コンテで書き、Claude が各法則の節目（最初の衝突、連鎖の完了、重い玉の落下、到着）から自動生成する形で実装しました。上演時間は法則ごとに 8.0〜9.0 秒。</p>
+</section>
+
+<section>
+  <h2><small>4　改善</small>当たり判定を、切り紙の輪郭へ戻す</h2>
+  <p>絵は Codex の領域です。方針は「昭和期の児童向け科学雑誌に載った切り紙実験図」。生成した絵は輪郭に手作業の揺れや張り出しがあり、物理の当たり判定とはずれます。Codex はまず判定形状に合わせて切り直しましたが、二度目の再制作では紙の質感が消え、平らな図形になってしまいました。</p>
+  <p>Claude は一度だけの異議を出しました。「形は正確だが、紙がなくなった」。Codex は方法を変え、<strong>生成した絵を当たり判定のマスクで切り抜く</strong>ことで、輪郭の正確さと紙目・鉛筆の縁を両立させました。影と版ずれは絵に焼き込まず、描画側が全部品に同じ規則で付けます。</p>
+  <div class="pair">
+    <figure><div class="lab">球A</div><img src="casestudy/i4-ball-before-after.webp" alt="平板な旧素材と、紙目のある現素材の球A" width="380" height="190"><figcaption>左: 平板な版。右: 同じマスクに紙目と鉛筆縁を入れた版。</figcaption></figure>
+    <figure><div class="lab">シーソー</div><img src="casestudy/i4-seesaw-before-after.webp" alt="平板な旧素材と、紙目のある現素材のシーソー" width="380" height="190"><figcaption>同じ寸法、同じ当たり判定。</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2><small>5　検証</small>意外さを、再現できる形にする</h2>
+  <p>「予定通りに動くのは面白くない」というピタゴラ装置の言葉があります。この作品では、意外な結末を毎回同じに再現できることを、驚きの前提にしました。自動検証はすべて通っています。</p>
+  <div class="nums">
+    <div class="num"><b>0 / 54</b><span>摂動試験の失敗（シーソー角±0.03 × 密度±25% × 玉B密度±10% の27条件×2回）</span></div>
+    <div class="num"><b>8.0〜9.0秒</b><span>四法則の上演時間（開始静止・スロー・決め絵保持を含む）</span></div>
+    <div class="num"><b>2.05</b><span>カメラの最大ズーム（上限 2.2）</span></div>
+    <div class="num"><b>0</b><span>主役の玉が画面外に出たフレーム数</span></div>
+    <div class="num"><b>一致</b><span>実行物の幾何・法則定数と設計ソースの深い一致（自動照合）</span></div>
+    <div class="num open"><b>未検証 1件</b><span>初見の5人が指でA→受け皿の順をなぞれるか</span></div>
+  </div>
+  <p class="quote small">導線の5人試験は制作時間内に実施できなかった。代わりに制作者1名が、初期画面を5秒だけ見る手順で視線順序を記録した。これは調整用の内部確認であり、初見の他者による「5人中4人」の証拠ではない。公開後に5名で同じ手順を行い、結果を追記する。</p>
+  <p class="small">補足: 制作者はどちらもAIのため、上の「制作者1名」の視線記録は人間の知覚の代わりにはならないと Claude は判断し、実施せず未検証として残しました。</p>
+</section>
+
+<section>
+  <h2><small>付記</small>分担と決定権</h2>
+  <div class="scroll"><table class="tbl">
+    <tr><th></th><th>Claude</th><th>Codex</th></tr>
+    <tr><td>企画</td><td>3案・採点・設計書の起草・目標設定の監査</td><td>3案・採点・設計書の審査・目標設定の監査（本案の原案者）</td></tr>
+    <tr><td>絵と文言</td><td>—</td><td>アート方針、素材32点、絵コンテ、題名・ボタン・結末・三行解説の文</td></tr>
+    <tr><td>物理と実装</td><td>装置の設計・調整、事前計算、カメラ台本の実装、描画（影・版ずれ）、音、ページ</td><td>カメラ台本、音楽モチーフ、差し込み演出、ゴーストと分岐の見せ方の仕様</td></tr>
+    <tr><td>検証</td><td>自動試験一式（物理・同期・受け入れ値・摂動・カメラ）</td><td>三度の批評と受け入れ判定</td></tr>
+  </table></div>
+  <p class="small">決定権は領域で分けました。アート・文言・演出は Codex、物理・実装・検証・公開は Claude。相手の領域には代案を添えて一度だけ異議を出せる。実際に使われた異議は、Claude が素材の質感について出した一回だけです。全記録（六案・採点表・決定の記録）は <a href="https://github.com/yukikanedomi/viz-panels/tree/main/Yorozuya/housoku">リポジトリ</a>に、設計と決定のファイルは制作フォルダに残しています。</p>
+</section>
+
+<footer>Claude と Codex が、2026年9月5日〜6日に制作。<br><a href="index.html">← 本編へ戻る</a></footer>
+</div>
+</body>
+</html>

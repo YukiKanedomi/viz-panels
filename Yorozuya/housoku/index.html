@@ -38,6 +38,23 @@
   .law[aria-pressed="true"]{filter:drop-shadow(1.5px 2px 0 rgba(43,42,40,.16)) brightness(.92) saturate(1.05)}
   .law[aria-pressed="true"]::after{content:"";position:absolute;left:12%;right:12%;bottom:-4px;height:3px;background:var(--red);border-radius:2px}
   .law:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  /* 差し込み: 0-90ms 手前へ、90-210ms スロットへ 6px、210-300ms 着座 */
+  @keyframes insert{0%{transform:translateY(-2px) scale(1)}30%{transform:translateY(-4px) scale(1.04)}70%{transform:translateY(4px) scale(.98)}100%{transform:translateY(0) scale(1)}}
+  .law.insert{animation:insert .3s cubic-bezier(.4,0,.2,1) both}
+  .law .fig{display:block;width:26px;height:12px;margin:0 auto 1px;background-repeat:no-repeat;background-size:26px 12px}
+  .law[data-law="normal"] .fig{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 12'%3E%3Cpath d='M13 1v7M10 5l3 3 3-3' fill='none' stroke='%232b2a28' stroke-width='1.2'/%3E%3Ccircle cx='6' cy='9' r='2.2' fill='%23c8442c'/%3E%3Cpath d='M1 11.5h24' stroke='%232b2a28' stroke-width='.8' opacity='.5'/%3E%3C/svg%3E")}
+  .law[data-law="jelly"] .fig{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 12'%3E%3Ccircle cx='13' cy='7' r='2.4' fill='%23c8442c'/%3E%3Cellipse cx='13' cy='10.5' rx='6' ry='1.6' fill='none' stroke='%232f6f74' stroke-width='.9'/%3E%3Cpath d='M1 11.5h24' stroke='%232b2a28' stroke-width='.8' opacity='.5'/%3E%3C/svg%3E")}
+  .law[data-law="inverted"] .fig{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 12'%3E%3Cpath d='M13 11V4M10 7l3-3 3 3' fill='none' stroke='%232b2a28' stroke-width='1.2'/%3E%3Ccircle cx='6' cy='3' r='2.2' fill='%23c8442c'/%3E%3Cpath d='M1 .8h24' stroke='%232b2a28' stroke-width='.8' opacity='.5'/%3E%3C/svg%3E")}
+  .law[data-law="magnet"] .fig{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 12'%3E%3Cpath d='M20 2h3v8h-3' fill='none' stroke='%23c8442c' stroke-width='2'/%3E%3Ccircle cx='9' cy='6' r='2.2' fill='%23c8442c'/%3E%3Crect x='13' y='3' width='1.6' height='6' fill='%232b2a28'/%3E%3Cpath d='M2 6h4M4.5 4.5l1.5 1.5-1.5 1.5' fill='none' stroke='%232b2a28' stroke-width='.9'/%3E%3C/svg%3E")}
+  @keyframes fig-normal{0%,100%{transform:translateY(0)}60%{transform:translateY(2px)}}
+  @keyframes fig-jelly{0%{transform:scaleY(1)}30%{transform:scaleY(.85) translateY(1px)}60%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+  @keyframes fig-inverted{0%{transform:translateY(2px) scaleY(-1)}50%{transform:translateY(0) scaleY(1)}100%{transform:translateY(-3px)}}
+  @keyframes fig-magnet{0%{transform:translateX(-5px)}100%{transform:translateX(0)}}
+  .law.insert[data-law="normal"] .fig{animation:fig-normal .3s both}
+  .law.insert[data-law="jelly"] .fig{animation:fig-jelly .3s both}
+  .law.insert[data-law="inverted"] .fig{animation:fig-inverted .3s both}
+  .law.insert[data-law="magnet"] .fig{animation:fig-magnet .3s both}
+  @media (prefers-reduced-motion: reduce){ .law.insert, .law.insert .fig{animation:none} }
   .row{display:flex;gap:8px;margin:6px 0 0}
   .scrub{margin:8px 2px 0;padding:4px 0}
   .track{position:relative;height:22px;cursor:pointer;touch-action:none;outline-offset:3px;border-style:solid;border-width:0 12px;border-image:url("assets/ui-scrub-track.webp") 0 24 fill / 0 12px stretch}
@@ -48,7 +65,7 @@
   .mk{position:absolute;top:50%;width:2px;height:8px;margin:-4px 0 0 -1px;background:rgba(43,42,40,.45);border-radius:1px}
   .mk.div{width:10px;height:10px;margin:-5px 0 0 -5px;border:2px solid var(--red);background:var(--paper2);border-radius:50%}
   .mk.arr{width:3px;height:14px;margin:-7px 0 0 -1px;background:var(--mustard)}
-  .knob{position:absolute;top:50%;left:0;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--ink);border:2px solid var(--paper2);box-shadow:0 1px 2px rgba(0,0,0,.25);pointer-events:none}
+  .knob{position:absolute;top:50%;pointer-events:none}
   .knob{left:calc(10px + (100% - 20px) * var(--k,0))}
   .marks{left:10px;right:10px}
   .btn{appearance:none;border:0;background:transparent;color:var(--ink);min-height:26px;padding:2px 6px;font:inherit;font-size:12.5px;cursor:pointer;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;
@@ -103,10 +120,10 @@
   <div class="stage"><canvas id="c" width="720" height="1120" aria-label="連鎖装置。ボールが滑り台を転がり、ドミノを倒し、重い玉がシーソーを叩き、小さな玉が受け皿へ入る。" role="img"></canvas></div>
   <div class="side">
     <div class="laws" role="group" aria-label="法則を選ぶ" id="laws">
-      <button class="law" data-law="normal" aria-pressed="true" aria-label="いつもの重力。いつもの順番で動く">いつもの重力<span>いつもの順番で動く</span></button>
-      <button class="law" data-law="jelly" aria-pressed="false" aria-label="ぜんぶゼリー。ぶつかるたび、よく弾む">ぜんぶゼリー<span>ぶつかるたび、よく弾む</span></button>
-      <button class="law" data-law="inverted" aria-pressed="false" aria-label="さかさ重力。上へ落ちていく">さかさ重力<span>上へ落ちていく</span></button>
-      <button class="law" data-law="magnet" aria-pressed="false" aria-label="右へ磁石。みんな右へ引かれる">右へ磁石<span>みんな右へ引かれる</span></button>
+      <button class="law" data-law="normal" aria-pressed="true" aria-label="いつもの重力。いつもの順番で動く"><i class="fig" aria-hidden="true"></i>いつもの重力<span>いつもの順番で動く</span></button>
+      <button class="law" data-law="jelly" aria-pressed="false" aria-label="ぜんぶゼリー。ぶつかるたび、よく弾む"><i class="fig" aria-hidden="true"></i>ぜんぶゼリー<span>ぶつかるたび、よく弾む</span></button>
+      <button class="law" data-law="inverted" aria-pressed="false" aria-label="さかさ重力。上へ落ちていく"><i class="fig" aria-hidden="true"></i>さかさ重力<span>上へ落ちていく</span></button>
+      <button class="law" data-law="magnet" aria-pressed="false" aria-label="右へ磁石。みんな右へ引かれる"><i class="fig" aria-hidden="true"></i>右へ磁石<span>みんな右へ引かれる</span></button>
     </div>
     <div class="scrub">
       <div class="track" id="track" role="slider" tabindex="0" aria-label="時間をなぞる" aria-valuemin="0" aria-valuenow="0" aria-valuemax="0">
@@ -122,62 +139,15 @@
     <div class="row">
       <button class="btn" id="again"><i class="ic ic-again" aria-hidden="true"></i><span>もう一度</span></button>
       <button class="btn" id="snd" aria-pressed="false"><i class="ic ic-snd" aria-hidden="true"></i><span>音なし</span></button>
+      <button class="btn" id="share"><span>共有</span></button>
     </div>
   </div>
 </main>
 
 <section class="making" id="making">
   <h2>このページができるまで</h2>
-  <p class="small">二つのAI（Claude と Codex）が、対等な立場で一晩かけて作りました。人が書いたのは最初の依頼文だけです。</p>
-
-  <h3>起点のことば</h3>
-  <p>Codex が出した原案の一文です。</p>
-  <p class="quote">「重力を弱く」「全部をゼリーに」というボタンを押すと、画面いっぱいのピタゴラ装置がその法則に従って崩れ、跳ね、つながり直して、毎回違うゴールへ到達する。</p>
-  <p>両者が独立に3案ずつ出し、五つの基準（驚き・能力の幅・今夜の実現性・共作性・誰かに送りたくなるか、各5点）で相互に採点し、合計点でこの案を選びました。</p>
-  <div class="scroll"><table class="tbl">
-    <tr><th>案</th><th>提案</th><th class="num">Claude</th><th class="num">Codex</th><th class="num">合計</th></tr>
-    <tr class="win"><td>ありえない連鎖装置</td><td>Codex</td><td class="num">23</td><td class="num">22</td><td class="num">45</td></tr>
-    <tr><td>2体のAIによる一晩ゲームジャム</td><td>Claude</td><td class="num">21</td><td class="num">21</td><td class="num">42</td></tr>
-    <tr><td>12の平行人生</td><td>Codex</td><td class="num">18</td><td class="num">21</td><td class="num">39</td></tr>
-    <tr><td>一日を80億倍する</td><td>Codex</td><td class="num">19</td><td class="num">18</td><td class="num">37</td></tr>
-    <tr><td>難しい概念を触って理解する説明ページ</td><td>Claude</td><td class="num">17</td><td class="num">18</td><td class="num">35</td></tr>
-    <tr><td>実データで作るデータ・ストーリー</td><td>Claude</td><td class="num">16</td><td class="num">19</td><td class="num">35</td></tr>
-  </table></div>
-  <p class="small">原案の「毎回違うゴール」「時間逆行」は、Codex 自身の見直しで「決定論的に同じ結末」「右へ磁石」に置き換えられました。設計書は Claude が起草し、Codex が全項目を採用・修正・却下しています。</p>
-
-  <h3>絵をつくる</h3>
-  <p>Codex が方針を決めて描きました。昭和期の児童向け科学雑誌の切り紙実験図を、五色（生成り・墨・朱・鈍い青・からし）で現代の画面に整えたものです。</p>
-  <div class="gallery" id="gallery"></div>
-  <p>生成した絵は輪郭に手作業の揺れや張り出しがあり、そのままでは物理の当たり判定と合いません。Codex は絵の紙の質感を残しつつ、円と長方形の当たり判定にぴたりと合う形へ切り直しました。</p>
-  <div class="pair">
-    <figure><img src="assets/makingof-fit-before.webp" alt="修正前: 絵の輪郭が当たり判定の枠からずれている" width="320" height="180"><figcaption>修正前：輪郭が判定枠からはみ出す</figcaption></figure>
-    <figure><img src="assets/makingof-fit-after.webp" alt="修正後: 絵が当たり判定の枠にぴたりと収まっている" width="320" height="180"><figcaption>修正後：判定枠に合わせて切り直し</figcaption></figure>
-  </div>
-
-  <h3>動かして確かめる</h3>
-  <div class="scroll"><table class="tbl">
-    <tr><th>担当</th><th>Claude</th><th>Codex</th></tr>
-    <tr><td>企画</td><td>3案・採点・設計書の起草</td><td>3案・採点・設計書の審査（本案の原案者）</td></tr>
-    <tr><td>絵と文言</td><td>—</td><td>アート方針、素材15点、題名・ボタン・結末の文</td></tr>
-    <tr><td>物理と実装</td><td>装置の設計・調整、描画、音、ページ</td><td>初回再生と切り替えの流れの仕様</td></tr>
-    <tr><td>検証</td><td>四法則の自動試験、表示確認</td><td>動作版の批評</td></tr>
-  </table></div>
-  <p>物理は乱数を使わず、毎秒60回の固定刻みで計算しています。同じボタンは同じ結末になります。四法則を自動で走らせ、期待した結末に到達するかを確かめました。</p>
-  <div class="scroll"><table class="tbl" id="testtbl">
-    <tr><th>法則</th><th>期待する結末</th><th>到着</th><th>結果</th></tr>
-    <tr><td>いつもの重力</td><td>ボールCが受け皿に入る</td><td class="num">4.45秒</td><td class="ok">到着</td></tr>
-    <tr><td>ぜんぶゼリー</td><td>跳ね返り、小さな玉は飛ばない</td><td class="num">2.83秒</td><td class="ok">到着</td></tr>
-    <tr><td>さかさ重力</td><td>天井の鐘に届く</td><td class="num">0.70秒</td><td class="ok">到着</td></tr>
-    <tr><td>右へ磁石</td><td>右端に集まって止まる</td><td class="num">1.92秒</td><td class="ok">到着</td></tr>
-  </table></div>
-  <p class="small">調整で分かったこと：Matter.js のドミノは倒れ始めても隣にもたれて止まりやすく、細く高いドミノ（6×48）と反発0.6、そしてボールが空中から中央の高さに当たる配置が必要でした。重い玉は多角形近似の転がり抵抗で動かず、棚の端1ミリに置いています。小さな玉の打ち上げ軌道は敏感なので、どこに落ちても受け皿へ導く板を足して結末を幾何で保証しました。</p>
-
-  <h3>Codexから</h3>
-  <p class="quote">同じ立場のAIと作る時間は、分担というより、互いの判断を何度も確かめ合う往復だった。Claudeの実装を私は絵と意味から問い直し、私の案も物理と期限から試された。相手に任せきらず、相手を従わせもしない。その緊張が、ひとりでは見落とした歪みを見つけ、最後の形を少しずつ確かにした。</p>
-  <h3>Claudeから</h3>
-  <p class="quote">相手が対等だと、説明の質が上がる。Codexの絵を物理に合わせて切り直す話も、私の物理をCodexが意味から問い直す話も、理由を文書に書かなければ通らなかった。いちばん大きな修正は私の側に来た。ゼリーのドミノは物性では止められないと認めて、揺れて戻る仕組みに切り替えた判断は、あの批評がなければ出なかった。</p>
-
-  <p class="sig">Claude と Codex が、2026年9月5日に一晩で制作。<br><a href="making-of.html">制作記録の全文（六案・採点表・決定の記録）</a></p>
+  <p class="small">二つのAI（Claude と Codex）が、対等な立場で作りました。人が書いたのは最初の依頼文だけです。物理は乱数を使わない決定論で、同じボタンは同じ結末になります。</p>
+  <p class="sig"><a href="making-of.html">どう作ったか — 問い・失敗・判断・改善・検証</a></p>
 </section>
 </div>
 

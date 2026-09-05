@@ -86,6 +86,29 @@
   };
   function unlockAudio() { if (unlocked) return; unlocked = true; const a = ac(); if (a && a.state === 'suspended') a.resume(); }
 
+  // 法則別の音楽モチーフ（Codex 仕様 review3-codex.md §B）: 短い署名。同時2音まで、各音240ms以内、フォーリーの35%以下
+  const NOTE = { C4: 261.63, Eb4: 311.13, E4: 329.63, F4: 349.23, G4: 392.0, A4: 440.0, Bb4: 466.16, C5: 523.25, D4: 293.66, D5: 587.33 };
+  const MOTIF = {
+    normal:   { bpm: 92,  notes: ['C4', 'E4', 'G4'], timbre: 'xylo', resolve: 'C5' },
+    jelly:    { bpm: 104, notes: ['C4', 'G4'], later: ['Eb4', 'C4'], timbre: 'rubber' },
+    inverted: { bpm: 76,  notes: ['C4', 'F4', 'Bb4'], timbre: 'whistle' },
+    magnet:   { bpm: 110, notes: ['D4', 'A4', 'D5'], timbre: 'pluck', pan: [0, 0.45, 0.8] },
+  };
+  function motifNote(when, name, timbre, pan) {
+    if (!soundOn || !ac()) return;
+    const a = ac(), f = NOTE[name], t0 = Math.max(a.currentTime, when), rel = 0.16, peak = 0.11;
+    const g = a.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(peak, t0 + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.06 + rel);
+    let out = g;
+    if (pan != null && a.createStereoPanner) { const p = a.createStereoPanner(); p.pan.value = pan; g.connect(p); out = p; }
+    out.connect(a.destination);
+    if (timbre === 'xylo') { const o = a.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.connect(g); o.start(t0); o.stop(t0 + 0.24); const s = a.createBufferSource(); s.buffer = noise(); const bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f * 4; bp.Q.value = 6; const ng = a.createGain(); ng.gain.setValueAtTime(0.25, t0); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05); s.connect(bp); bp.connect(ng); ng.connect(g); s.start(t0); s.stop(t0 + 0.06); }
+    else if (timbre === 'rubber') { const o = a.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(f * 1.06, t0); o.frequency.exponentialRampToValueAtTime(f, t0 + 0.03); const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; o.connect(lp); lp.connect(g); o.start(t0); o.stop(t0 + 0.24); }
+    else if (timbre === 'whistle') { const o = a.createOscillator(); o.type = 'sine'; o.frequency.value = f * 2; const o2 = a.createOscillator(); o2.type = 'triangle'; o2.frequency.value = f * 2; const g2 = a.createGain(); g2.gain.value = 0.25; o.connect(g); o2.connect(g2); g2.connect(g); o.start(t0); o2.start(t0); o.stop(t0 + 0.24); o2.stop(t0 + 0.24); }
+    else { const o = a.createOscillator(); o.type = 'square'; o.frequency.value = f; const bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f * 2; bp.Q.value = 4; o.connect(bp); bp.connect(g); o.start(t0); o.stop(t0 + 0.2); }
+  }
+  function playMotif(names, pans) { if (!soundOn || !ac()) return; const m = MOTIF[law], step = 60 / m.bpm; names.forEach((n, i) => motifNote(ac().currentTime + i * step, n, m.timbre, pans ? pans[i] : null)); }
+  const haptic = (p) => { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } };
+
   // ---- 再生状態 ----
   let law = 'normal', L = TL.laws.normal, BASE = TL.laws.normal;
   let t = 0, playing = false, userSlow = false, ghostOn = true, scrubbing = false;
@@ -112,7 +135,10 @@
     opts = opts || {};
     const from = poseAt(L, t);
     law = newLaw; L = TL.laws[law]; dir = D.build(law, L);
-    effects = []; squash = {}; jellyBoinged = false; bellRang = { bottom: -1, top: -1 }; magnetAppear = 0; evIndex = 0; t = 0;
+    effects = []; squash = {}; jellyBoinged = false; bellRang = { bottom: -1, top: -1 }; magnetAppear = 0; evIndex = 0; t = 0; motifFired = {}; userStarted = !opts.initial;
+    if (!opts.initial) { // カードを差し込む合図（ゼリーは前2音、磁石は1音）
+      if (law === 'jelly') playMotif(MOTIF.jelly.notes); else if (law === 'magnet') playMotif(['D4'], [0]);
+    }
     lawBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.law === law)));
     canvas.setAttribute('aria-label', '連鎖装置。法則は' + META[law].label + '、' + META[law].line + '。');
     buildMarks();
@@ -144,14 +170,22 @@
         if (/domino/.test(pair) && e.v > 0.9) { sfx.click(e.v); continue; }
         if (/ball[ABC]/.test(pair) && /slope|shelf|chute|seesaw|floor|catcher|cLedge|armStop/.test(pair) && e.v > 1.2) sfx.paper(e.v);
       } else if (e.t === 'arrive') {
-        if (e.what === 'catcher') { bellRang.bottom = e.f; sfx.bell(false); }
+        if (e.what === 'catcher') { bellRang.bottom = e.f; sfx.bell(false); if (law === 'normal') motifNote(ac() ? ac().currentTime + 0.05 : 0, MOTIF.normal.resolve, 'xylo'); }
         else if (e.what === 'bellTop') { bellRang.top = e.f; sfx.bell(true); }
-        else if (e.what === 'magnet') sfx.tap();
+        else if (e.what === 'magnet') { sfx.tap(); playMotif(['D5'], [0.8]); }
+        if (userStarted) haptic(e.what === 'catcher' || e.what === 'bellTop' ? [10, 35, 16] : 14);
       }
     }
+    // モチーフの節目（法則ごとの合図）
+    const A = L.anchors;
+    if (law === 'jelly' && A.hitD0 >= 0 && !motifFired.hit && f >= A.hitD0) { motifFired.hit = true; playMotif(MOTIF.jelly.later); }
+    if (law === 'inverted' && !motifFired.rise && f >= 2) { motifFired.rise = true; playMotif(MOTIF.inverted.notes); }
+    if (law === 'magnet' && A.cMove >= 0 && !motifFired.move && f >= A.cMove) { motifFired.move = true; playMotif(['A4'], [0.45]); }
+    if (law === 'normal' && !motifFired.start && f >= 1) { motifFired.start = true; playMotif(MOTIF.normal.notes); }
   }
+  let motifFired = {}, userStarted = false;
   function onEnded() {
-    playing = false; updatePlayBtn();
+    playing = false; updatePlayBtn(); markSeen(law);
     canvas.setAttribute('aria-label', '連鎖装置。法則は' + META[law].label + '。結末: ' + META[law].end);
     if (!firstEndingShown && !reduced) { firstEndingShown = true; lawsEl.classList.add('lift'); setTimeout(() => lawsEl.classList.remove('lift'), 320); }
   }
@@ -166,9 +200,12 @@
     if (L.arrivedFrame > 0) add(L.arrivedFrame, 'arr', '到着');
   }
   function updateKnob() { knob.style.setProperty('--k', String(t / endFrame())); track.setAttribute('aria-valuenow', String(Math.round(t / FPS * 10) / 10)); track.setAttribute('aria-valuemax', String(Math.round(endFrame() / FPS * 10) / 10)); }
+  let crossedDiv = false;
   function scrubTo(clientX) {
     const r = track.getBoundingClientRect(); const k = Math.min(1, Math.max(0, (clientX - r.left - 10) / (r.width - 20)));
-    t = k * endFrame(); idleLeft = 0; tween = null; flash = null; syncToTime(); draw();
+    const before = t; t = k * endFrame(); idleLeft = 0; tween = null; flash = null; syncToTime();
+    if (L.divergence && !crossedDiv && ((before < L.divergence.f) !== (t < L.divergence.f))) { crossedDiv = true; haptic(6); }
+    draw();
   }
   track.addEventListener('pointerdown', e => { unlockAudio(); scrubbing = true; playing = false; updatePlayBtn(); track.setPointerCapture(e.pointerId); scrubTo(e.clientX); });
   track.addEventListener('pointermove', e => { if (scrubbing) scrubTo(e.clientX); });
@@ -185,7 +222,24 @@
   playBtn.addEventListener('click', togglePlay);
   slowBtn.addEventListener('click', () => { unlockAudio(); userSlow = !userSlow; slowBtn.setAttribute('aria-pressed', String(userSlow)); slowBtn.textContent = userSlow ? 'スロー ×0.25' : 'スロー'; });
   ghostBtn.addEventListener('click', () => { ghostOn = !ghostOn; ghostBtn.setAttribute('aria-pressed', String(ghostOn)); draw(); });
-  lawBtns.forEach(b => b.addEventListener('click', () => { unlockAudio(); setLaw(b.dataset.law, {}); }));
+  // 法則カードの差し込み（Codex §B: 0〜90ms 手前へ → 90〜210ms スロットへ → 210〜300ms 着座）。連打は最後の選択だけ採用
+  let insertTimer = null;
+  lawBtns.forEach(b => b.addEventListener('click', () => {
+    unlockAudio(); haptic(8);
+    lawBtns.forEach(x => x.classList.remove('insert'));
+    if (reduced) { setLaw(b.dataset.law, {}); return; }
+    b.classList.add('insert');
+    if (insertTimer) clearTimeout(insertTimer);
+    insertTimer = setTimeout(() => { b.classList.remove('insert'); haptic(12); setLaw(b.dataset.law, {}); insertTimer = null; }, 300);
+  }));
+  // 共有: 最後に見た法則と時刻を URL に含める
+  const shareBtn = document.getElementById('share');
+  if (shareBtn) shareBtn.addEventListener('click', async () => {
+    const url = location.origin + location.pathname + '?law=' + law + '&t=' + Math.round(t);
+    const data = { title: '法則をひとつ変えたら', text: '同じ連鎖装置を、四つの法則で見比べる。', url };
+    try { if (navigator.share) { await navigator.share(data); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(url); shareBtn.querySelector('span').textContent = 'リンクをコピーしました'; setTimeout(() => { shareBtn.querySelector('span').textContent = '共有'; }, 1800); } catch (e) { prompt('このリンクを共有', url); }
+  });
   againBtn.addEventListener('click', () => { unlockAudio(); setLaw(law, {}); });
   sndBtn.addEventListener('click', () => { unlockAudio(); soundOn = !soundOn; sndBtn.setAttribute('aria-pressed', String(soundOn)); sndBtn.textContent = soundOn ? '音あり' : '音なし'; if (soundOn) sfx.click(1); });
   window.addEventListener('resize', fit);
@@ -320,9 +374,43 @@
     if (qt.aid) label(qt.aid, 8, 36, { size: 10, weight: 500, color: 'rgba(43,42,40,.75)' });
     const sp = speedAt(t);
     label((t / FPS).toFixed(1) + '秒' + (sp !== 1 ? '　×' + sp.toFixed(2).replace(/0$/, '') : ''), W - 8, 16, { size: 12, align: 'right', weight: 500 });
-    if (t >= endFrame() - 0.5) label(m.end, W / 2, H - 22, { size: 14, align: 'center', weight: 700, bg: 'rgba(247,239,220,.96)' });
+    if (t >= endFrame() - 0.5) drawEndingCard(m);
     if (flash) { const k = flash.t / flash.total; ctx.save(); ctx.globalAlpha = 1 - k; ctx.fillStyle = flash.tint; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = Math.min(1, (1 - k) * 1.6); ctx.font = '700 30px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = COL.ink; ctx.fillText(flash.text, W / 2, H / 2 - 20); ctx.restore(); }
     updateKnob();
+  }
+
+  // 結末カード（Codex の切り紙枠 328×72 を下端 HUD 領域に）: 結末の一文＋三行解説（変わった力／分岐点／結果）
+  // 三行解説（Codex 最終文言 review3-codex.md §C1）
+  const EXPLAIN = {
+    normal:   { force: 'なし。これが比較の基準', fork: '最初の衝突から基準になる', result: '小さな玉が受け皿で鐘を鳴らす' },
+    jelly:    { force: '反発が0.05から0.92へ', fork: '玉Aが最初のドミノに触れた時', result: '跳ね返り、小さな玉は飛ばない' },
+    inverted: { force: '重力の向きが下から上へ', fork: '動き出した瞬間、全体が上へ', result: '重い玉が天井の鐘に届く' },
+    magnet:   { force: '右向きの磁力を加えた', fork: '玉Aが滑り台で基準を離れる', result: 'すべてが右の磁石に集まる' },
+  };
+  const INVITE = '基準を重ねて、分かれた瞬間を見る', COMPLETE = '四つの法則を見届けました。基準から比べよう。';
+  let seen = {}; try { seen = JSON.parse(localStorage.getItem('housoku.seen') || '{}'); } catch (e) { seen = {}; }
+  function markSeen(l) { seen[l] = true; try { localStorage.setItem('housoku.seen', JSON.stringify(seen)); } catch (e) {} }
+  // 9-slice で枠を描く（切り紙の四隅を伸ばさない）
+  function nineSlice(im, x, y, w, h, s) {
+    const iw = im.naturalWidth, ih = im.naturalHeight, S2 = s * 2, d = s;
+    const cols = [[0, S2, x, d], [S2, iw - 2 * S2, x + d, w - 2 * d], [iw - S2, S2, x + w - d, d]];
+    const rows = [[0, S2, y, d], [S2, ih - 2 * S2, y + d, h - 2 * d], [ih - S2, S2, y + h - d, d]];
+    for (const r of rows) for (const c of cols) ctx.drawImage(im, c[0], r[0], c[1], r[1], c[2], r[2], c[3], r[3]);
+  }
+  // 結末カードは右下に置き、左下の受け皿と鐘（通常の決め絵）を隠さない
+  function drawEndingCard(m) {
+    const allSeen = Object.keys(TL.laws).every(l => seen[l]);
+    const cw = 232, ch = 100, x = W - cw - 10, y = H - ch - 10;
+    ctx.save();
+    if (IMG['ending-card-frame']) nineSlice(IMG['ending-card-frame'], x, y, cw, ch, 12); else { ctx.fillStyle = 'rgba(247,239,220,.96)'; ctx.fillRect(x, y, cw, ch); ctx.strokeStyle = 'rgba(43,42,40,.35)'; ctx.strokeRect(x + .5, y + .5, cw - 1, ch - 1); }
+    ctx.fillStyle = COL.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '700 12.5px "Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif'; ctx.fillText(m.end, x + cw / 2, y + 19);
+    const ex = EXPLAIN[law];
+    ctx.font = '500 9.5px "Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif'; ctx.textAlign = 'left';
+    [['変わった力', ex.force], ['分岐点', ex.fork], ['結果', ex.result]].forEach((row, i) => { ctx.fillStyle = COL.red; ctx.fillText(row[0], x + 14, y + 38 + i * 13); ctx.fillStyle = 'rgba(43,42,40,.85)'; ctx.fillText(row[1], x + 66, y + 38 + i * 13); });
+    ctx.textAlign = 'center'; ctx.fillStyle = allSeen ? COL.blue : 'rgba(43,42,40,.62)'; ctx.font = '600 9px "Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif';
+    ctx.fillText(allSeen ? COMPLETE : INVITE, x + cw / 2, y + ch - 11);
+    ctx.restore();
   }
 
   function drawGhost() {
@@ -362,7 +450,7 @@
       const p = project(dv.x, dv.y), text = 'ここで基準と分かれた';
       ctx.font = '600 11px "Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif';
       const tw = ctx.measureText(text).width + 14 + 8, th = 21;
-      const forbidden = [[0, 0, 360, 48], [276, 0, 360, 36], [16, 504, 344, 560]];
+      const forbidden = [[0, 0, 360, 48], [276, 0, 360, 36], [118, 450, 360, 560]];
       if (flash) forbidden.push([60, 200, 300, 360]);
       const cand = [[p.x + 14, p.y - 14 - th], [p.x - 14 - tw, p.y - 14 - th], [p.x + 14, p.y + 14], [p.x - 14 - tw, p.y + 14]];
       const bodyRects = curPose.map((q, i) => { const b = L.bodies[i], s = project(q.x, q.y), r = (b.r || Math.max(b.w, b.h) / 2) * cam.z + 12; return [s.x - r, s.y - r, s.x + r, s.y + r]; });
