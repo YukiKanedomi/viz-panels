@@ -377,7 +377,7 @@
   const initLaw = Machine.LAWS.indexOf(params.get('law')) >= 0 ? params.get('law') : 'normal';
   start(initLaw, { initial: true });
   fit();
-  if (!fast) requestAnimationFrame(frame); else { let tries = 0; const t = setInterval(() => { draw(); if (++tries > 20) clearInterval(t); }, 100); }
+  if (!fast) requestAnimationFrame(frame); else { let tries = 0; const t = setInterval(() => { draw(); if (++tries > 120) clearInterval(t); }, 100); }
 })();
 </script>
 </body>
