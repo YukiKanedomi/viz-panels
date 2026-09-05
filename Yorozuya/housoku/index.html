@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>法則をひとつ変えたら</title>
-<meta name="description" content="同じ連鎖装置で、法則をひとつだけ変える。ことばが動きになり、結末が変わるところを見比べる。ClaudeとCodexが一晩で制作。">
+<meta name="description" content="同じ連鎖装置で、法則をひとつだけ変える。ことばが動きになり、結末が変わるところを見比べる。ClaudeとCodexが対等に制作。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="法則をひとつ変えたら">
+<meta property="og:description" content="同じ連鎖装置を、四つの法則で動かして見比べる。二つのAIが対等に作った物理の小さな短編。">
+<meta property="og:image" content="https://yukikanedomi.github.io/viz-panels/Yorozuya/housoku/assets/og-phase3.webp">
+<meta property="og:url" content="https://yukikanedomi.github.io/viz-panels/Yorozuya/housoku/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23efe3c8'/%3E%3Ccircle cx='11' cy='12' r='6' fill='%23c8442c'/%3E%3Crect x='19' y='8' width='3' height='16' fill='%232b2a28'/%3E%3Crect x='6' y='24' width='20' height='3' fill='%23d9a12b'/%3E%3C/svg%3E">
 <style>
   :root{
     --paper:#efe3c8; --paper2:#f7efdc; --ink:#2b2a28; --red:#c8442c; --blue:#2f6f74; --mustard:#d9a12b;
@@ -23,14 +30,36 @@
   canvas{display:block;border:1px solid var(--rule);background:var(--paper2);box-shadow:0 1px 0 rgba(255,255,255,.6) inset}
   .laws{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:10px 0 0;transition:transform .3s}
   .laws.lift{transform:translateY(-2px)}
-  .law{appearance:none;border:1.5px solid var(--ink);background:var(--paper2);color:var(--ink);border-radius:6px;min-height:46px;padding:6px 2px;font:inherit;font-size:13px;font-weight:600;line-height:1.2;cursor:pointer;position:relative;letter-spacing:.02em}
-  .law span{display:block;font-size:10.5px;font-weight:400;color:rgba(43,42,40,.7);margin-top:2px;letter-spacing:0}
-  .law[aria-pressed="true"]{background:var(--ink);color:var(--paper2)}
-  .law[aria-pressed="true"] span{color:rgba(247,239,220,.75)}
-  .law[aria-pressed="true"]::after{content:"";position:absolute;left:10%;right:10%;bottom:-6px;height:3px;background:var(--red);border-radius:2px}
-  .row{display:flex;gap:8px;margin:14px 0 0}
-  .btn{appearance:none;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:6px;min-height:40px;padding:6px 14px;font:inherit;font-size:13px;cursor:pointer;flex:1}
-  .btn[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+  /* 法則カード: Codex の切り紙カード素材を 9-slice で使う（文言と状態は HTML） */
+  .law{appearance:none;border:0;background:transparent;color:var(--ink);min-height:40px;padding:3px 0 2px;font:inherit;font-size:12px;font-weight:600;line-height:1.2;cursor:pointer;position:relative;letter-spacing:0;
+    border-style:solid;border-width:7px;border-image:url("assets/ui-law-card.webp") 20 fill / 7px stretch;filter:drop-shadow(1.5px 2px 0 rgba(43,42,40,.16));transition:transform .12s}
+  .law:active{transform:translateY(1px) scale(.985)}
+  .law span{display:block;font-size:10px;font-weight:400;color:rgba(43,42,40,.7);margin-top:1px;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:clip}
+  .law[aria-pressed="true"]{filter:drop-shadow(1.5px 2px 0 rgba(43,42,40,.16)) brightness(.92) saturate(1.05)}
+  .law[aria-pressed="true"]::after{content:"";position:absolute;left:12%;right:12%;bottom:-4px;height:3px;background:var(--red);border-radius:2px}
+  .law:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .row{display:flex;gap:8px;margin:6px 0 0}
+  .scrub{margin:8px 2px 0;padding:4px 0}
+  .track{position:relative;height:22px;cursor:pointer;touch-action:none;outline-offset:3px;border-style:solid;border-width:0 12px;border-image:url("assets/ui-scrub-track.webp") 0 24 fill / 0 12px stretch}
+  .track:focus-visible{outline:2px solid var(--blue)}
+  .track::after{content:"";position:absolute;inset:-11px 0;}
+  .knob{background:url("assets/ui-scrub-knob.webp") center/20px 20px no-repeat;border:0;box-shadow:none;width:20px;height:20px;margin:-10px 0 0 -10px}
+  .marks{position:absolute;left:10px;right:10px;top:0;bottom:0}
+  .mk{position:absolute;top:50%;width:2px;height:8px;margin:-4px 0 0 -1px;background:rgba(43,42,40,.45);border-radius:1px}
+  .mk.div{width:10px;height:10px;margin:-5px 0 0 -5px;border:2px solid var(--red);background:var(--paper2);border-radius:50%}
+  .mk.arr{width:3px;height:14px;margin:-7px 0 0 -1px;background:var(--mustard)}
+  .knob{position:absolute;top:50%;left:0;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--ink);border:2px solid var(--paper2);box-shadow:0 1px 2px rgba(0,0,0,.25);pointer-events:none}
+  .knob{left:calc(10px + (100% - 20px) * var(--k,0))}
+  .marks{left:10px;right:10px}
+  .btn{appearance:none;border:0;background:transparent;color:var(--ink);min-height:26px;padding:2px 6px;font:inherit;font-size:12.5px;cursor:pointer;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;
+    border-style:solid;border-width:8px;border-image:url("assets/ui-control-button.webp") 20 fill / 8px stretch;filter:drop-shadow(1.5px 2px 0 rgba(43,42,40,.16));transition:transform .12s}
+  .btn:active{transform:translateY(1px) scale(.985)}
+  .btn[aria-pressed="true"]{color:var(--blue);filter:drop-shadow(1.5px 2px 0 rgba(43,42,40,.16)) brightness(.94)}
+  .btn[aria-pressed="true"]::after{content:"";position:absolute}
+  .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .ic{display:inline-block;width:16px;height:24px;background:url("assets/ui-control-icons.webp") no-repeat;background-size:96px 24px;flex:none}
+  .ic-play{background-position:0 0}.ic-pause{background-position:-16px 0}.ic-slow{background-position:-32px 0}.ic-ghost{background-position:-48px 0}.ic-again{background-position:-64px 0}.ic-snd{background-position:-80px 0}
+  .btn[aria-pressed="true"] .ic-play{background-position:-16px 0}
   @media (min-width:700px) and (orientation:landscape){
     .wrap{max-width:900px}
     main{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start}
@@ -79,9 +108,20 @@
       <button class="law" data-law="inverted" aria-pressed="false" aria-label="さかさ重力。上へ落ちていく">さかさ重力<span>上へ落ちていく</span></button>
       <button class="law" data-law="magnet" aria-pressed="false" aria-label="右へ磁石。みんな右へ引かれる">右へ磁石<span>みんな右へ引かれる</span></button>
     </div>
+    <div class="scrub">
+      <div class="track" id="track" role="slider" tabindex="0" aria-label="時間をなぞる" aria-valuemin="0" aria-valuenow="0" aria-valuemax="0">
+        <div class="marks" id="marks"></div>
+        <div class="knob" id="knob"></div>
+      </div>
+    </div>
     <div class="row">
-      <button class="btn" id="again">もう一度</button>
-      <button class="btn" id="snd" aria-pressed="false">音なし</button>
+      <button class="btn" id="play" aria-pressed="false"><i class="ic ic-play" aria-hidden="true"></i><span>一時停止</span></button>
+      <button class="btn" id="slow" aria-pressed="false"><i class="ic ic-slow" aria-hidden="true"></i><span>スロー</span></button>
+      <button class="btn" id="ghost" aria-pressed="true"><i class="ic ic-ghost" aria-hidden="true"></i><span>基準を重ねる</span></button>
+    </div>
+    <div class="row">
+      <button class="btn" id="again"><i class="ic ic-again" aria-hidden="true"></i><span>もう一度</span></button>
+      <button class="btn" id="snd" aria-pressed="false"><i class="ic ic-snd" aria-hidden="true"></i><span>音なし</span></button>
     </div>
   </div>
 </main>
@@ -141,244 +181,9 @@
 </section>
 </div>
 
-<script src="vendor/matter.min.js"></script>
-<script src="machine.js"></script>
-<script>
-(function(){
-  'use strict';
-  const W = Machine.W, H = Machine.H, G = Machine.G;
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
-  const lawsEl = document.getElementById('laws');
-  const lawBtns = Array.from(lawsEl.querySelectorAll('.law'));
-  const againBtn = document.getElementById('again');
-  const sndBtn = document.getElementById('snd');
-  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const params = new URLSearchParams(location.search);
-
-  const META = {
-    normal:   { label: 'いつもの重力', line: 'いつもの順番で動く',   end: '受け皿に入り、鐘が鳴った。',   tint: 'rgba(217,161,43,.22)' },
-    jelly:    { label: 'ぜんぶゼリー', line: 'ぶつかるたび、よく弾む', end: '跳ね返り、小さな玉は飛ばなかった。', tint: 'rgba(47,111,116,.26)' },
-    inverted: { label: 'さかさ重力',   line: '上へ落ちていく',       end: '天井の鐘に届いた。',           tint: 'rgba(200,68,44,.22)' },
-    magnet:   { label: '右へ磁石',     line: 'みんな右へ引かれる',   end: '右の磁石に集まった。',         tint: 'rgba(43,42,40,.18)' },
-  };
-  const COL = { paper:'#efe3c8', paper2:'#f7efdc', ink:'#2b2a28', red:'#c8442c', blue:'#2f6f74', mustard:'#d9a12b' };
-
-  // ---- 画像 ----
-  const NAMES = ['paper-background','ball-a','ball-b','ball-c','domino','slope','shelf','seesaw','fulcrum','catcher','bell-bottom','bell-top','magnet','jelly-overlay'];
-  const IMG = {};
-  NAMES.concat(['post']).forEach(n => { const im = new Image(); im.decoding = 'async'; im.src = 'assets/' + n + '.webp'; im.onload = () => { IMG[n] = im; }; });
-  // 制作記録のギャラリー
-  (function(){ const g = document.getElementById('gallery'); NAMES.concat(['post']).forEach(n => { const f = document.createElement('figure'); const im = document.createElement('img'); im.src = 'assets/' + n + '.webp'; im.alt = n; im.loading = 'lazy'; f.appendChild(im); f.appendChild(document.createTextNode(n.replace('.webp',''))); g.appendChild(f); }); })();
-
-  // ---- 音（Web Audio 合成） ----
-  let AC = null, soundOn = false, unlocked = false;
-  function ac(){ if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { AC = null; } } return AC; }
-  function env(node, t0, a, d, peak){ const g = ac().createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + a); g.gain.exponentialRampToValueAtTime(0.0001, t0 + a + d); node.connect(g); g.connect(ac().destination); return g; }
-  let lastClick = 0;
-  const sfx = {
-    click(){ if (!soundOn || !ac()) return; const now = ac().currentTime; if (now - lastClick < 0.045) return; lastClick = now;
-      const o = ac().createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(1400, now); o.frequency.exponentialRampToValueAtTime(500, now + 0.03); env(o, now, 0.002, 0.05, 0.25); o.start(now); o.stop(now + 0.07); },
-    thud(){ if (!soundOn || !ac()) return; const now = ac().currentTime; const o = ac().createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(160, now); o.frequency.exponentialRampToValueAtTime(50, now + 0.18); env(o, now, 0.004, 0.22, 0.6); o.start(now); o.stop(now + 0.25); },
-    creak(){ if (!soundOn || !ac()) return; const now = ac().currentTime; const o = ac().createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(220, now); o.frequency.linearRampToValueAtTime(330, now + 0.25); const f = ac().createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 900; o.connect(f); env(f, now, 0.02, 0.3, 0.12); o.start(now); o.stop(now + 0.35); },
-    boing(){ if (!soundOn || !ac()) return; const now = ac().currentTime; const o = ac().createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(520, now); o.frequency.exponentialRampToValueAtTime(180, now + 0.35); env(o, now, 0.01, 0.4, 0.45); o.start(now); o.stop(now + 0.45); },
-    bell(hi){ if (!soundOn || !ac()) return; const now = ac().currentTime; const base = hi ? 1320 : 880;
-      [[1, 1.0, 1.6], [2.76, 0.35, 1.0], [5.4, 0.12, 0.6]].forEach(([r, a, d]) => { const o = ac().createOscillator(); o.type = 'sine'; o.frequency.value = base * r; env(o, now, 0.003, d, 0.35 * a); o.start(now); o.stop(now + d + 0.05); }); },
-    tap(){ if (!soundOn || !ac()) return; const now = ac().currentTime; const o = ac().createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(300, now); const f = ac().createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1200; o.connect(f); env(f, now, 0.002, 0.08, 0.18); o.start(now); o.stop(now + 0.1); },
-  };
-  function unlockAudio(){ if (unlocked) return; unlocked = true; const a = ac(); if (a && a.state === 'suspended') a.resume(); }
-
-  // ---- 状態 ----
-  let law = 'normal';
-  let st = null;                  // 物理状態（Machine.create）
-  let phase = 'idle';             // idle(静止) | tween(戻し) | run | done
-  let idleLeft = 24;              // 0.4秒
-  let tween = null;               // {from:{label:{x,y,a}}, n, total}
-  let flash = null;               // {t, total, text, tint}
-  let effects = [];               // ripples/squash
-  let jellyBoinged = false;
-  let firstEndingShown = false;
-  let bellSwing = { bottom: -1, top: -1 };
-  let magnetAppear = 0;
-  let acc = 0, last = 0;
-  const fast = params.get('fast') === '1'; // 試験用: 結末まで即時計算して静止画にする
-
-  function snapshot(s){ const m = {}; if (!s) return m; for (const b of s.bodies) if (!b.isStatic) m[b.label] = { x: b.position.x, y: b.position.y, a: b.angle }; return m; }
-
-  function start(newLaw, opts){
-    opts = opts || {};
-    const from = snapshot(st);
-    law = newLaw;
-    st = Machine.create(Matter, law);
-    effects = []; jellyBoinged = false; bellSwing = { bottom: -1, top: -1 }; magnetAppear = 0;
-    lawBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.law === law)));
-    canvas.setAttribute('aria-label', '連鎖装置。法則は' + META[law].label + '、' + META[law].line + '。');
-    if (opts.initial) { phase = 'idle'; idleLeft = reduced ? 1 : 24; tween = null; flash = null; }
-    else {
-      tween = reduced ? null : { from, n: 0, total: 21 };
-      flash = (reduced || law === 'normal') ? null : { t: 0, total: 15, text: META[law].label, tint: META[law].tint };
-      phase = tween ? 'tween' : 'run';
-    }
-    if (fast) { while (!st.done) Machine.step(Matter, st); phase = 'done'; tween = null; flash = null; }
-  }
-
-  function handleEvents(evs){
-    for (const e of evs) {
-      if (e.type === 'impact') {
-        const pair = e.a + '|' + e.b;
-        const isDomino = /domino/.test(pair);
-        if (law === 'jelly') {
-          if (e.speed > 1.2) { effects.push({ kind: 'ripple', x: e.x, y: e.y, t: 0, total: 26 }); }
-          for (const b of st.bodies) if (!b.isStatic && (b.label === e.a || b.label === e.b)) b._squash = { t: 0, total: 14, k: Math.min(0.28, e.speed * 0.05) };
-          if (!jellyBoinged && e.speed > 2.5) { jellyBoinged = true; sfx.boing(); }
-          continue;
-        }
-        if (/ballB/.test(pair) && /seesaw/.test(pair)) { sfx.thud(); sfx.creak(); continue; }
-        if (/wallR|ceiling/.test(pair) && e.speed > 1.5) { sfx.tap(); continue; }
-        if (isDomino || /ballA|ballC/.test(pair)) { if (e.speed > 0.9) sfx.click(); }
-      } else if (e.type === 'arrive') {
-        if (e.what === 'catcher') { bellSwing.bottom = st.frame; sfx.bell(false); }
-        else if (e.what === 'bellTop') { bellSwing.top = st.frame; sfx.bell(true); }
-        else if (e.what === 'magnet') { sfx.tap(); }
-      } else if (e.type === 'done' || e.type === 'forced') {
-        phase = 'done';
-        canvas.setAttribute('aria-label', '連鎖装置。法則は' + META[law].label + '。結末: ' + META[law].end);
-        if (!firstEndingShown && !reduced) { firstEndingShown = true; lawsEl.classList.add('lift'); setTimeout(() => lawsEl.classList.remove('lift'), 320); }
-      }
-    }
-  }
-
-  // ---- 描画 ----
-  function fit(){
-    const stage = canvas.parentElement;
-    const side = document.querySelector('.side');
-    const header = document.querySelector('header');
-    const landscape = window.matchMedia('(min-width:700px) and (orientation:landscape)').matches;
-    let availH = window.innerHeight - header.offsetHeight - (landscape ? 30 : (side.offsetHeight + 40));
-    availH = Math.max(320, availH);
-    const w = Math.max(240, Math.min(stage.clientWidth, availH * W / H, 420));
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.style.width = w + 'px'; canvas.style.height = (w * H / W) + 'px';
-    canvas.width = Math.round(w * dpr); canvas.height = Math.round(w * H / W * dpr);
-    draw();
-  }
-
-  function drawSprite(name, x, y, w, h, angle, fallback){
-    const im = IMG[name];
-    ctx.save(); ctx.translate(x, y); if (angle) ctx.rotate(angle);
-    if (im) ctx.drawImage(im, -w / 2, -h / 2, w, h);
-    else { ctx.fillStyle = fallback || COL.ink; ctx.fillRect(-w / 2, -h / 2, w, h); }
-    ctx.restore();
-  }
-  function pos(b){ // tween 中は補間位置
-    if (phase === 'tween' && tween && tween.from[b.label]) {
-      const k = tween.n / tween.total, s = k * k * (3 - 2 * k), f = tween.from[b.label];
-      return { x: f.x + (b.position.x - f.x) * s, y: f.y + (b.position.y - f.y) * s, a: f.a + (b.angle - f.a) * s };
-    }
-    return { x: b.position.x, y: b.position.y, a: b.angle };
-  }
-  function label(text, x, y, opts){
-    opts = opts || {};
-    ctx.save();
-    ctx.font = (opts.weight || 600) + ' ' + (opts.size || 12) + 'px "Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif';
-    ctx.textBaseline = 'middle'; ctx.textAlign = opts.align || 'left';
-    const m = ctx.measureText(text).width, pad = 7, h = (opts.size || 12) + 10;
-    let bx = x - (opts.align === 'center' ? m / 2 + pad : (opts.align === 'right' ? m + pad : pad));
-    ctx.fillStyle = opts.bg || 'rgba(247,239,220,.92)'; ctx.fillRect(bx, y - h / 2, m + pad * 2, h);
-    ctx.strokeStyle = 'rgba(43,42,40,.35)'; ctx.lineWidth = 1; ctx.strokeRect(bx + .5, y - h / 2 + .5, m + pad * 2 - 1, h - 1);
-    ctx.fillStyle = opts.color || COL.ink; ctx.fillText(text, x, y + 1);
-    ctx.restore();
-  }
-
-  function draw(){
-    const s = canvas.width / W;
-    ctx.setTransform(s, 0, 0, s, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-    if (IMG['paper-background']) ctx.drawImage(IMG['paper-background'], 0, 0, W, H); else { ctx.fillStyle = COL.paper2; ctx.fillRect(0, 0, W, H); }
-    if (!st) return;
-
-    // 裁ち落とし印（四隅・朱）と部品番号（紙面の注記）: Codex のアート方針
-    ctx.save(); ctx.strokeStyle = COL.red; ctx.lineWidth = 1;
-    [[6, 6, 1, 1], [W - 6, 6, -1, 1], [6, H - 6, 1, -1], [W - 6, H - 6, -1, -1]].forEach(([x, y, dx, dy]) => { ctx.beginPath(); ctx.moveTo(x, y + dy * 4); ctx.lineTo(x, y + dy * 14); ctx.moveTo(x + dx * 4, y); ctx.lineTo(x + dx * 14, y); ctx.stroke(); });
-    ctx.fillStyle = 'rgba(43,42,40,.62)'; ctx.font = '500 9px "Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-    const NUM = [['01', 46, 40], ['02', 328, 200], ['03', 262, 352], ['04', 158, 484], ['05', 20, 372]];
-    if (law === 'magnet') NUM.push(['06', 300, 322]);
-    NUM.forEach(([n, x, y]) => { ctx.beginPath(); ctx.moveTo(x - 8, y); ctx.lineTo(x - 2, y); ctx.stroke(); ctx.fillText(n, x, y); });
-    ctx.restore();
-
-    // 装飾（受け皿・鐘・磁石・支点）
-    const c = G.catcher;
-    drawSprite('catcher', c.x, c.y, c.w + 2 * c.wallW, c.wallH + c.h, 0, COL.blue);
-    const swingB = bellSwing.bottom >= 0 ? Math.sin((st.frame - bellSwing.bottom) * 0.45) * 0.35 * Math.exp(-(st.frame - bellSwing.bottom) / 40) : 0;
-    ctx.save(); ctx.translate(G.bellBottom.x, G.bellBottom.y - 22); ctx.rotate(swingB); drawSprite('bell-bottom', 0, 22, 40, 44, 0, COL.mustard); ctx.restore();
-    // 左壁から出た腕木と、鐘を吊るひも
-    ctx.save(); ctx.strokeStyle = COL.ink; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, G.bellBottom.y - 40); ctx.lineTo(G.bellBottom.x + 6, G.bellBottom.y - 40); ctx.stroke();
-    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(43,42,40,.7)'; ctx.beginPath(); ctx.moveTo(G.bellBottom.x, G.bellBottom.y - 40); ctx.lineTo(G.bellBottom.x, G.bellBottom.y - 22); ctx.stroke(); ctx.restore();
-    const swingT = bellSwing.top >= 0 ? Math.sin((st.frame - bellSwing.top) * 0.45) * 0.35 * Math.exp(-(st.frame - bellSwing.top) / 40) : 0;
-    ctx.save(); ctx.translate(G.bellTop.x, G.bellTop.y + 22); ctx.rotate(swingT); drawSprite('bell-top', 0, -22, 40, 44, 0, COL.mustard); ctx.restore();
-    // 「鳴った」印: 到着後は鐘の両脇に短い二重線を残す（音なしでも伝わる）
-    function rang(x, y){ ctx.save(); ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.2; [-1, 1].forEach(s => { [0, 6].forEach(o => { ctx.beginPath(); ctx.arc(x + s * (30 + o), y, 7 + o, s > 0 ? -0.6 : Math.PI - 0.6, s > 0 ? 0.6 : Math.PI + 0.6); ctx.stroke(); }); }); ctx.restore(); }
-    if (bellSwing.bottom >= 0) rang(G.bellBottom.x, G.bellBottom.y);
-    if (bellSwing.top >= 0) rang(G.bellTop.x, G.bellTop.y);
-    if (law === 'magnet') { magnetAppear = Math.min(1, magnetAppear + 0.08); ctx.save(); ctx.globalAlpha = magnetAppear; drawSprite('magnet', G.magnet.x + (1 - magnetAppear) * 20, G.magnet.y, 60, 60, -Math.PI / 2, COL.red); ctx.restore(); }
-    drawSprite('fulcrum', G.seesaw.x, G.seesaw.y + 5 + 12, 24, 24, 0, COL.red);
-
-    // 可動体・板
-    for (const b of st.bodies) {
-      if (!b.sprite) continue;
-      const p = pos(b);
-      let sx = 1, sy = 1;
-      if (b._squash) { const q = b._squash; const k = q.k * (1 - q.t / q.total) * Math.sin(q.t / q.total * Math.PI * 2); sx = 1 + k; sy = 1 - k; q.t++; if (q.t >= q.total) b._squash = null; }
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.scale(sx, sy);
-      const im = IMG[b.sprite.img];
-      if (im) ctx.drawImage(im, -b.sprite.w / 2, -b.sprite.h / 2, b.sprite.w, b.sprite.h);
-      else if (b.sprite.img === 'post') { ctx.fillStyle = COL.ink; ctx.fillRect(-b.sprite.w / 2, -b.sprite.h / 2, b.sprite.w, b.sprite.h); }
-      else { ctx.fillStyle = /ball-a/.test(b.sprite.img) ? COL.red : /ball-b/.test(b.sprite.img) ? COL.blue : /ball-c/.test(b.sprite.img) ? COL.mustard : COL.ink;
-        if (b.circleRadius) { ctx.beginPath(); ctx.arc(0, 0, b.circleRadius, 0, Math.PI * 2); ctx.fill(); } else ctx.fillRect(-b.sprite.w / 2, -b.sprite.h / 2, b.sprite.w, b.sprite.h); }
-      ctx.restore();
-    }
-    // 波紋
-    effects = effects.filter(e => e.t < e.total);
-    for (const e of effects) { const k = e.t / e.total; ctx.save(); ctx.globalAlpha = (1 - k) * 0.9; const r = 18 + k * 30; drawSprite('jelly-overlay', e.x, e.y, r * 2, r * 2, 0, 'rgba(47,111,116,.3)'); ctx.restore(); e.t++; }
-
-    // HUD（上端）
-    const m = META[law];
-    label(m.label + '　' + m.line, 8, 16, { size: 12 });
-    const secs = phase === 'idle' ? 0 : st.frame / 60;
-    label(secs.toFixed(1) + '秒', W - 8, 16, { size: 12, align: 'right', weight: 500 });
-    if (phase === 'done') label(m.end, W / 2, H - 22, { size: 14, align: 'center', weight: 700, bg: 'rgba(247,239,220,.96)' });
-
-    // 法則の色面
-    if (flash) { const k = flash.t / flash.total; ctx.save(); ctx.globalAlpha = 1 - k; ctx.fillStyle = flash.tint; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = Math.min(1, (1 - k) * 1.6); ctx.font = '700 30px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = COL.ink; ctx.fillText(flash.text, W / 2, H / 2 - 20); ctx.restore(); }
-  }
-
-  // ---- ループ（固定刻み。描画間隔に応じて最大3刻み） ----
-  function frame(ts){
-    requestAnimationFrame(frame);
-    if (!last) last = ts; let dt = ts - last; last = ts; if (dt > 100) dt = 100;
-    acc += dt; let steps = 0;
-    while (acc >= 1000 / 60 && steps < 3) {
-      acc -= 1000 / 60; steps++;
-      if (flash) { flash.t++; if (flash.t >= flash.total) flash = null; }
-      if (phase === 'idle') { if (--idleLeft <= 0) phase = 'run'; }
-      else if (phase === 'tween') { tween.n++; if (tween.n >= tween.total) { tween = null; phase = 'run'; } }
-      else if (phase === 'run') { handleEvents(Machine.step(Matter, st)); if (st.done) phase = 'done'; }
-    }
-    if (steps) draw();
-  }
-
-  // ---- 操作 ----
-  lawBtns.forEach(b => b.addEventListener('click', () => { unlockAudio(); start(b.dataset.law, {}); }));
-  againBtn.addEventListener('click', () => { unlockAudio(); start(law, {}); });
-  sndBtn.addEventListener('click', () => { unlockAudio(); soundOn = !soundOn; sndBtn.setAttribute('aria-pressed', String(soundOn)); sndBtn.textContent = soundOn ? '音あり' : '音なし'; if (soundOn) sfx.click(); });
-  window.addEventListener('resize', fit);
-  window.addEventListener('orientationchange', () => setTimeout(fit, 150));
-
-  const initLaw = Machine.LAWS.indexOf(params.get('law')) >= 0 ? params.get('law') : 'normal';
-  start(initLaw, { initial: true });
-  fit();
-  if (!fast) requestAnimationFrame(frame); else { let tries = 0; const t = setInterval(() => { draw(); if (++tries > 120) clearInterval(t); }, 100); }
-})();
-</script>
+<script>if (new URLSearchParams(location.search).get('debug') === '1') { window.onerror = function (m, s, l, c) { var d = document.createElement('pre'); d.textContent = m + ' @' + (s || '').split('/').pop() + ':' + l + ':' + c; d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#fff;color:#c00;z-index:9;font:12px monospace;white-space:pre-wrap;margin:0;padding:6px'; document.body.appendChild(d); }; }</script>
+<script src="timeline.js"></script>
+<script src="director.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
