@@ -113,6 +113,14 @@
       "type": "dashboard",
       "added": "2026-09-01",
       "desc": "平日夜の帰宅を着席重視で提案。磯子始発・桜木町始発・東神奈川並び直しの作戦別候補とダイヤグラム表示"
+    },
+    {
+      "project": "Yorozuya",
+      "title": "法則をひとつ変えたら",
+      "file": "Yorozuya/housoku/index.html",
+      "type": "app",
+      "added": "2026-09-06",
+      "desc": "ClaudeとCodexが対等に一晩で作ったAIデモ。同じ連鎖装置を四つの法則で動かし、結末を見比べる。切り紙風の絵と決定論の物理。制作記録つき"
     }
   ]
 }
