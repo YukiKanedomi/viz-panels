@@ -1,0 +1,149 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>旅の書架 試作 — Googleマップ（奈良 DAY 1）</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=M+PLUS+1p:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#EEF0EA;font-family:"M PLUS 1p","Hiragino Sans",Meiryo,sans-serif;color:#1A1A1A;-webkit-text-size-adjust:100%}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+#map{position:absolute;inset:0;background:#E9EDE4}
+.mono{font-family:"IBM Plex Mono",monospace}
+.sbar{position:absolute;left:0;right:0;top:calc(10px + env(safe-area-inset-top));padding:0 14px;z-index:3;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.sbar>*{pointer-events:auto}
+.pill{display:inline-flex;background:#fff;border:1px solid #D6D9CF;font-size:12px;font-weight:700;letter-spacing:.06em;overflow:hidden;box-shadow:0 2px 8px -4px rgba(0,0,0,.3)}
+.pill span{padding:8px 14px;cursor:pointer}.pill span.on{background:#1A1A1A;color:#fff}
+.ttl{text-align:right;background:rgba(255,255,255,.94);padding:5px 9px;border:1px solid #D6D9CF;box-shadow:0 2px 8px -4px rgba(0,0,0,.3)}
+.ttl b{font-size:15px;font-weight:800;display:block}
+.ttl small{font-family:"IBM Plex Mono";font-size:10px;color:#444;letter-spacing:.1em}
+.sheet{position:relative;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 24px -12px rgba(0,0,0,.35);padding:8px 20px calc(16px + env(safe-area-inset-bottom));z-index:4;max-height:46%;overflow:auto}
+.hdl{width:36px;height:4px;background:#D6D9CF;border-radius:2px;margin:0 auto 10px}
+.nowrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.nowrow b{font-size:17px;font-weight:800;white-space:nowrap}
+.nowrow b i{font-style:normal;display:inline-block;width:9px;height:9px;border-radius:50%;background:#D8232A;margin-right:7px;vertical-align:1px}
+.nowrow span{font-family:"IBM Plex Mono";font-size:11.5px;color:#555;letter-spacing:.04em;text-align:right}
+.nowsub{font-size:11.5px;color:#555;margin-top:3px}
+.evs{margin-top:8px;border-top:1px solid #1A1A1A}
+.ev{display:grid;grid-template-columns:48px 1fr auto;gap:8px;align-items:baseline;padding:9px 0;border-top:1px solid #ECEEE7;cursor:pointer}
+.ev:first-child{border-top:0}
+.ev .t{font-family:"IBM Plex Mono";font-size:12.5px;font-weight:600}
+.ev .n{font-size:13.5px;font-weight:700}
+.ev .s{font-size:10.5px;color:#666;margin-top:1px}
+.ev .d{font-family:"IBM Plex Mono";font-size:10.5px;color:#555;white-space:nowrap}
+.ev .h{font-size:9.5px;font-weight:800;letter-spacing:.1em;border:1.5px solid #1A1A1A;padding:1px 5px;margin-left:6px;vertical-align:1px}
+.ev.on{background:#F4F5F0;margin:0 -8px;padding-left:8px;padding-right:8px}
+.go{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;border:1.5px solid #1A1A1A;padding:7px 12px;color:#1A1A1A;text-decoration:none;letter-spacing:.04em}
+.go small{font-family:"IBM Plex Mono";font-weight:500;color:#555;margin-left:6px}
+/* マーカー（HTMLオーバーレイ） */
+.pin{position:absolute;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap}
+.pin .dot{width:12px;height:12px;border-radius:50%;background:#fff;border:2.5px solid #111;margin:0 auto}
+.pin.pt .dot{background:#111;border-color:#111;width:10px;height:10px}
+.pin.venue .dot{border-radius:0;background:#111;width:14px;height:14px}
+.pin.now .dot{width:14px;height:14px;background:#D8232A;border:2.5px solid #fff;box-shadow:0 0 0 8px rgba(216,35,42,.18)}
+.pin .lb{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;font-size:11.5px;font-weight:700;color:#1A1A1A;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff}
+.pin.now .lb{color:#D8232A}
+.list{position:absolute;inset:0;background:#fff;z-index:2;overflow:auto;padding:calc(64px + env(safe-area-inset-top)) 20px 20px;display:none}
+.list.show{display:block}
+.list .ev{grid-template-columns:52px 1fr}
+.nokey{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:13px;line-height:1.9;color:#444;background:#EEF0EA;z-index:1}
+.nokey b{display:block;font-size:15px;margin-bottom:6px;color:#1A1A1A}
+.attr{position:absolute;left:8px;bottom:8px;z-index:3;font-size:10px;color:#555;background:rgba(255,255,255,.8);padding:2px 6px}
+</style></head><body>
+<div id="app">
+  <div style="position:relative;flex:1;min-height:0">
+    <div id="map"></div>
+    <div class="nokey" id="nokey"><div><b>APIキー待ち</b>このファイルの <span class="mono">AIzaSyA5sckvNOvym2pAi01NCuWrrpKohbHoJUw</span> を Google Maps の API キーに置き換えると、ここに Google マップが出ます。</div></div>
+    <div class="sbar"><div class="pill"><span class="on" data-v="map">地図</span><span data-v="list">リスト</span></div><div class="ttl"><b>奈良・平城京</b><small>DAY 1 · 10.10 SAT</small></div></div>
+    <div class="list" id="list"></div>
+  </div>
+  <div class="sheet">
+    <div class="hdl"></div>
+    <div class="nowrow"><b><i></i>朱雀門ひろば</b><span id="nowtxt">14:52 · 開場まで 38分</span></div>
+    <div class="nowsub">散楽フェスタの屋台で軽食。会場へは北へ徒歩5分（時刻は当日14:52の想定で固定）</div>
+    <div class="evs" id="evs"></div>
+    <a class="go" id="go" href="#" target="_blank" rel="noopener">Googleマップで経路<small>WALK</small></a>
+  </div>
+</div>
+<script>
+const KEY='AIzaSyA5sckvNOvym2pAi01NCuWrrpKohbHoJUw';
+if(location.search.includes('shot=1')){const a=document.getElementById('app');a.style.cssText='position:absolute;left:0;top:0;right:auto;bottom:auto;width:390px;height:844px'}
+// 地点（緯度経度は地図上の位置合わせ用。会場は朝堂院付近の概略）
+const PTS={
+  nishi:{lat:34.6933,lng:135.7817,n:'大和西大寺',k:'sta'},
+  shin:{lat:34.6906,lng:135.8206,n:'新大宮',k:'sta'},
+  suzaku:{lat:34.6849,lng:135.7947,n:'朱雀門ひろば',k:'pt'},
+  venue:{lat:34.6893,lng:135.7947,n:'会場 · 朝堂院',k:'venue'},
+  daigoku:{lat:34.6923,lng:135.7945,n:'第一次大極殿',k:'pt'},
+  now:{lat:34.6846,lng:135.7958,n:'いま',k:'now'}
+};
+const EV=[
+  {t:'14:23',n:'大和西大寺 着',s:'近鉄で1駅、新大宮へ',d:'',at:'nishi'},
+  {t:'14:30',n:'新大宮',s:'荷物はロッカーへ。徒歩15分で朱雀門',d:'',at:'shin'},
+  {t:'14:45',n:'朱雀門ひろば',s:'散楽フェスタの屋台で軽食',d:'',at:'suzaku',now:true},
+  {t:'15:30',n:'開場',h:true,s:'ブロック別・整理番号順に入場',d:'北へ 400m',at:'venue'},
+  {t:'17:30',n:'開演',h:true,s:'夜は15℃前後。羽織り必須',d:'会場',at:'venue'},
+  {t:'19:45',n:'終演・規制退場',s:'新大宮へ徒歩20分。20:51 快速急行',d:'東へ 1.9km',at:'shin'}
+];
+// 淡い配色（Google の JSON スタイル。POI名は残す）
+const STYLE=[
+ {elementType:'geometry',stylers:[{color:'#EEF0EA'}]},
+ {elementType:'labels.text.fill',stylers:[{color:'#3A3A3A'}]},
+ {elementType:'labels.text.stroke',stylers:[{color:'#FFFFFF'},{weight:2}]},
+ {featureType:'water',elementType:'geometry',stylers:[{color:'#CFE0EA'}]},
+ {featureType:'landscape.natural',elementType:'geometry',stylers:[{color:'#E6EBDD'}]},
+ {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#D9E6CB'}]},
+ {featureType:'poi',elementType:'labels.icon',stylers:[{saturation:-60},{lightness:20}]},
+ {featureType:'road',elementType:'geometry',stylers:[{color:'#FFFFFF'}]},
+ {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#D8DBD2'}]},
+ {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#F6E9C8'}]},
+ {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#F0D9A3'}]},
+ {featureType:'transit.line',elementType:'geometry',stylers:[{color:'#9AA0A6'},{weight:1.2}]},
+ {featureType:'transit.station',elementType:'labels.icon',stylers:[{saturation:-40}]},
+ {featureType:'administrative',elementType:'geometry.stroke',stylers:[{color:'#C9CDC3'}]}
+];
+// ----- 下のシート・リスト -----
+function renderEvs(){
+  const box=document.getElementById('evs');
+  box.innerHTML=EV.filter(e=>!['14:23','14:30'].includes(e.t)).map(e=>row(e)).join('');
+  document.getElementById('list').innerHTML='<div class="evs">'+EV.map(e=>row(e)).join('')+'</div>';
+  document.querySelectorAll('.ev').forEach(el=>el.addEventListener('click',()=>{const p=PTS[el.dataset.at];if(map&&p){map.panTo(p);map.setZoom(16)}}));
+}
+function row(e){return '<div class="ev'+(e.now?' on':'')+'" data-at="'+e.at+'"><span class="t">'+e.t+'</span><span><div class="n">'+e.n+(e.h?'<span class="h">厳守</span>':'')+'</div><div class="s">'+e.s+'</div></span>'+(e.d?'<span class="d">'+e.d+'</span>':'')+'</div>'}
+renderEvs();
+document.getElementById('go').href='https://www.google.com/maps/dir/?api=1&origin='+PTS.now.lat+','+PTS.now.lng+'&destination='+PTS.venue.lat+','+PTS.venue.lng+'&travelmode=walking';
+document.querySelectorAll('.pill span').forEach(s=>s.addEventListener('click',()=>{
+  document.querySelectorAll('.pill span').forEach(x=>x.classList.toggle('on',x===s));
+  document.getElementById('list').classList.toggle('show',s.dataset.v==='list');
+}));
+// ----- Google マップ -----
+let map;
+function init(){
+  document.getElementById('nokey').remove();
+  map=new google.maps.Map(document.getElementById('map'),{
+    center:{lat:34.6885,lng:135.801},zoom:14,styles:STYLE,
+    disableDefaultUI:true,zoomControl:false,gestureHandling:'greedy',clickableIcons:true,
+    mapTypeControl:false,fullscreenControl:false
+  });
+  // 近鉄（模式）と徒歩（点線）
+  new google.maps.Polyline({map,path:[PTS.nishi,PTS.shin],strokeColor:'#E08A2E',strokeOpacity:1,strokeWeight:5});
+  const dots={path:google.maps.SymbolPath.CIRCLE,fillColor:'#333',fillOpacity:1,strokeOpacity:0,scale:2};
+  new google.maps.Polyline({map,path:[PTS.shin,PTS.suzaku],strokeOpacity:0,icons:[{icon:dots,offset:'0',repeat:'9px'}]});
+  new google.maps.Polyline({map,path:[PTS.suzaku,PTS.venue],strokeOpacity:0,icons:[{icon:dots,offset:'0',repeat:'9px'}]});
+  // HTMLマーカー
+  class Pin extends google.maps.OverlayView{
+    constructor(p){super();this.p=p;this.setMap(map)}
+    onAdd(){this.el=document.createElement('div');this.el.className='pin '+this.p.k;this.el.innerHTML='<div class="dot"></div><div class="lb">'+this.p.n+'</div>';this.getPanes().overlayMouseTarget.appendChild(this.el)}
+    draw(){const q=this.getProjection().fromLatLngToDivPixel(new google.maps.LatLng(this.p.lat,this.p.lng));this.el.style.left=q.x+'px';this.el.style.top=q.y+'px'}
+    onRemove(){this.el.remove()}
+  }
+  Object.values(PTS).forEach(p=>new Pin(p));
+  const b=new google.maps.LatLngBounds();[PTS.nishi,PTS.shin,PTS.suzaku,PTS.daigoku].forEach(p=>b.extend(p));
+  map.fitBounds(b,{top:70,bottom:20,left:24,right:24});
+}
+window.init=init;
+if(KEY && !KEY.startsWith('__')){
+  const s=document.createElement('script');
+  s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(KEY)+'&callback=init&language=ja&region=JP&v=weekly&loading=async';
+  s.async=true;document.head.appendChild(s);
+}
+</script>
+</body></html>

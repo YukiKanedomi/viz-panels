@@ -121,6 +121,14 @@
       "type": "app",
       "added": "2026-09-06",
       "desc": "ClaudeとCodexが対等に一晩で作ったAIデモ。同じ連鎖装置を四つの法則で動かし、結末を見比べる。切り紙風の絵と決定論の物理。制作記録つき"
+    },
+    {
+      "project": "travel-desk",
+      "title": "Google Maps prototype",
+      "file": "travel-desk/gmap-proto.html",
+      "type": "panel",
+      "added": "2026-09-06",
+      "desc": ""
     }
   ]
 }
