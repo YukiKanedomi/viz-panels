@@ -14,7 +14,9 @@
   const COL = { paper: '#efe3c8', paper2: '#f7efdc', ink: '#2b2a28', red: '#c8442c', blue: '#2f6f74', mustard: '#d9a12b' };
 
   // ---- 画像 ----
-  const NAMES = ['paper-background-v3', 'ball-a', 'ball-b', 'ball-c', 'domino', 'slope', 'shelf', 'seesaw', 'fulcrum', 'catcher', 'bell-bottom', 'magnet-emblem', 'post', 'jelly-overlay'];
+  const NAMES = ['paper-background-v3', 'ball-a', 'ball-b', 'ball-c', 'domino', 'slope', 'shelf', 'seesaw', 'fulcrum', 'catcher', 'bell-bottom', 'bell-top', 'magnet-emblem', 'post', 'jelly-overlay',
+    // 第三期の新素材（Codex, beats-codex.md §C）。無い間は仮図形
+    'sign-blank', 'boundary-dash', 'boundary-water', 'hero-scar', 'portal-envelope', 'magnet-moon', 'magnet-ring-on', 'flap-oneway', 'paper-fish', 'ring-big', 'ring-small', 'ring-restore', 'keyhole-wall', 'bubble', 'spring-pad', 'goal-cup', 'goal-lamp-off', 'goal-lamp-on', 'goal-dekita', 'confetti-sheet'];
   const IMG = {}; let imgTick = 0, lastImgTick = -1;
   NAMES.forEach(n => { const im = new Image(); im.src = 'assets/' + n + '.webp'; im.onload = () => { IMG[n] = im; imgTick++; }; });
 
@@ -38,7 +40,10 @@
 
   // ---- 再生状態 ----
   let t = 0, playing = true, userSlow = false, scrubbing = false, evIndex = 0, idleLeft = reduced ? 1 : 30, lastTs = 0, acc = 0;
-  let effects = [], zoneFlash = null, lastZone = null, camPrev = null;
+  let effects = [], zoneFlash = null, camPrev = null, ringPulse = null, goalT = -1, confetti = [], bubbles = [];
+  const ZONE_COLORS = ['#efe3c8', '#f1d9d2', '#d9e6ec', '#e3d9ea', '#dfe9d6', '#ecece6', '#cfdbe8', '#d9a12b'];
+  function spawnConfetti() { confetti = []; const g = goalPos(); for (let i = 0; i < 28; i++) { const a = -Math.PI / 2 + (i / 28 - 0.5) * 1.6; const sp = 3 + (i % 5) * 0.7; confetti.push({ x: g.x, y: g.y - 20, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: (i * 37) % 360, c: ZONE_COLORS[i % 8], t: 0 }); } }
+  function goalPos() { const s = TL.statics.find(b => b.label === 'goalBase'); return s ? { x: s.x, y: s.y } : { x: 80, y: 3180 }; }
   const endFrame = () => TL.frames.length - 1;
   const NB = TL.bodies.length;
   function poseAt(f) {
@@ -62,9 +67,21 @@
   }
   function clampCam(c) { const hw = VW / (2 * c.z), hh = VH / (2 * c.z); return { cx: Math.min(W - hw, Math.max(hw, c.cx)), cy: Math.min(H - hh, Math.max(hh, c.cy)), z: c.z }; }
   function camAt(f) { const tgt = camTarget(f); if (!camPrev || scrubbing) { camPrev = clampCam(tgt); return camPrev; } const k = 0.08; camPrev = clampCam({ cx: camPrev.cx + (tgt.cx - camPrev.cx) * k, cy: camPrev.cy + (tgt.cy - camPrev.cy) * k, z: camPrev.z + (tgt.z - camPrev.z) * 0.05 }); return camPrev; }
-  // スロー: エリア境界の通過と節目（ring/portal/break/release-orbit/arrive）の前後
-  const SLOW = [];
-  for (const e of TL.events) if (/^(zone|ring|portal|break|release-orbit|arrive|release)$/.test(e.t)) SLOW.push({ from: e.f - 10, to: e.f + 14, sp: e.t === 'arrive' ? 0.5 : 0.45 });
+  // スロー（Codex §A/§B）: 境界の通過・輪・封筒・橋の破断・磁力解除・到着。同種の連続は最初だけ
+  const SLOW = []; let lastBreak = -999, lastZone = -999;
+  for (const e of TL.events) {
+    if (e.t === 'zone') { if (e.f - lastZone > 90) SLOW.push({ from: e.f - 12, to: e.f + 16, sp: 0.45 }); lastZone = e.f; }
+    else if (e.t === 'ring') SLOW.push({ from: e.f - 4, to: e.f + (e.k > 1 ? 40 : 26), sp: 0.45 });
+    else if (e.t === 'portal') SLOW.push({ from: e.f - 8, to: e.f + 20, sp: 0.5 });
+    else if (e.t === 'break') { if (e.f - lastBreak > 30) SLOW.push({ from: e.f - 3, to: e.f + 6, sp: 0.45 }); lastBreak = e.f; }
+    else if (e.t === 'release-orbit') SLOW.push({ from: e.f - 30, to: e.f + 10, sp: 0.45 });
+    else if (e.t === 'release') SLOW.push({ from: e.f + 20, to: e.f + 40, sp: 0.65 });
+    else if (e.t === 'arrive') SLOW.push({ from: e.f - 12, to: e.f + 2, sp: 0.5 });
+  }
+  // 拍のイベント（花火・ゼリーの跳ね・ばね）の一瞬のスロー
+  let jellyHits = 0;
+  for (const e of TL.events) if (e.t === 'impact' && /hero/.test(e.a + e.b) && /^st\d/.test(e.a + e.b)) { jellyHits++; if (jellyHits === 2) SLOW.push({ from: e.f - 3, to: e.f + 10, sp: 0.65 }); }
+  for (const e of TL.events) if (e.t === 'impact' && /hero/.test(e.a + e.b) && /spring3/.test(e.a + e.b)) { SLOW.push({ from: e.f - 3, to: e.f + 8, sp: 0.65 }); break; }
   function speedAt(f) { if (userSlow) return 0.25; let sp = 1; for (const s of SLOW) if (f >= s.from && f < s.to) sp = Math.min(sp, s.sp); return sp; }
 
   // ---- イベント発火（音・演出） ----
@@ -72,12 +89,12 @@
     while (evIndex < TL.events.length && TL.events[evIndex].f <= f) {
       const e = TL.events[evIndex++];
       if (e.t === 'impact') { const pair = e.a + '|' + e.b; if (/domino/.test(pair) && e.v > 0.9) sfx.click(e.v); else if (/hero|trigger|fish/.test(pair) && e.v > 1.5) { if (zoneAt(e.y).id === 'jelly') { sfx.boing(); effects.push({ x: e.x, y: e.y, t: 0, total: 24 }); } else sfx.paper(e.v); } continue; }
-      if (e.t === 'zone') { zoneFlash = { t: 0, total: 40, name: e.name, id: e.what }; sfx.chime(TL.zones.findIndex(z => z.id === e.what)); }
+      if (e.t === 'zone') { const z = TL.zones.find(z => z.id === e.what); zoneFlash = { t: 0, total: 48, name: e.name, word: z && z.sfx, id: e.what }; sfx.chime(TL.zones.findIndex(z => z.id === e.what)); }
       else if (e.t === 'portal') sfx.whoosh();
-      else if (e.t === 'ring') sfx.chime(e.k > 1 ? 2 : 6);
+      else if (e.t === 'ring') { sfx.chime(e.k > 1 ? -4 : (e.k < 0.5 ? 8 : 2)); ringPulse = { x: e.x, y: e.y, t: 0, total: 30, k: e.k }; }
       else if (e.t === 'break') sfx.thud();
       else if (e.t === 'release-orbit') sfx.whoosh();
-      else if (e.t === 'arrive') sfx.bell();
+      else if (e.t === 'arrive') { sfx.bell(); goalT = 0; spawnConfetti(); }
     }
   }
 
@@ -86,7 +103,7 @@
   function buildMarks() { marks.innerHTML = ''; const n = endFrame(); const add = (f, cls) => { const s = document.createElement('span'); s.className = 'mk ' + cls; s.style.left = (f / n * 100) + '%'; marks.appendChild(s); }; TL.events.forEach(e => { if (e.t === 'zone') add(e.f, 'zone'); else if (e.t === 'arrive') add(e.f, 'arr'); else if (/ring|portal|break|release-orbit/.test(e.t)) add(e.f, ''); }); }
   buildMarks();
   function updateKnob() { knob.style.setProperty('--k', String(t / endFrame())); track.setAttribute('aria-valuenow', String(Math.round(t / FPS))); track.setAttribute('aria-valuemax', String(Math.round(endFrame() / FPS))); }
-  function syncToTime() { evIndex = 0; while (evIndex < TL.events.length && TL.events[evIndex].f <= t) evIndex++; effects = []; zoneFlash = null; camPrev = null; }
+  function syncToTime() { evIndex = 0; while (evIndex < TL.events.length && TL.events[evIndex].f <= t) evIndex++; effects = []; zoneFlash = null; camPrev = null; ringPulse = null; confetti = []; bubbles = []; goalT = (TL.arrived && t >= TL.arrivedFrame) ? 60 : -1; }
   function scrubTo(clientX) { const r = track.getBoundingClientRect(); const k = Math.min(1, Math.max(0, (clientX - r.left - 10) / (r.width - 20))); t = k * endFrame(); idleLeft = 0; syncToTime(); draw(); }
   track.addEventListener('pointerdown', e => { unlockAudio(); scrubbing = true; playing = false; updatePlayBtn(); track.setPointerCapture(e.pointerId); scrubTo(e.clientX); });
   track.addEventListener('pointermove', e => { if (scrubbing) scrubTo(e.clientX); });
@@ -138,11 +155,15 @@
     ctx.save(); ctx.strokeStyle = 'rgba(200,68,44,.7)'; ctx.setLineDash([6, 5]); ctx.lineWidth = 1.5;
     for (const z of TL.zones) if (z.y0 > 0) { ctx.beginPath(); ctx.moveTo(0, z.y0); ctx.lineTo(W, z.y0); ctx.stroke(); }
     ctx.restore();
-    for (const z of TL.zones) { // 看板（手書き札）
-      ctx.save(); ctx.translate(W - 14, z.y0 + 26); ctx.rotate(-0.04); ctx.fillStyle = 'rgba(247,239,220,.95)'; ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.2;
-      ctx.font = '700 12px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif'; const tw = ctx.measureText(z.sign).width + 16; ctx.fillRect(-tw, -12, tw, 24); ctx.strokeRect(-tw + .5, -11.5, tw - 1, 23);
-      ctx.fillStyle = COL.ink; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(z.sign, -8, 1); ctx.restore();
+    for (const z of TL.zones) { // 看板（ちぎり紙＋画鋲。素材があれば使う）
+      ctx.save(); ctx.translate(W - 14, z.y0 + 26); ctx.rotate(-0.04);
+      ctx.font = '700 13px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif'; const tw = Math.max(64, ctx.measureText(z.sign).width + 22);
+      if (IMG['sign-blank']) ctx.drawImage(IMG['sign-blank'], -tw, -14, tw, 28); else { ctx.fillStyle = 'rgba(247,239,220,.95)'; ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.2; ctx.fillRect(-tw, -12, tw, 24); ctx.strokeRect(-tw + .5, -11.5, tw - 1, 23); ctx.fillStyle = COL.red; ctx.beginPath(); ctx.arc(-tw + 8, -6, 2.5, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = COL.ink; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(z.sign, -10, 1); ctx.restore();
     }
+    // 水面（二重波線）と泡
+    { const wz = TL.zones.find(z => z.id === 'water'); if (wz) { ctx.save(); ctx.strokeStyle = 'rgba(47,111,116,.7)'; ctx.lineWidth = 1.5; [0, 5].forEach(o => { ctx.beginPath(); for (let x = 0; x <= W; x += 6) { const y = wz.y0 + o + Math.sin(x / 9 + t / 8) * 2; if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } ctx.stroke(); }); ctx.restore();
+      for (const b of bubbles) { ctx.save(); ctx.globalAlpha = 0.55 * (1 - b.t / b.total); ctx.strokeStyle = 'rgba(247,239,220,.9)'; ctx.fillStyle = 'rgba(207,219,232,.5)'; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore(); } } }
     // 磁石（点灯中は同心円）
     for (const m of TL.magnets) { const on = t >= m.on && (m.off == null || t < m.off); ctx.save(); ctx.strokeStyle = on ? COL.red : 'rgba(43,42,40,.25)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); [24, 48, 72].forEach(r => { ctx.beginPath(); ctx.arc(m.x, m.y, r, 0, Math.PI * 2); ctx.stroke(); }); ctx.restore(); sprite('magnet-emblem', m.x, m.y, 30, 30, 0, COL.red); }
     // 静的部品
@@ -154,17 +175,21 @@
       }
       sprite(b.sprite.img, b.x, b.y, b.sprite.w, b.sprite.h, b.a, colorOf(b.sprite.img));
     }
-    // 可動体
-    TL.bodies.forEach((b, i) => { const p = pose[i]; const w = b.r ? p.r * 2 : b.w, h = b.r ? p.r * 2 : b.h; sprite(b.sprite ? b.sprite.img : 'post', p.x, p.y, w, h, p.a, colorOf(b.sprite ? b.sprite.img : ''), !!b.r); if (i === mi) { ctx.save(); ctx.strokeStyle = 'rgba(200,68,44,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(p.x, p.y, (p.r || 12) + 6, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); } });
+    // ゴール（杯・ランプ・札）
+    { const g = goalPos(); if (IMG['goal-cup']) ctx.drawImage(IMG['goal-cup'], g.x - 50, g.y - 46, 100, 56); const lit = goalT >= 0; sprite(lit ? 'goal-lamp-on' : 'goal-lamp-off', g.x + 80, g.y - 50, 48, 60, 0, lit ? COL.mustard : 'rgba(43,42,40,.35)'); if (lit) { const k = Math.min(1, Math.max(0, (goalT - 10) / 20)); ctx.save(); ctx.globalAlpha = k; sprite('goal-dekita', g.x + 80, g.y - 110 + k * 24, 96, 36, -0.05, COL.paper2); if (!IMG['goal-dekita']) { ctx.fillStyle = COL.ink; ctx.font = '700 16px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('できた！', g.x + 80, g.y - 110 + k * 24); } ctx.restore(); } }
+    // 可動体（主役には回転が読める丸傷）
+    TL.bodies.forEach((b, i) => { const p = pose[i]; const w = b.r ? p.r * 2 : b.w, h = b.r ? p.r * 2 : b.h; const img = b.sprite ? b.sprite.img : 'post'; sprite(img === 'fish' ? 'paper-fish' : img, p.x, p.y, w, h, p.a, colorOf(img), !!b.r); if (i === mi && b.r) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); const sr = Math.max(1.2, p.r * 0.22); if (IMG['hero-scar']) ctx.drawImage(IMG['hero-scar'], p.r * 0.45 - sr, -p.r * 0.35 - sr, sr * 2, sr * 2); else { ctx.fillStyle = 'rgba(247,239,220,.9)'; ctx.beginPath(); ctx.arc(p.r * 0.45, -p.r * 0.35, sr, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); } });
     for (const e of effects) { const k = e.t / e.total; ctx.save(); ctx.globalAlpha = (1 - k) * 0.9; sprite('jelly-overlay', e.x, e.y, 30 + k * 30, 30 + k * 30, 0, 'rgba(47,111,116,.3)', true); ctx.restore(); }
+    if (ringPulse) { const k = ringPulse.t / ringPulse.total; ctx.save(); ctx.globalAlpha = 1 - k; ctx.strokeStyle = COL.red; ctx.lineWidth = 2; [0, 8].forEach(o => { ctx.beginPath(); ctx.arc(ringPulse.x, ringPulse.y, 14 + o + k * (ringPulse.k > 1 ? 40 : 10), 0, Math.PI * 2); ctx.stroke(); }); ctx.restore(); }
+    for (const c of confetti) { ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.r * Math.PI / 180); ctx.fillStyle = c.c; ctx.globalAlpha = Math.max(0, 1 - c.t / 150); ctx.fillRect(-3, -2, 6, 4); ctx.restore(); }
 
     // HUD
     screenTransform();
     const z = zoneAt(pose[mi].y);
     label(z.name + '　' + z.sign, 8, 16, { size: 12 });
     const sp = speedAt(t); label((t / FPS).toFixed(1) + '秒' + (sp !== 1 ? '　×' + sp.toFixed(2).replace(/0$/, '') : ''), VW - 8, 16, { size: 12, align: 'right', weight: 500 });
-    if (zoneFlash) { const k = zoneFlash.t / zoneFlash.total; ctx.save(); ctx.globalAlpha = 1 - k; ctx.font = '700 26px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = COL.ink; ctx.fillText(zoneFlash.name, VW / 2, VH / 2 - 40 - k * 20); ctx.restore(); }
-    if (t >= endFrame() - 0.5) label(TL.arrived ? 'できた！　八つの法則を旅してゴールに届いた。' : '（試作）まだゴールに届いていない', VW / 2, VH - 22, { size: 13, align: 'center', weight: 700 });
+    if (zoneFlash) { const k = zoneFlash.t / zoneFlash.total; ctx.save(); ctx.globalAlpha = 1 - k; ctx.font = '700 26px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = COL.ink; ctx.fillText(zoneFlash.name, VW / 2, VH / 2 - 40 - k * 20); if (zoneFlash.word) { ctx.font = '600 15px "Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif'; ctx.fillStyle = COL.red; ctx.fillText(zoneFlash.word, VW / 2, VH / 2 - 8 - k * 12); } ctx.restore(); }
+    if (t >= endFrame() - 0.5) label(TL.arrived ? '八つの法則を旅して、ゴールに届いた。' : '（試作）まだゴールに届いていない', VW / 2, VH - 22, { size: 13, align: 'center', weight: 700 });
     Array.from(zonesEl.children).forEach(s => s.classList.toggle('on', s.dataset.id === z.id));
     updateKnob();
   }
@@ -177,10 +202,16 @@
       acc -= 1000 / FPS; steps++;
       if (zoneFlash) { zoneFlash.t++; if (zoneFlash.t >= zoneFlash.total) zoneFlash = null; }
       effects = effects.filter(e => ++e.t < e.total);
+      if (ringPulse && ++ringPulse.t >= ringPulse.total) ringPulse = null;
+      if (goalT >= 0) goalT++;
+      for (const c of confetti) { c.x += c.vx; c.y += c.vy; c.vy += 0.12; c.vx *= 0.985; c.r += 6; c.t++; } confetti = confetti.filter(c => c.t < 150);
+      // 水中の主役から泡
+      if (playing) { const p = poseAt(t), i = mainIndex(t), z = zoneAt(p[i].y); if (z.id === 'water' && (Math.floor(t) % 9 === 0)) bubbles.push({ x: p[i].x + ((t * 7) % 10) - 5, y: p[i].y - 8, r: 2 + (t % 3), t: 0, total: 70, vx: ((t * 13) % 7 - 3) * 0.05 }); }
+      for (const b of bubbles) { b.y -= 0.9; b.x += b.vx; b.t++; } bubbles = bubbles.filter(b => b.t < b.total);
       if (idleLeft > 0) { idleLeft--; continue; }
       if (playing && !scrubbing) { const before = t; t = Math.min(endFrame(), t + speedAt(t)); fireEventsUpTo(Math.floor(t)); if (t >= endFrame() && before < endFrame()) { playing = false; updatePlayBtn(); } }
     }
-    const active = playing || idleLeft > 0 || effects.length || zoneFlash;
+    const active = playing || idleLeft > 0 || effects.length || zoneFlash || ringPulse || confetti.length || bubbles.length || (goalT >= 0 && goalT < 60);
     if (steps && (active || imgTick !== lastImgTick)) { lastImgTick = imgTick; draw(); }
   }
   if (params.get('t')) { t = params.get('t') === 'end' ? endFrame() : Math.min(endFrame(), +params.get('t')); playing = false; idleLeft = 0; syncToTime(); }
