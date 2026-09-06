@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>法則を旅する装置</title>
+<meta name="description" content="物理法則がエリアごとに変わる、現実にはできない長編ピタゴラ装置。二つのAI（Claude と Codex）が対等に制作。">
+<style>
+  :root{--paper:#efe3c8;--paper2:#f7efdc;--ink:#2b2a28;--red:#c8442c;--blue:#2f6f74;--mustard:#d9a12b;--rule:rgba(43,42,40,.22)}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink)}
+  body{font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+  .wrap{max-width:480px;margin:0 auto;padding:10px 12px 40px}
+  header{display:flex;flex-direction:column;gap:2px;padding:4px 2px 6px}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;font-size:22px;letter-spacing:.06em;margin:0;line-height:1.25}
+  h1 small{display:inline-block;font-family:inherit;font-size:11px;letter-spacing:.2em;color:var(--red);margin-right:8px;vertical-align:middle}
+  .lead{margin:0;font-size:14px}
+  .hint{margin:0;font-size:12px;color:rgba(43,42,40,.7)}
+  .stage{position:relative;margin:4px auto 0;display:flex;justify-content:center}
+  canvas{display:block;border:1px solid var(--rule);background:var(--paper2)}
+  .scrub{margin:8px 2px 0;padding:4px 0}
+  .track{position:relative;height:22px;cursor:pointer;touch-action:none;outline-offset:3px;border-style:solid;border-width:0 12px;border-image:url("assets/ui-scrub-track.webp") 0 24 fill / 0 12px stretch}
+  .track:focus-visible{outline:2px solid var(--blue)}
+  .marks{position:absolute;left:10px;right:10px;top:0;bottom:0}
+  .mk{position:absolute;top:50%;width:2px;height:8px;margin:-4px 0 0 -1px;background:rgba(43,42,40,.45);border-radius:1px}
+  .mk.zone{width:2px;height:14px;margin:-7px 0 0 -1px;background:var(--red)}
+  .mk.arr{width:3px;height:14px;margin:-7px 0 0 -1px;background:var(--mustard)}
+  .knob{position:absolute;top:50%;pointer-events:none;background:url("assets/ui-scrub-knob.webp") center/20px 20px no-repeat;width:20px;height:20px;margin:-10px 0 0 -10px;left:calc(10px + (100% - 20px) * var(--k,0))}
+  .row{display:flex;gap:8px;margin:6px 0 0}
+  .btn{appearance:none;border:0;background:transparent;color:var(--ink);min-height:26px;padding:2px 6px;font:inherit;font-size:12.5px;cursor:pointer;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;
+    border-style:solid;border-width:8px;border-image:url("assets/ui-control-button.webp") 20 fill / 8px stretch;filter:drop-shadow(1.5px 2px 0 rgba(43,42,40,.16));transition:transform .12s}
+  .btn:active{transform:translateY(1px) scale(.985)}
+  .btn[aria-pressed="true"]{color:var(--blue);filter:drop-shadow(1.5px 2px 0 rgba(43,42,40,.16)) brightness(.94)}
+  .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .ic{display:inline-block;width:16px;height:24px;background:url("assets/ui-control-icons.webp") no-repeat;background-size:96px 24px;flex:none}
+  .ic-play{background-position:0 0}.ic-pause{background-position:-16px 0}.ic-slow{background-position:-32px 0}.ic-again{background-position:-64px 0}.ic-snd{background-position:-80px 0}
+  .zones{display:flex;gap:3px;margin:8px 0 0;flex-wrap:wrap}
+  .zones span{font-size:10px;padding:2px 6px;border:1px solid var(--rule);border-radius:3px;color:rgba(43,42,40,.7);background:var(--paper2)}
+  .zones span.on{color:var(--ink);border-color:var(--ink);font-weight:600}
+  .small{font-size:12px;color:rgba(43,42,40,.7)}
+  .sig{margin-top:20px;font-size:13px;border-top:1px solid var(--rule);padding-top:10px}
+  .sig a{color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1><small>長編・連鎖装置</small>法則を旅する装置</h1>
+  <p class="lead">玉がひとつ、八つの法則のエリアを通り抜けてゴールへ向かいます。</p>
+  <p class="hint">エリアの境目で、重力の向き・弾みやすさ・浮力・磁力・大きさが変わります。</p>
+</header>
+<main>
+  <div class="stage"><canvas id="c" width="720" height="1120" role="img" aria-label="法則がエリアごとに変わる長編の連鎖装置"></canvas></div>
+  <div class="side">
+    <div class="zones" id="zones"></div>
+    <div class="scrub"><div class="track" id="track" role="slider" tabindex="0" aria-label="時間をなぞる" aria-valuemin="0" aria-valuenow="0" aria-valuemax="0"><div class="marks" id="marks"></div><div class="knob" id="knob"></div></div></div>
+    <div class="row">
+      <button class="btn" id="play" aria-pressed="false"><i class="ic ic-play" aria-hidden="true"></i><span>一時停止</span></button>
+      <button class="btn" id="slow" aria-pressed="false"><i class="ic ic-slow" aria-hidden="true"></i><span>スロー</span></button>
+      <button class="btn" id="again"><i class="ic ic-again" aria-hidden="true"></i><span>はじめから</span></button>
+      <button class="btn" id="snd" aria-pressed="false"><i class="ic ic-snd" aria-hidden="true"></i><span>音なし</span></button>
+    </div>
+  </div>
+</main>
+<p class="sig small">試作（グレーボックス）。二つのAI（Claude と Codex）が対等に制作中。<a href="index.html">前作「法則をひとつ変えたら」</a></p>
+</div>
+<script>if (new URLSearchParams(location.search).get('debug') === '1') { window.onerror = function (m, s, l, c) { var d = document.createElement('pre'); d.textContent = m + ' @' + (s || '').split('/').pop() + ':' + l + ':' + c; d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#fff;color:#c00;z-index:9;font:12px monospace;white-space:pre-wrap;margin:0;padding:6px'; document.body.appendChild(d); }; }</script>
+<script src="timeline3.js"></script>
+<script src="app3.js"></script>
+</body>
+</html>
