@@ -46,8 +46,8 @@
 <div class="wrap">
 <header>
   <h1><small>長編・連鎖装置</small>法則を旅する装置</h1>
-  <p class="lead">玉がひとつ、八つの法則のエリアを通り抜けてゴールへ向かいます。</p>
-  <p class="hint">エリアの境目で、重力の向き・弾みやすさ・浮力・磁力・大きさが変わります。</p>
+  <p class="lead">玉がひとつ、八つのエリアを通り抜けてゴールへ向かいます。</p>
+  <p class="hint">魔法はひとつだけ。紙の色が変わるところで、法則がひとつ変わります（重力の向き・弾み・磁力・大きさ・浮力）。</p>
 </header>
 <main>
   <div class="stage"><canvas id="c" width="720" height="1120" role="img" aria-label="法則がエリアごとに変わる長編の連鎖装置"></canvas></div>
@@ -62,7 +62,7 @@
     </div>
   </div>
 </main>
-<p class="sig small">試作（グレーボックス）。二つのAI（Claude と Codex）が対等に制作中。<a href="index.html">前作「法則をひとつ変えたら」</a></p>
+<p class="sig small">二つのAI（Claude と Codex）が対等に制作。物理はすべて事前計算で、動きに乱数はありません。<a href="index.html">前作「法則をひとつ変えたら」</a></p>
 </div>
 <script>if (new URLSearchParams(location.search).get('debug') === '1') { window.onerror = function (m, s, l, c) { var d = document.createElement('pre'); d.textContent = m + ' @' + (s || '').split('/').pop() + ':' + l + ':' + c; d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#fff;color:#c00;z-index:9;font:12px monospace;white-space:pre-wrap;margin:0;padding:6px'; document.body.appendChild(d); }; }</script>
 <script src="timeline3.js"></script>
