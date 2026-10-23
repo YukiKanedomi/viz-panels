@@ -58,6 +58,9 @@
   ol.steps li { margin:6px 0; }
   .oq li { list-style:none; padding:6px 0; border-bottom:1px dashed var(--line); font-size:.82rem; }
   .oq .st { font-size:.7rem; color:var(--mut); margin-left:6px; }
+  .tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .tw table { min-width:600px; }
+  .tw td { white-space:normal; }
 </style>
 </head>
 <body>
@@ -147,10 +150,10 @@
 
 <section class="card" id="s-matrix">
   <h2>4. 試験マトリクス</h2>
-  <table id="matrix">
+  <div class="tw"><table id="matrix">
     <thead><tr><th>段</th><th>シム厚</th><th>ΔS</th><th>起動時の隙間（通常比）</th><th>到達 自然／強制</th><th>狙い</th></tr></thead>
     <tbody></tbody>
-  </table>
+  </table></div>
   <p class="small">起動時の隙間 = 開き量 − ΔS。負なら起動時に通常より強い締め代で回り始める（赤字）。到達は入熱カット後の最終値（通常比）。各段で自然冷却と強制冷却を1本ずつ取り、閉じ速度の影響も見る。</p>
   <div class="note"><b>Radil 2002 の原典図より</b>: φ35 Gen III では、負荷容量が 0 になった（焼付いた）のは最適クリアランスの約 1/3 まで詰めた点で、最適の 65 % でもまだ最大の 6 割を支えていた。破断までの詰め量は軸受固有のクリアランスに対する比で決まるので、φ44 供試軸受の組付けクリアランス c を荷重‐たわみで測り、ΔS を c 比でも読むこと。c≈40 µm なら −20 µm（−50 %）ではまだ支持力が残る可能性が高い。</div>
   <div class="note">文献のシム厚は公称組付けクリアランス c の 0.25〜0.67 の範囲（A7）。シム増分は c の約 0.5 以下が無難なので、段 3〜4（+30/+40 µm）は予熱特性試験で c を実測してから可否を決める。起動は lift-off 速度の 2 倍以上まで速やかに加速（NASA 推奨）。</div>
@@ -158,7 +161,7 @@
 
 <section class="card" id="s-parts">
   <h2>5. 計測・部品の構成</h2>
-  <table>
+  <div class="tw"><table>
     <thead><tr><th>部位</th><th>仕様の要点</th><th>入手先の目安</th></tr></thead>
     <tbody>
       <tr><td>カートリッジヒータ ×6</td><td>φ6.35 × 38 mm、100〜150 W。Watlow FIREROD（アスクル E1J40/E1J41）は <b>120 V 品</b>。200 V 同寸法は未発見（A6）→ 120 V＋降圧トランス、200 V 55 W×6〜8 本（TRUSCO φ6×30）、または坂口電熱・八光の特注</td><td>アスクル／モノタロウ／特注</td></tr>
@@ -179,7 +182,7 @@
       <tr><td>零点・寄生トルクの手順</td><td>零点は「ハウジング 250 °C 熱平衡・軸停止・荷重付与状態」で取り、停止→再始動ごとに再取得。ヒータ・熱電対リードは軸方向に沿わせ細線でループ。リード着脱と 1 g 分銅載せの読み差で寄生トルクと感度を温間で実測（文献に手順なし＝本PJで確立）</td><td>—</td></tr>
       <tr><td>配線の耐熱</td><td>ガラス編組・テフロン被覆。ハウジング近傍の結束も耐熱品</td><td>ミスミ／モノタロウ</td></tr>
     </tbody>
-  </table>
+  </table></div>
   <h3>軸温度の取り方</h3>
   <ul>
     <li><b>主計測</b>: 放射温度センサ＋耐熱黒色塗料の帯（ε ≥ 0.9）。校正は回転停止・温間で熱電対を帯に当てて ε を合わせる（±3 K ≒ 隙間 ±0.7 µm）。</li>
