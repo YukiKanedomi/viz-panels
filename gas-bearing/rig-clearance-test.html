@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>隙間詰め膜破断試験機 検討サイト</title>
+<style>
+  :root { --ink:#1d2330; --mut:#66707f; --line:#dde2ea; --bg:#f5f6f8; --acc:#2b6cb0; --warn:#b7791f; --bad:#c53030; --ok:#2f855a; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:0 0 60px; font-family:"Hiragino Sans","Yu Gothic","Segoe UI",sans-serif; background:var(--bg); color:var(--ink); line-height:1.6; }
+  header { background:#fff; border-bottom:2px solid var(--ink); padding:14px 16px 10px; position:sticky; top:0; z-index:5; }
+  header h1 { font-size:1.05rem; margin:0; }
+  header .sub { font-size:.78rem; color:var(--mut); margin:2px 0 8px; }
+  nav { display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  nav::-webkit-scrollbar { display:none; }
+  nav a { flex:0 0 auto; font-size:.78rem; padding:5px 10px; border:1px solid var(--line); border-radius:999px; color:var(--ink); text-decoration:none; background:#fff; white-space:nowrap; }
+  nav a:active { background:var(--ink); color:#fff; }
+  main { max-width: 920px; margin: 0 auto; padding: 12px 12px; }
+  section.card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); margin:12px 0; scroll-margin-top:110px; }
+  h2 { font-size:.98rem; margin:0 0 8px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  h3 { font-size:.88rem; margin:14px 0 6px; color:var(--acc); }
+  p, li { font-size:.86rem; }
+  table { width:100%; border-collapse:collapse; font-size:.82rem; }
+  th, td { text-align:left; padding:6px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; white-space:nowrap; }
+  td.num { font-variant-numeric: tabular-nums; text-align:right; white-space:nowrap; }
+  .grid { display:grid; grid-template-columns: 1fr; gap:10px 16px; }
+  @media (min-width:680px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+  .ctl { padding:8px 0; border-bottom:1px dashed var(--line); }
+  .ctl label { display:flex; justify-content:space-between; font-size:.84rem; gap:8px; }
+  .ctl label b { font-variant-numeric: tabular-nums; color:var(--acc); }
+  .ctl input[type=range] { width:100%; margin:6px 0 2px; }
+  .ctl .hint { font-size:.74rem; color:var(--mut); }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin:4px 0; }
+  .seg button { font:inherit; font-size:.8rem; padding:6px 12px; border:0; background:#fff; color:var(--ink); cursor:pointer; }
+  .seg button.on { background:var(--ink); color:#fff; }
+  .kpis { display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin:10px 0; }
+  @media (min-width:680px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+  .kpi { background:var(--bg); border-radius:10px; padding:10px 12px; }
+  .kpi .l { font-size:.72rem; color:var(--mut); }
+  .kpi .v { font-size:1.15rem; font-variant-numeric: tabular-nums; }
+  .kpi .v small { font-size:.72rem; color:var(--mut); margin-left:2px; }
+  .kpi.warn .v { color:var(--warn); } .kpi.bad .v { color:var(--bad); } .kpi.ok .v { color:var(--ok); }
+  .note { font-size:.8rem; color:#445; background:#eef3fa; border-left:4px solid var(--acc); padding:8px 12px; border-radius:6px; margin:10px 0; }
+  .note.warn { background:#fdf6e7; border-color:var(--warn); }
+  svg.chart { width:100%; height:auto; display:block; margin-top:8px; }
+  .tag { display:inline-block; font-size:.68rem; padding:1px 7px; border-radius:999px; border:1px solid var(--line); color:var(--mut); margin-right:4px; vertical-align:middle; }
+  .tag.full { border-color:var(--ok); color:var(--ok); } .tag.abstract { border-color:var(--warn); color:var(--warn); }
+  .tag.calc, .tag.design { border-color:var(--acc); color:var(--acc); } .tag.secondary { border-color:#999; }
+  .log li { margin:8px 0; padding-left:0; list-style:none; border-left:3px solid var(--line); padding-left:10px; }
+  .log .t { font-size:.72rem; color:var(--mut); }
+  .log .ttl { font-weight:600; font-size:.86rem; }
+  textarea { width:100%; min-height:120px; font-family:Consolas,monospace; font-size:.74rem; border:1px solid var(--line); border-radius:8px; padding:8px; }
+  button.primary { font:inherit; font-size:.86rem; padding:9px 16px; border:0; border-radius:8px; background:var(--acc); color:#fff; cursor:pointer; }
+  .chk { display:flex; gap:8px; align-items:flex-start; font-size:.84rem; padding:5px 0; }
+  .chk input { margin-top:5px; }
+  .small { font-size:.74rem; color:var(--mut); }
+  ol.steps li { margin:6px 0; }
+  .oq li { list-style:none; padding:6px 0; border-bottom:1px dashed var(--line); font-size:.82rem; }
+  .oq .st { font-size:.7rem; color:var(--mut); margin-left:6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>隙間詰め膜破断試験機 — 検討サイト</h1>
+  <div class="sub">バンプフォイル式ラジアルガス軸受 φ44×35.2 ／ 既設の駆動軸＋浮動ハウジング試験機を流用 ／ ハウジング予熱→入熱カットで運転中に隙間を詰める</div>
+  <nav>
+    <a href="#s-cond">前提</a><a href="#s-calc">隙間計算機</a><a href="#s-proc">手順・判定</a><a href="#s-matrix">試験マトリクス</a><a href="#s-parts">計測・部品</a><a href="#s-log">研究ログ</a><a href="#s-oq">未解決</a><a href="#s-out">設定をコピー</a>
+  </nav>
+</header>
+<main>
+
+<section class="card" id="s-cond">
+  <h2>1. 前提条件（確認済み）</h2>
+  <table>
+    <tr><th>軸受</th><td>バンプフォイル式ラジアル。ハウジング内径に直接組付け（スリーブなし）。通常隙間は 20 µm シムで調整</td></tr>
+    <tr><th>ジャーナル</th><td>φ44 × 幅 35.2 mm。中実 SUS403。両端を転がり軸受で支持</td></tr>
+    <tr><th>ハウジング</th><td>内径 φ46 ／ 外径 約 φ70（肉厚 12 mm）。SUS403。浮動（トルクアーム→ロードセル）</td></tr>
+    <tr><th>回転数</th><td>最高 40 krpm（要素試験機の上限）。周速 約 92 m/s</td></tr>
+    <tr><th>被膜</th><td>耐熱 300 °C → ハウジング上限 250 °C、フォイル裏熱電対の中断値 280 °C</td></tr>
+    <tr><th>計測</th><td>φ0.25 K 熱電対（手持ち）、トルク用ロードセル（既設）。軸温度は非接触（スリップリング不可）。露出ジャーナルは軸受端から約 10 mm</td></tr>
+    <tr><th>冷却</th><td>工場エアを蛇腹ホースで吹付け（既設）</td></tr>
+    <tr><th>方針</th><td>部品はミスミ・モノタロウで買えるもの中心。電気接触抵抗法は使わない。検知はフォイル裏温度＋共連れトルク</td></tr>
+  </table>
+  <div class="note">同材（SUS403）なので隙間を動かすのは「ハウジングと軸の温度差」だけです。ΔC ≈ α·R·(T_h − T_s) − u_遠心。ハウジングの温度そのものではありません。</div>
+</section>
+
+<section class="card" id="s-calc">
+  <h2>2. 隙間計算機</h2>
+  <p class="small">スライダーを動かすと下の数値とグラフが即時に変わります。既定値は現時点の見立てです。</p>
+  <div class="grid two">
+    <div>
+      <div class="ctl"><label>ハウジング予熱の上昇幅 ΔT_h <b id="v_dth"></b></label><input type="range" id="dth" min="20" max="200" step="5" value="100"><div class="hint">通常運転温度 T_n からの上昇。ハウジング絶対温度 = T_n + ΔT_h ≤ 250 °C</div></div>
+      <div class="ctl"><label>通常運転時のハウジング温度 T_n <b id="v_tn"></b></label><input type="range" id="tn" min="30" max="150" step="5" value="70"><div class="hint">未実測。40 krpm で測って置き換える</div></div>
+      <div class="ctl"><label>軸の温度追従率 f <b id="v_f"></b></label>
+        <div class="seg"><button data-f="45" id="fs">静止予熱（概算 40〜50%）</button><button data-f="20" class="on" id="fr">40 krpm 回転中（概算 15〜20%）</button></div>
+        <input type="range" id="f" min="0" max="80" step="1" value="20"><div class="hint">軸がハウジング上昇分の何割まで温まるか。実効温度差 = ΔT_h × (1 − f)。予熱特性試験で実測して置き換える</div></div>
+      <div class="ctl"><label>線膨張係数 α <b id="v_a"></b></label><input type="range" id="a" min="9" max="12" step="0.1" value="10.0"><div class="hint">SUS403 は 0〜100 °C で約 9.9〜10.4 ×10⁻⁶/K。高温側で増える</div></div>
+    </div>
+    <div>
+      <div class="ctl"><label>シム増分 ΔS（通常 20 µm シムに対し） <b id="v_ds"></b></label><input type="range" id="ds" min="0" max="40" step="1" value="10"><div class="hint">この分だけ通常より狭い側まで掃引できる。開き量の 8 割以下が目安</div></div>
+      <div class="ctl"><label>回転数 <b id="v_rpm"></b></label><input type="range" id="rpm" min="10000" max="40000" step="1000" value="40000"></div>
+      <div class="ctl"><label>運転膜厚の目安 C（Λ 算出用） <b id="v_c"></b></label><input type="range" id="c" min="10" max="40" step="1" value="20"><div class="hint">フォイル軸受の運転膜厚は 15〜25 µm が典型（Radil 2003）</div></div>
+      <div class="ctl"><label>ハウジング外周の熱伝達率 h（自然／強制） <b id="v_h"></b></label><input type="range" id="hn" min="8" max="20" step="1" value="12"><input type="range" id="hf" min="30" max="150" step="5" value="60"><div class="hint">上: 自然対流＋放射 8〜20。下: 工場エア吹付け 30〜150（ノズル次第）</div></div>
+      <div class="ctl"><label>強制冷却で T_n より下げられる幅 <b id="v_dtf"></b></label><input type="range" id="dtf" min="0" max="60" step="5" value="20"><div class="hint">発熱と冷却能力の釣り合いで決まる。特性試験で実測</div></div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi" id="k_open"><div class="l">回転中の開き量（予熱で得る余裕）</div><div class="v"><span id="o_open"></span><small>µm</small></div></div>
+    <div class="kpi" id="k_need"><div class="l">半径 20 µm に必要な ΔT_h</div><div class="v"><span id="o_need"></span><small>K</small></div></div>
+    <div class="kpi" id="k_tmax"><div class="l">ハウジング最高温度</div><div class="v"><span id="o_tmax"></span><small>°C</small></div></div>
+    <div class="kpi" id="k_start"><div class="l">起動時の隙間（通常比）</div><div class="v"><span id="o_start"></span><small>µm</small></div></div>
+    <div class="kpi"><div class="l">圧縮性数 Λ（C で評価）</div><div class="v"><span id="o_lam"></span></div></div>
+    <div class="kpi"><div class="l">Petroff ドラグ発熱の概算</div><div class="v"><span id="o_pw"></span><small>W</small></div></div>
+    <div class="kpi"><div class="l">時定数 自然／強制</div><div class="v"><span id="o_tau"></span><small>分</small></div></div>
+    <div class="kpi"><div class="l">初期閉じ速度 自然／強制</div><div class="v"><span id="o_rate"></span><small>µm/分</small></div></div>
+  </div>
+
+  <h3>入熱カット後の隙間推移（通常運転隙間を 0 とした相対値）</h3>
+  <svg class="chart" id="chart" viewBox="0 0 760 360" role="img" aria-label="入熱カット後の隙間推移"></svg>
+  <p class="small">実線=自然冷却、破線=強制冷却。0 の線が通常運転の隙間、下側ほど狭い。終点は −ΔS（自然）／−ΔS − α·R·ΔT_強制（強制）。曲線は指数近似で、軸温度は一定と仮定（実際は軸も少し冷えて差動が縮む側に動く）。</p>
+  <div class="note warn" id="warn"></div>
+</section>
+
+<section class="card" id="s-proc">
+  <h2>3. 試験手順と判定基準</h2>
+  <ol class="steps">
+    <li><b>予熱特性試験（回転なし・通常シム）</b>: ハウジング熱電対（周4点×軸2断面）と放射温度計で (T_h − T_s) を段階的に記録。各段で浮動ハウジングに既知荷重をかけ荷重‐たわみ曲線→実効クリアランス。ここで「ハウジング温度 vs 実効クリアランス」の実測勾配と、静止時の軸追従率が決まる。</li>
+    <li><b>回転中特性試験（40 krpm・通常シム）</b>: ヒータ保持で各温度段。回転中の軸追従率、トルク・零点ドリフト（ヒータリード・エア吹付け・温度）を記録。</li>
+    <li><b>本試験（シム増分 ΔS）</b>: 静止予熱は起動時締め代を通常以下に戻す分だけ → 起動 → 40 krpm でヒータ保持し軸が風冷で冷えて開きが伸びた「回転中温間状態」を基準点に → 入熱カット（または設定値ランプ）→ 必要なら強制空冷 → 判定条件まで記録。</li>
+    <li><b>段を進める</b>: 破断が出なければ ΔS を一段厚くして繰り返す。</li>
+  </ol>
+  <h3>判定・中断条件（編集できます）</h3>
+  <div class="grid two">
+    <div class="ctl"><label>フォイル裏温度の上昇率 <b id="v_rT"></b></label><input type="range" id="rT" min="0.2" max="3" step="0.1" value="1.0"><div class="hint">K/s。thermal runaway の兆候は「上昇率の加速」</div></div>
+    <div class="ctl"><label>トルクの基準比 <b id="v_rQ"></b></label><input type="range" id="rQ" min="1.1" max="3" step="0.1" value="1.5"><div class="hint">回転中温間状態のトルクに対する倍率</div></div>
+    <div class="ctl"><label>フォイル裏温度の絶対上限 <b id="v_Tmax"></b></label><input type="range" id="Tmax" min="200" max="300" step="5" value="280"><div class="hint">被膜 300 °C に対する余裕</div></div>
+    <div class="ctl"><label>判定ロジック</label><div class="seg"><button data-l="AND" class="on" id="lAnd">温度率 AND トルク比</button><button data-l="OR" id="lOr">どちらか（OR）</button></div><div class="hint">絶対上限はどちらでも単独で中断</div></div>
+  </div>
+  <div class="note">中断操作は「ヒータ再投入＋エア停止」で隙間を開け戻す方向。焼付きの手前で戻せるのがこの方式の利点。トルクアームには機械ストッパを付ける。</div>
+</section>
+
+<section class="card" id="s-matrix">
+  <h2>4. 試験マトリクス</h2>
+  <table id="matrix">
+    <thead><tr><th>段</th><th>シム厚</th><th>ΔS</th><th>起動時の隙間（通常比）</th><th>到達 自然／強制</th><th>狙い</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p class="small">起動時の隙間 = 開き量 − ΔS。負なら起動時に通常より強い締め代で回り始める（赤字）。到達は入熱カット後の最終値（通常比）。各段で自然冷却と強制冷却を1本ずつ取り、閉じ速度の影響も見る。</p>
+</section>
+
+<section class="card" id="s-parts">
+  <h2>5. 計測・部品の構成</h2>
+  <table>
+    <thead><tr><th>部位</th><th>仕様の要点</th><th>入手先の目安</th></tr></thead>
+    <tbody>
+      <tr><td>カートリッジヒータ ×6</td><td>φ6.35 × 35〜40 mm、100〜150 W、200 V。合計 600〜900 W</td><td>ミスミ／モノタロウ（坂口電熱・八光電機）</td></tr>
+      <tr><td>ヒータ穴</td><td>φ6.5〜6.6、肉厚中央 PCD 約 58 mm に 60° 等配。30° 位置を熱電対引出し穴に</td><td>既設ハウジング追加工</td></tr>
+      <tr><td>温度調節器</td><td>PID・熱電対入力・設定値ランプ・SSR 出力（オムロン E5CC 系）</td><td>ミスミ／モノタロウ</td></tr>
+      <tr><td>SSR・ヒューズ・端子台</td><td>合計電流の 1.5 倍以上</td><td>同上</td></tr>
+      <tr><td>熱電対</td><td>φ0.25 K 型（手持ち）。ハウジング 周4×軸2＋外周1、フォイル裏 中央断面 3〜4＋端部 1〜2、支持転がり軸受 各1</td><td>済</td></tr>
+      <tr><td>熱電対固定</td><td>トップフォイル背面はスポット溶接が最良。代替は耐熱無機接着剤（アロンセラミック D 等）</td><td>モノタロウ</td></tr>
+      <tr><td>放射温度センサ</td><td>スポット ≤4 mm、0〜300 °C、ε 設定可、アナログ出力。黒色塗料帯に向ける</td><td>メーカー直販／代理店（機種は夜間調査）</td></tr>
+      <tr><td>耐熱黒色塗料</td><td>つや消し黒、耐熱 300 °C 以上。露出ジャーナル片側の帯 6 mm に薄く</td><td>モノタロウ</td></tr>
+      <tr><td>データロガー</td><td>熱電対 10 ch 以上、≤100 ms、アナログ入力併用（GL240/GL840 級）</td><td>モノタロウ</td></tr>
+      <tr><td>冷却エア</td><td>既存蛇腹ホース 対向 2〜4 本。電磁弁で ON/OFF</td><td>既存＋モノタロウ</td></tr>
+      <tr><td>変位プローブ（検討中）</td><td>軌道観察: 帯域 ≥10 kHz の渦電流式 直交 2 本、反対側の素地帯へ。軸径計測なら対向レーザ変位計</td><td>センサメーカー直販</td></tr>
+      <tr><td>熱対策</td><td>トルクアーム→ロードセル間にセラミック／SUS スタンドオフ。配線はガラス編組・テフロン被覆</td><td>ミスミ／モノタロウ</td></tr>
+    </tbody>
+  </table>
+  <h3>軸温度の取り方</h3>
+  <ul>
+    <li><b>主計測</b>: 放射温度センサ＋耐熱黒色塗料の帯（ε ≥ 0.9）。校正は回転停止・温間で熱電対を帯に当てて ε を合わせる（±3 K ≒ 隙間 ±0.7 µm）。</li>
+    <li><b>既知の偏り</b>: 計測点は軸受外なので軸受直下より低く読む → 実隙間は計算より小さい側。安全余裕はその方向へ。</li>
+    <li><b>上位案</b>: 冷えたスタンド上の対向 2 本レーザ変位計で軸径変化を直接測る（0.44 µm/K、横振れは一次相殺、ε 無関係）。</li>
+  </ul>
+</section>
+
+<section class="card" id="s-log">
+  <h2>6. 研究ログ（夜間ループで追記）</h2>
+  <p class="small" id="logmeta"></p>
+  <ul class="log" id="loglist"></ul>
+</section>
+
+<section class="card" id="s-oq">
+  <h2>7. 未解決論点</h2>
+  <ul class="oq" id="oqlist"></ul>
+</section>
+
+<section class="card" id="s-out">
+  <h2>8. 設定をコピー（チャットに貼って返す）</h2>
+  <p class="small">今のスライダーと判定条件を JSON にします。「この値で進める」「ここを変えたい」をチャットに貼ってください。</p>
+  <div class="chk"><input type="checkbox" id="d_heater" checked><label for="d_heater">ヒータはカートリッジ内蔵 6 本（外周バンドではなく）</label></div>
+  <div class="chk"><input type="checkbox" id="d_probe"><label for="d_probe">渦電流プローブ直交 2 本を追加する</label></div>
+  <div class="chk"><input type="checkbox" id="d_laser"><label for="d_laser">対向レーザ変位計による軸径計測を検討する</label></div>
+  <div class="chk"><input type="checkbox" id="d_forced" checked><label for="d_forced">各段で強制冷却の本も取る</label></div>
+  <textarea id="memo" placeholder="自由メモ（距離・T_n の実測値、気になる点など）"></textarea>
+  <p><button class="primary" id="copy">設定をコピー</button> <span class="small" id="copied"></span></p>
+  <textarea id="out" readonly></textarea>
+</section>
+
+</main>
+
+<script type="application/json" id="logdata">{"meta": {"title": "隙間詰め膜破断試験機 検討サイト", "started": "2026-10-24T01:50+09:00", "fidelity": "sourceLevel: full=全文確認 / abstract=抄録・書誌のみ / secondary=二次資料 / calc=本PJ試算 / design=本PJ設計判断"}, "entries": [{"t": "2026-10-23 夕", "kind": "design", "title": "方式の骨格を決定", "text": "既設の駆動軸＋浮動ハウジング試験機を流用。ハウジングをカートリッジヒータで予熱し、運転中に入熱を切って隙間を詰める。対象はバンプフォイル式ラジアル、φ44×35.2、ハウジング φ46/φ70 SUS403、40 krpm、通常隙間は 20 µm シム。", "sourceLevel": "design"}, {"t": "2026-10-23 夕", "kind": "finding", "title": "入熱カットの到達点は通常運転隙間まで", "text": "予熱→入熱カットで戻れるのはヒータ無しの自然平衡（＝通常運転隙間）まで。通常より狭い側へはシムで基準をずらす＋強制空冷で入る。", "sourceLevel": "design"}, {"t": "2026-10-23 夜", "kind": "research", "title": "先行例調査（researcher）", "text": "回転中に機械的に隙間を連続可変にした試験装置の明示例は未発見。最も近いのは Breńkacz et al. 2026 (Measurement 282) のスリーブ径可変 GFB（25.4 µm 刻み 15 段、ラン間設定）。膜破断検出は TU Berlin が ECR＋トルク同時計測を GT2026 で初適用。ISO 13939:2019 は steady-state 判定のみで数値閾値は本文未確認。", "sourceLevel": "abstract"}, {"t": "2026-10-24 深夜", "kind": "finding", "title": "同材（SUS403）では温度差だけが隙間を動かす", "text": "ΔC ≈ 0.225 µm/K × (T_h − T_s) − 1.3 µm(遠心)。半径 20 µm には温度差 90 K。軸の追従率は静止 40〜50 %、40 krpm 回転中 15〜20 %（風冷 h≈220 W/m²K 級）。差動は回転中のほうが大きい。", "sourceLevel": "calc"}, {"t": "2026-10-24 深夜", "kind": "design", "title": "予熱上限と判定基準", "text": "被膜 300 °C → ハウジング上限 250 °C、フォイル裏熱電対の中断値 280 °C。検知はフォイル裏温度の上昇率とトルク上昇率の AND。中断操作は『ヒータ再投入＋エア停止で開け戻す』。", "sourceLevel": "design"}], "openQuestions": [{"q": "試験軸受から両端の転がり軸受までの距離（軸の追従率を確定）", "status": "ユーザー確認待ち"}, {"q": "40 krpm 通常運転時のハウジング温度 T_n の実測値（予熱上昇幅の上限）", "status": "ユーザー確認待ち"}, {"q": "バンプフォイル層の熱抵抗（ハウジング→トップフォイル）の文献値。概算 1 W/K の裏取り", "status": "夜間調査"}, {"q": "回転円筒の対流熱伝達率の相関式（Nu≈0.1Re^0.7 の近似の妥当性）", "status": "夜間調査"}, {"q": "トップフォイル裏熱電対の取付実務（線径・固定法・位置・引出し）", "status": "夜間調査"}, {"q": "thermal runaway の実測シグネチャと中断閾値の先行例", "status": "夜間調査"}, {"q": "SUS403 の CTE（100〜300 °C）・熱伝導率・焼戻し温度", "status": "夜間調査"}, {"q": "小スポット放射温度センサの機種・スポット径・ミスミ/モノタロウ取扱い", "status": "夜間調査"}, {"q": "起動時の締め代（シム厚）の許容量と lift-off・トルクへの影響", "status": "夜間調査"}, {"q": "静的荷重‐たわみ試験の手順（Rubio & San Andrés 系）", "status": "夜間調査"}]}</script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const st={f:20,logic:'AND'};
+  const fmt=(x,d=1)=>Number.isFinite(x)?x.toFixed(d):'—';
+  const ids=['dth','tn','f','a','ds','rpm','c','hn','hf','dtf','rT','rQ','Tmax'];
+  function calc(){
+    const dth=+$('dth').value, tn=+$('tn').value, f=+$('f').value/100, a=+$('a').value*1e-6;
+    const ds=+$('ds').value, rpm=+$('rpm').value, C=+$('c').value*1e-6, hn=+$('hn').value, hf=+$('hf').value, dtf=+$('dtf').value;
+    const Rb=0.023, Rs=0.022, Ro=0.035, L=0.0352, R=(Rb+Rs)/2;
+    const w=2*Math.PI*rpm/60;
+    const uc=(1-0.3)*7750*w*w*Math.pow(Rs,3)/(4*200e9)*1e6; // µm
+    const perK=a*R*1e6; // µm per K of differential
+    const dTeff=dth*(1-f);
+    const open=perK*dTeff-uc;
+    const need=(20+uc)/(perK*(1-f));
+    const tmax=tn+dth;
+    const start=open-ds;
+    const lam=6*1.85e-5*w/101325*Math.pow(Rs/C,2);
+    const T=2*Math.PI*1.85e-5*w*Math.pow(Rs,3)*L/C; const pw=T*w;
+    const V=Math.PI*(Ro*Ro-Rb*Rb)*L, m=V*7750, Cth=m*460, A=2*Math.PI*Ro*L+2*Math.PI*(Ro*Ro-Rb*Rb);
+    const taun=Cth/(hn*A)/60, tauf=Cth/(hf*A)/60; // min
+    const raten=open/taun, ratef=(open+perK*dtf)/tauf; // µm/min initial
+    const endf=-ds-perK*dtf;
+    return {dth,tn,f,a,ds,rpm,C,hn,hf,dtf,uc,perK,dTeff,open,need,tmax,start,lam,pw,taun,tauf,raten,ratef,endf,T};
+  }
+  function kpi(id,cls){const e=$(id); e.classList.remove('warn','bad','ok'); if(cls) e.classList.add(cls);}
+  function render(){
+    const r=calc();
+    $('v_dth').textContent=`+${r.dth} K`; $('v_tn').textContent=`${r.tn} °C`; $('v_f').textContent=`${Math.round(r.f*100)} %`;
+    $('v_a').textContent=`${(r.a*1e6).toFixed(1)} ×10⁻⁶/K`; $('v_ds').textContent=`+${r.ds} µm（シム ${20+r.ds} µm）`;
+    $('v_rpm').textContent=`${(r.rpm/1000).toFixed(0)} krpm`; $('v_c').textContent=`${(r.C*1e6).toFixed(0)} µm`;
+    $('v_h').textContent=`${r.hn} ／ ${r.hf} W/m²K`; $('v_dtf').textContent=`${r.dtf} K`;
+    $('v_rT').textContent=`${(+$('rT').value).toFixed(1)} K/s`; $('v_rQ').textContent=`×${(+$('rQ').value).toFixed(1)}`; $('v_Tmax').textContent=`${$('Tmax').value} °C`;
+    $('o_open').textContent=fmt(r.open,1); kpi('k_open', r.open>=20?'ok':(r.open>=10?'warn':'bad'));
+    $('o_need').textContent=fmt(r.need,0); kpi('k_need', r.tn+r.need<=250?'ok':'bad');
+    $('o_tmax').textContent=fmt(r.tmax,0); kpi('k_tmax', r.tmax<=250?'ok':'bad');
+    $('o_start').textContent=(r.start>=0?'+':'')+fmt(r.start,1); kpi('k_start', r.start>=0?'ok':'warn');
+    $('o_lam').textContent=fmt(r.lam,2); $('o_pw').textContent=fmt(r.pw,0);
+    $('o_tau').textContent=`${fmt(r.taun,0)} ／ ${fmt(r.tauf,0)}`; $('o_rate').textContent=`${fmt(r.raten,1)} ／ ${fmt(r.ratef,1)}`;
+    const w=[];
+    if(r.tmax>250) w.push(`ハウジング ${r.tmax.toFixed(0)} °C は上限 250 °C を超えます。ΔT_h を下げるか T_n の実測で見直してください。`);
+    if(r.start<0) w.push(`起動時に通常より ${(-r.start).toFixed(1)} µm 強い締め代で回り始めます。静止予熱を増やすか ΔS を下げるか、起動後の開き待ちで吸収してください。`);
+    if(r.ds>0.8*r.open) w.push(`ΔS=${r.ds} µm は開き量 ${r.open.toFixed(1)} µm の 8 割を超えています。段と段の掃引範囲が重なりません。`);
+    if(r.open<10) w.push(`開き量が 10 µm 未満です。回転中の追従率を実測で確認し、必要なら予熱を上げてください。`);
+    $('warn').textContent=w.length?w.join(' '):'現在の設定に警告はありません。';
+    $('warn').style.display=w.length?'block':'none';
+    drawChart(r); drawMatrix(r);
+  }
+  function drawChart(r){
+    const W=760,H=360,ml=56,mr=16,mt=16,mb=40; const pw=W-ml-mr, ph=H-mt-mb;
+    const tmaxMin=Math.max(60, Math.ceil(r.taun*3/30)*30);
+    const ymax=Math.max(5, Math.ceil((r.open-r.ds+2)/5)*5), ymin=Math.min(-5, Math.floor((r.endf-2)/5)*5);
+    const X=t=>ml+pw*t/tmaxMin, Y=c=>mt+ph*(ymax-c)/(ymax-ymin);
+    let s='';
+    // grid
+    for(let c=ymin;c<=ymax;c+=5){ s+=`<line x1="${ml}" x2="${W-mr}" y1="${Y(c)}" y2="${Y(c)}" stroke="${c===0?'#1d2330':'#e3e7ee'}" stroke-width="${c===0?1.5:0.8}"/><text x="${ml-8}" y="${Y(c)+4}" font-size="11" text-anchor="end" fill="#66707f">${c>0?'+':''}${c}</text>`; }
+    for(let t=0;t<=tmaxMin;t+=tmaxMin/6){ s+=`<text x="${X(t)}" y="${H-mb+18}" font-size="11" text-anchor="middle" fill="#66707f">${Math.round(t)}</text>`; }
+    s+=`<text x="${ml+pw/2}" y="${H-6}" font-size="12" text-anchor="middle" fill="#1d2330">入熱カット後の時間 [分]</text>`;
+    s+=`<text x="14" y="${mt+ph/2}" font-size="12" text-anchor="middle" fill="#1d2330" transform="rotate(-90 14 ${mt+ph/2})">隙間（通常比） [µm]</text>`;
+    // curves
+    const N=120; let pn='',pf='';
+    for(let i=0;i<=N;i++){ const t=tmaxMin*i/N;
+      const cn=-r.ds + r.open*Math.exp(-t/r.taun);
+      const cf=r.endf + (r.open-r.ds-r.endf)*Math.exp(-t/r.tauf);
+      pn+=(i?'L':'M')+X(t).toFixed(1)+','+Y(cn).toFixed(1)+' '; pf+=(i?'L':'M')+X(t).toFixed(1)+','+Y(cf).toFixed(1)+' ';
+    }
+    s+=`<path d="${pn}" fill="none" stroke="#2b6cb0" stroke-width="2.2"/><path d="${pf}" fill="none" stroke="#b7791f" stroke-width="2.2" stroke-dasharray="7 5"/>`;
+    s+=`<line x1="${ml}" x2="${W-mr}" y1="${Y(-r.ds)}" y2="${Y(-r.ds)}" stroke="#c53030" stroke-width="1" stroke-dasharray="3 4"/><text x="${W-mr-4}" y="${Y(-r.ds)-5}" font-size="11" text-anchor="end" fill="#c53030">自然冷却の到達 −ΔS = −${r.ds} µm</text>`;
+    s+=`<text x="${ml+6}" y="${Y(r.open-r.ds)-6}" font-size="11" fill="#2b6cb0">回転中温間状態 +${(r.open-r.ds).toFixed(1)} µm</text>`;
+    s+=`<text x="${W-mr-4}" y="${Y(r.endf)+14}" font-size="11" text-anchor="end" fill="#b7791f">強制冷却の到達 ${r.endf.toFixed(1)} µm</text>`;
+    $('chart').innerHTML=s;
+  }
+  function drawMatrix(r){
+    const steps=[0,10,20,30,40]; const tb=$('matrix').querySelector('tbody'); let h='';
+    const aims=['基準。温間→冷却で何も起きないことの確認、ドリフト・零点の把握','通常より 10 µm 狭い側まで掃引','20 µm 狭い側まで','30 µm 狭い側まで（破断が出るまで継続）','40 µm 狭い側まで'];
+    steps.forEach((d,i)=>{ const start=r.open-d, endn=-d, endf=-d-r.perK*r.dtf;
+      h+=`<tr><td>${i}</td><td class="num">${20+d} µm</td><td class="num">+${d}</td><td class="num" style="color:${start<0?'#c53030':'inherit'}">${start>=0?'+':''}${start.toFixed(1)}</td><td class="num">${endn} ／ ${endf.toFixed(1)}</td><td>${aims[i]}</td></tr>`; });
+    tb.innerHTML=h;
+  }
+  ids.forEach(id=>$(id).addEventListener('input',()=>{ if(id==='f'){ document.querySelectorAll('.seg [data-f]').forEach(b=>b.classList.remove('on')); } render(); }));
+  document.querySelectorAll('.seg [data-f]').forEach(b=>b.addEventListener('click',()=>{ $('f').value=b.dataset.f; document.querySelectorAll('.seg [data-f]').forEach(x=>x.classList.remove('on')); b.classList.add('on'); render(); }));
+  document.querySelectorAll('.seg [data-l]').forEach(b=>b.addEventListener('click',()=>{ st.logic=b.dataset.l; document.querySelectorAll('.seg [data-l]').forEach(x=>x.classList.remove('on')); b.classList.add('on'); }));
+  // log
+  try{
+    const log=JSON.parse($('logdata').textContent);
+    $('logmeta').textContent=`開始 ${log.meta.started}。${log.meta.fidelity}`;
+    $('loglist').innerHTML=log.entries.slice().reverse().map(e=>`<li><div class="t">${e.t} <span class="tag ${e.sourceLevel}">${e.sourceLevel}</span> <span class="tag">${e.kind}</span></div><div class="ttl">${e.title}</div><div style="font-size:.82rem">${e.text}${e.source?`<div class="small">出典: ${e.source}</div>`:''}</div></li>`).join('');
+    $('oqlist').innerHTML=log.openQuestions.map(q=>`<li>${q.q}<span class="st">[${q.status}]</span></li>`).join('');
+  }catch(e){ $('logmeta').textContent='ログの読み込みに失敗しました。'; }
+  // copy
+  $('copy').addEventListener('click',()=>{
+    const r=calc();
+    const o={panel:'rig-clearance-test', version:1, date:new Date().toISOString().slice(0,10),
+      inputs:{dT_housing_K:r.dth, T_normal_C:r.tn, shaft_follow_ratio:r.f, alpha_1perK:r.a, shim_increment_um:r.ds, rpm:r.rpm, film_thickness_um:r.C*1e6, h_natural:r.hn, h_forced:r.hf, forced_cooling_below_Tn_K:r.dtf},
+      criteria:{foil_temp_rate_Kps:+$('rT').value, torque_ratio:+$('rQ').value, foil_temp_max_C:+$('Tmax').value, logic:st.logic},
+      decisions:{cartridge_heaters:$('d_heater').checked, eddy_probes:$('d_probe').checked, laser_diameter:$('d_laser').checked, forced_cooling_runs:$('d_forced').checked},
+      derived:{opening_um:+r.open.toFixed(1), needed_dT_for_20um_K:+r.need.toFixed(0), housing_max_C:+r.tmax.toFixed(0), start_clearance_um:+r.start.toFixed(1), lambda:+r.lam.toFixed(2), tau_min_natural:+r.taun.toFixed(0), tau_min_forced:+r.tauf.toFixed(0)},
+      memo:$('memo').value};
+    const summary=`隙間試験機 設定: ΔT_h=+${r.dth}K, T_n=${r.tn}°C, 追従率${Math.round(r.f*100)}%, ΔS=+${r.ds}µm, 開き量${r.open.toFixed(1)}µm, 判定 温度率${$('rT').value}K/s ${st.logic} トルク×${$('rQ').value}, 上限${$('Tmax').value}°C`;
+    const txt=summary+"\n"+JSON.stringify(o,null,1);
+    $('out').value=txt;
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{$('copied').textContent='コピーしました';},()=>{ $('out').select(); $('copied').textContent='下の欄を長押しでコピーしてください'; });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

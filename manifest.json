@@ -129,6 +129,14 @@
       "type": "panel",
       "added": "2026-09-06",
       "desc": ""
+    },
+    {
+      "project": "gas-bearing",
+      "title": "隙間詰め膜破断試験機 検討サイト",
+      "file": "gas-bearing/rig-clearance-test.html",
+      "type": "dashboard",
+      "added": "2026-10-24",
+      "desc": "φ44バンプフォイル軸受の既設試験機を流用し、ハウジング予熱→入熱カットで運転中に隙間を詰めて空気膜破断を見る試験機の検討。隙間計算機・手順・判定基準・試験マトリクス・部品・夜間研究ログ"
     }
   ]
 }
