@@ -137,6 +137,14 @@
       "type": "dashboard",
       "added": "2026-10-24",
       "desc": ""
+    },
+    {
+      "project": "gas-bearing",
+      "title": "隙間詰め接触開始試験 試験計画書",
+      "file": "gas-bearing/rig-clearance-plan.html",
+      "type": "report",
+      "added": "2026-10-25",
+      "desc": "設計・系統図・購入品・手順をまとめた計画書（暗号化）"
     }
   ]
 }
