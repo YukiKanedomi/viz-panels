@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>油圧ショベル 操縦れんしゅう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plate:#f6c21c; --ink:#16171a; --paper:#f4efe2; --steel:#2a2d31; --soil:#7b5435;
+  --pad:min(132px,29vw,33vh);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#c9d9de;touch-action:none;
+  -webkit-user-select:none;user-select:none;
+  font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:var(--ink)}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+/* 上の計器 */
+.hud{position:fixed;top:calc(8px + env(safe-area-inset-top));display:flex;gap:8px;align-items:flex-start;z-index:3}
+.hud.l{left:calc(10px + env(safe-area-inset-left))}
+.hud.r{right:calc(10px + env(safe-area-inset-right))}
+.meter{background:rgba(22,23,26,.82);color:var(--paper);padding:6px 9px 7px;border-radius:3px;min-width:96px}
+.meter b{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.06em;font-weight:700}
+.meter b span{font-feature-settings:"tnum";color:var(--plate)}
+.bar{height:6px;margin-top:5px;background:#4a4d52;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--plate)}
+.btn{appearance:none;border:0;background:rgba(22,23,26,.82);color:var(--paper);font:700 11px/1 inherit;
+  font-family:inherit;letter-spacing:.06em;padding:9px 10px;border-radius:3px}
+.btn[aria-pressed="true"]{background:var(--plate);color:var(--ink)}
+
+/* 手ほどきの一行 */
+#coach{position:fixed;left:50%;top:calc(52px + env(safe-area-inset-top));transform:translateX(-50%);z-index:3;
+  background:var(--paper);color:var(--ink);font-weight:700;font-size:14px;letter-spacing:.04em;
+  padding:7px 14px 7px 12px;border-left:6px solid var(--plate);white-space:nowrap;
+  box-shadow:0 2px 0 rgba(0,0,0,.25);transition:opacity .25s}
+#coach small{display:inline-block;margin-right:8px;font-size:11px;color:#6b6558;font-feature-settings:"tnum"}
+
+/* レバー: 運転席の操作パターン銘板をそのまま盤にする */
+.lever{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));z-index:3;
+  display:grid;grid-template-columns:26px var(--pad) 26px;grid-template-rows:22px var(--pad) 22px;
+  background:var(--plate);border:2px solid var(--ink);border-radius:6px;padding:3px}
+.lever.l{left:calc(10px + env(safe-area-inset-left))}
+.lever.r{right:calc(10px + env(safe-area-inset-right))}
+.lever .lab{display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;
+  letter-spacing:.04em;white-space:nowrap;color:var(--ink);transition:background .08s,color .08s}
+.lever .lab.on{background:var(--ink);color:var(--plate)}
+.lever .u{grid-area:1/1/2/4}.lever .d{grid-area:3/1/4/4}
+.lever .w{grid-area:2/1/3/2;writing-mode:vertical-rl}.lever .e{grid-area:2/3/3/4;writing-mode:vertical-rl}
+.pad{grid-area:2/2/3/3;position:relative;border-radius:50%;background:var(--ink);touch-action:none}
+.pad::before,.pad::after{content:"";position:absolute;background:rgba(246,194,28,.35)}
+.pad::before{left:50%;top:10%;bottom:10%;width:2px;margin-left:-1px}
+.pad::after{top:50%;left:10%;right:10%;height:2px;margin-top:-1px}
+.knob{position:absolute;left:50%;top:50%;width:44%;height:44%;margin:-22% 0 0 -22%;border-radius:50%;z-index:1;
+  background:radial-gradient(circle at 38% 32%,#5b5f66,#222427 70%);background-color:#34373c;
+  border:2px solid var(--plate);pointer-events:none}
+.lever h3{position:absolute;left:0;bottom:100%;margin:0 0 4px;font-size:10.5px;letter-spacing:.14em;
+  background:var(--ink);color:var(--plate);padding:3px 7px 2px}
+.lever.r h3{left:auto;right:0}
+
+/* はじまりの札 */
+#start{position:fixed;inset:0;z-index:9;overflow:auto;display:flex;align-items:center;justify-content:center;
+  background:rgba(22,23,26,.55);padding:16px}
+#start .card{background:var(--plate);border:3px solid var(--ink);border-radius:8px;max-width:440px;width:100%;padding:18px 18px 16px}
+#start h1{margin:0 0 2px;font-size:22px;letter-spacing:.06em;line-height:1.3}
+#start p{margin:6px 0 0;font-size:13px;line-height:1.75;letter-spacing:.03em}
+#start ol{margin:10px 0 0;padding:10px 12px 10px 30px;background:var(--ink);color:var(--paper);font-size:13px;line-height:1.8}
+#start ol b{color:var(--plate)}
+#start button{margin-top:14px;width:100%;border:0;background:var(--ink);color:var(--plate);
+  font:700 16px/1 inherit;font-family:inherit;letter-spacing:.2em;padding:15px;border-radius:4px}
+#start .note{font-size:11px;color:#4a3f10;margin-top:10px;line-height:1.6}
+body.shot #start{display:none}
+@media (max-height:430px){ #coach{top:calc(8px + env(safe-area-inset-top));font-size:13px}
+  #start .card{max-width:640px;padding:12px 16px} #start h1{font-size:17px} #start p{font-size:12px;margin-top:2px}
+  #start ol{font-size:12px;line-height:1.55;margin-top:6px;padding-top:6px;padding-bottom:6px} #start button{margin-top:8px;padding:11px} #start .note{display:none} }
+@media (orientation:portrait){ .hud.l{flex-direction:column;gap:5px} #coach{top:calc(100px + env(safe-area-inset-top));font-size:13px} }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div class="hud l">
+  <div class="meter"><b>バケット<span id="mLoad">0%</span></b><div class="bar"><i id="bLoad"></i></div></div>
+  <div class="meter"><b>ダンプ<span id="mTruck">0台</span></b><div class="bar"><i id="bTruck"></i></div></div>
+</div>
+<div class="hud r">
+  <button class="btn" id="bDemo" aria-pressed="false">お手本</button>
+  <button class="btn" id="bView" aria-pressed="false">運転席</button>
+  <button class="btn" id="bSound" aria-pressed="true">音</button>
+</div>
+<div id="coach"><small id="coachN">1/4</small><span id="coachT">アームを伸ばして、ブームを下げる</span></div>
+
+<div class="lever l" id="LL"><h3>左レバー</h3>
+  <div class="lab u">アーム伸ばす</div><div class="lab w">左旋回</div>
+  <div class="pad"><div class="knob"></div></div>
+  <div class="lab e">右旋回</div><div class="lab d">アーム引く</div></div>
+<div class="lever r" id="LR"><h3>右レバー</h3>
+  <div class="lab u">ブーム下げ</div><div class="lab w">バケット掘る</div>
+  <div class="pad"><div class="knob"></div></div>
+  <div class="lab e">バケット開く</div><div class="lab d">ブーム上げ</div></div>
+
+<div id="start"><div class="card">
+  <h1>油圧ショベル<wbr>操縦れんしゅう</h1>
+  <p>本物と同じ2本レバー（JIS 標準の配置）で、白線の中を掘ってダンプに積みます。</p>
+  <ol>
+    <li><b>左</b>を奥へ倒してアームを伸ばし、<b>右</b>を奥へ倒してブームを下げる</li>
+    <li><b>右</b>を左へ倒してバケットで掘りながら、<b>左</b>を手前へ引く</li>
+    <li><b>右</b>を手前へ引いてブームを上げ、<b>左</b>を左へ倒して旋回</li>
+    <li>ダンプの上で<b>右</b>を右へ倒してバケットを開く</li>
+  </ol>
+  <button id="go">はじめる</button>
+  <div class="note">パソコンでは 左レバー=W A S D、右レバー=矢印キー。機体によってレバーの配置が違うことがあります。</div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+const Q = new URLSearchParams(location.search);
+const SHOT = Q.has('shot'); if (SHOT) document.body.classList.add('shot');
+const DUSK = Q.get('look') === 'dusk';
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+
+// ---------- 画面と光 ----------
+const renderer = new THREE.WebGLRenderer({ canvas: $('gl'), antialias: true, preserveDrawingBuffer: SHOT });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const SKY = DUSK ? 0x4a4f78 : 0xc9d9de;
+scene.background = new THREE.Color(SKY);
+scene.fog = new THREE.Fog(SKY, 26, 70);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+scene.add(new THREE.HemisphereLight(DUSK ? 0x8f9bd0 : 0xeaf3f6, DUSK ? 0x6a4a3a : 0x9a8463, DUSK ? 0.8 : 0.64));
+const sun = new THREE.DirectionalLight(DUSK ? 0xff9a55 : 0xfff1d6, DUSK ? 1.1 : 0.85);
+sun.position.set(DUSK ? -16 : -10, DUSK ? 6 : 15, DUSK ? -9 : -5); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -15, right: 15, top: 15, bottom: -15, near: 1, far: 60 });
+sun.shadow.camera.updateProjectionMatrix(); sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.04;
+scene.add(sun);
+
+const mat = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.85, metalness: 0, flatShading: true }, o));
+function box(w, h, d, m, x, y, z, parent) {
+  const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+  o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; (parent || scene).add(o); return o;
+}
+function cyl(r, len, m, x, y, z, parent, seg) {   // 軸は Z 向き（車輪・転輪）
+  const o = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, seg || 12), m);
+  o.rotation.x = Math.PI / 2; o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; (parent || scene).add(o); return o;
+}
+
+// ---------- 地面（高さの格子。掘ると減り、積むと増え、崩れる） ----------
+const S = 24, N = 96, CS = S / N, NV = N + 1, CELL = CS * CS;
+const H = new Float32Array(NV * NV), tint = new Float32Array(NV * NV);
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+for (let k = 0; k < NV * NV; k++) tint[k] = rnd();
+const gGeo = new THREE.PlaneGeometry(S, S, N, N); gGeo.rotateX(-Math.PI / 2);
+const gPos = gGeo.attributes.position, gCol = new THREE.BufferAttribute(new Float32Array(NV * NV * 3), 3);
+gGeo.setAttribute('color', gCol);
+const ground = new THREE.Mesh(gGeo, mat(0xffffff, { vertexColors: true, roughness: 1 }));
+ground.receiveShadow = true; ground.castShadow = true; scene.add(ground);
+const C_TOP = new THREE.Color(DUSK ? 0xb89a80 : 0xb09c7a), C_DUG = new THREE.Color(0x6e4a2e),
+      C_DEEP = new THREE.Color(0x4a3220), C_PILE = new THREE.Color(0x8a623e), tmpC = new THREE.Color();
+const far = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), mat(C_TOP.getHex(), { roughness: 1 }));
+far.rotation.x = -Math.PI / 2; far.position.y = -0.02; far.receiveShadow = true; scene.add(far);
+let groundDirty = true, settle = 0;
+function paintGround() {
+  for (let k = 0; k < NV * NV; k++) {
+    const h = H[k], ix = k % NV, iz = (k / NV) | 0;
+    const edge = Math.min(ix, iz, N - ix, N - iz) / 6, n = (tint[k] - 0.5) * 0.035 * clamp(edge, 0, 1);
+    if (h < -0.03) tmpC.copy(C_DUG).lerp(C_DEEP, clamp(-h / 1.4, 0, 1));
+    else if (h > 0.03) tmpC.copy(C_PILE);
+    else tmpC.copy(C_TOP);
+    gPos.array[k * 3 + 1] = h;
+    gCol.array[k * 3] = tmpC.r + n; gCol.array[k * 3 + 1] = tmpC.g + n; gCol.array[k * 3 + 2] = tmpC.b + n;
+  }
+  gPos.needsUpdate = gCol.needsUpdate = true; groundDirty = false;
+}
+const cellOf = (x, z) => clamp(Math.round((z + S / 2) / CS), 1, N - 1) * NV + clamp(Math.round((x + S / 2) / CS), 1, N - 1);
+const heightAt = (x, z) => H[cellOf(x, z)];
+function addSoil(x, z, vol, r) {           // 体積 vol を (x,z) の周り r マスに均して置く
+  const c = cellOf(x, z), n = (2 * r + 1) * (2 * r + 1), dh = vol / CELL / n;
+  for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
+    const k = c + dz * NV + dx; if (k >= 0 && k < H.length) H[k] += dh;
+  }
+  groundDirty = true; settle = 90;
+}
+function relax() {                          // 安息角: 盛った土はゆるく、掘った壁は立つ
+  for (let pass = 0; pass < 2; pass++) for (let iz = 1; iz < N; iz++) for (let ix = 1; ix < N; ix++) {
+    const k = iz * NV + ix;
+    for (let s = 0; s < 2; s++) {
+      const j = k + (s ? NV : 1), d = H[k] - H[j], hi = d > 0 ? H[k] : H[j];
+      const lim = hi > 0.02 ? 0.16 : 0.42, a = Math.abs(d);
+      if (a > lim) { const m = (a - lim) * 0.25 * Math.sign(d); H[k] -= m; H[j] += m; groundDirty = true; }
+    }
+  }
+}
+
+// ---------- 現場のしつらえ ----------
+const M_WHITE = mat(0xf2efe6), M_CONE = mat(0xe8542a), M_DARK = mat(0x2a2d31), M_TRUNK = mat(0x6b5038),
+      M_LEAF = mat(DUSK ? 0x3d5a4a : 0x6f8f5a), M_YEL = mat(0xe3a40e, { roughness: 0.6 });
+const DIG = { x0: 3.3, x1: 5.9, z0: -1.1, z1: 1.1 };   // 白線の枠
+for (const [x, z, w, d] of [[4.6, DIG.z0, 2.6, .07], [4.6, DIG.z1, 2.6, .07], [DIG.x0, 0, .07, 2.2], [DIG.x1, 0, .07, 2.2]]) {
+  const l = box(w, 0.012, d, M_WHITE, x, 0.012, z); l.castShadow = false;
+}
+for (const [x, z] of [[DIG.x0 - .35, DIG.z0 - .35], [DIG.x1 + .35, DIG.z0 - .35], [DIG.x0 - .35, DIG.z1 + .35], [DIG.x1 + .35, DIG.z1 + .35]]) {
+  const c = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.55, 8), M_CONE); c.position.set(x, 0.275, z); c.castShadow = true; scene.add(c);
+  box(0.42, 0.04, 0.42, M_CONE, x, 0.02, z); box(0.2, 0.1, 0.2, M_WHITE, x, 0.33, z).scale.set(.8, 1, .8);
+}
+for (let i = 0; i < 16; i++) {              // 敷地の外の木立
+  const a = i / 16 * Math.PI * 2 + rnd() * .3, r = 17 + rnd() * 9, x = Math.cos(a) * r, z = Math.sin(a) * r, s = 1.2 + rnd() * 1.4;
+  const t = new THREE.Mesh(new THREE.CylinderGeometry(.14 * s, .2 * s, 1.6 * s, 6), M_TRUNK); t.position.set(x, .8 * s, z); t.castShadow = true; scene.add(t);
+  const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.25 * s, 0), M_LEAF); c.position.set(x, 2.3 * s, z); c.rotation.y = rnd() * 6; c.castShadow = true; scene.add(c);
+}
+box(5.5, 2.4, 2.3, mat(0xdfe3de), -9, 1.2, 9).rotation.y = .5;         // 現場事務所
+for (let i = 0; i < 9; i++) box(1.9, 1.7, .06, mat(i % 2 ? 0xf2efe6 : 0xe9a53a), -11 + i * 2, .85, -10.5); // 仮囲い
+
+
+// ---------- ショベル本体 ----------
+const L1 = 3.2, L2 = 1.8, L3 = 0.95, ZO = 0.2, PX = 0.45, PY = 1.35, BW = 0.85, CAP = 0.30;
+const M_STEEL = mat(0x3a3d42, { roughness: 0.55, metalness: 0.3, side: THREE.DoubleSide }), M_ROD = mat(0xc9ccd0, { roughness: 0.3, metalness: 0.6 }),
+      M_GLASS = mat(DUSK ? 0x2a3a48 : 0x5f8794, { roughness: 0.2, metalness: 0.2 }), M_SOIL = mat(0x8a623e, { roughness: 1 });
+const under = new THREE.Group(); scene.add(under);
+for (const z of [-0.85, 0.85]) {
+  box(2.9, 0.56, 0.5, M_DARK, 0, 0.3, z, under);
+  for (const x of [-1.45, 1.45]) cyl(0.28, 0.5, M_DARK, x, 0.3, z, under, 10);
+  for (const x of [-0.9, -0.3, 0.3, 0.9]) cyl(0.12, 0.54, M_STEEL, x, 0.14, z, under, 8);
+}
+box(1.7, 0.34, 1.3, M_DARK, 0, 0.5, 0, under);
+const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.2, 14), M_STEEL); ring.position.y = 0.76; under.add(ring);
+
+const upper = new THREE.Group(); scene.add(upper);
+box(2.5, 0.34, 1.9, M_YEL, -0.15, 1.03, 0, upper);
+box(1.7, 0.72, 1.9, M_YEL, -0.95, 1.55, 0, upper);
+box(0.3, 0.5, 1.98, M_DARK, -1.75, 1.22, 0, upper);                       // カウンターウエイト
+box(0.9, 0.05, 1.2, M_DARK, -1.0, 1.93, 0, upper);                      // 吸気口
+const stack = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.5, 8), M_DARK); stack.position.set(-1.5, 2.15, 0.6); upper.add(stack);
+const cab = new THREE.Group(); cab.position.set(0.5, 0, -0.55); upper.add(cab);
+box(1.15, 0.5, 0.8, M_YEL, 0, 1.45, 0, cab);
+box(1.08, 0.86, 0.74, M_GLASS, 0, 2.12, 0, cab);
+box(1.2, 0.07, 0.86, M_YEL, 0, 2.58, 0, cab);
+for (const [x, z] of [[-.56, -.38], [.56, -.38], [-.56, .38], [.56, .38]]) box(0.07, 0.9, 0.07, M_YEL, x, 2.12, z, cab);
+
+function slab(pts, depth, m) {               // 横から見た形を厚みで押し出す
+  const sh = new THREE.Shape(pts.map(p => new THREE.Vector2(p[0], p[1])));
+  const g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: false }); g.translate(0, 0, -depth / 2);
+  const o = new THREE.Mesh(g, m); o.castShadow = o.receiveShadow = true; return o;
+}
+const boom = new THREE.Group(); boom.position.set(PX, PY, ZO); upper.add(boom);
+boom.add(slab([[-.15, -.22], [-.15, .22], [1.45, .98], [1.8, .98], [3.3, .2], [3.3, -.18], [1.65, .42]], 0.36, M_YEL));
+const arm = new THREE.Group(); arm.position.set(L1, 0, 0); boom.add(arm);
+arm.add(slab([[-.55, .05], [-.5, .3], [.1, .34], [1.87, .11], [1.87, -.11], [0, -.2]], 0.28, M_YEL));
+const bucket = new THREE.Group(); bucket.position.set(L2, 0, 0); arm.add(bucket);
+const BP = [[0, 0], [-.03, .3], [.17, .58], [.5, .66], [.78, .5], [L3, 0]];   // バケットの横顔（+y 側にふくらむ）
+(function () {
+  const v = [], hw = BW / 2;
+  for (let i = 0; i < BP.length - 1; i++) {
+    const [ax, ay] = BP[i], [bx, by] = BP[i + 1];
+    v.push(ax, ay, -hw, bx, by, -hw, bx, by, hw, ax, ay, -hw, bx, by, hw, ax, ay, hw);
+  }
+  for (const z of [-hw, hw]) for (let i = 1; i < BP.length - 1; i++)
+    v.push(BP[0][0], BP[0][1], z, BP[i][0], BP[i][1], z, BP[i + 1][0], BP[i + 1][1], z);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g.computeVertexNormals();
+  const o = new THREE.Mesh(g, M_STEEL); o.castShadow = true; bucket.add(o);
+  for (let i = 0; i < 4; i++) box(0.16, 0.05, 0.09, M_ROD, L3 + 0.03, 0.01, -hw + 0.12 + i * (BW - 0.24) / 3, bucket);
+})();
+const bSoil = slab([[.1, .1], [.1, .34], [.25, .55], [.5, .62], [.74, .47], [.86, .1]], BW - 0.06, M_SOIL); bucket.add(bSoil);
+
+function strut(r, barrel) {                  // 油圧シリンダ（太い筒＋光る棒）
+  const g = new THREE.Group(); upper.add(g); g.userData.b = barrel;
+  box(1, r * 2, r * 2, M_DARK, 0, 0, 0, g); box(1, r, r, M_ROD, 0, 0, 0, g); return g;
+}
+function setStrut(g, a, b) {
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), bl = g.userData.b;
+  g.position.set(a[0], a[1], ZO); g.rotation.z = Math.atan2(dy, dx);
+  g.children[0].scale.x = bl; g.children[0].position.x = bl / 2; g.children[1].scale.x = L; g.children[1].position.x = L / 2;
+}
+const sBoom = strut(0.09, 0.86), sArm = strut(0.08, 1.3), sBkt = strut(0.065, 1.2);
+const fr = (o, ang, x, y) => [o[0] + x * Math.cos(ang) - y * Math.sin(ang), o[1] + x * Math.sin(ang) + y * Math.cos(ang)];
+
+const st = { psi: 0, a1: 0.62, a2: -1.75, a3: -1.3, vpsi: 0, v1: 0, v2: 0, v3: 0, load: 0, trucks: 0, dug: 0 };
+const K = { tip: new THREE.Vector3(), mouth: new THREE.Vector3(), belly: new THREE.Vector3(), c: 0 };
+function toWorld(p, out) {                   // 上部旋回体の平面 (x,y) → 世界
+  const cs = Math.cos(st.psi), sn = Math.sin(st.psi);
+  return out.set(p[0] * cs + ZO * sn, p[1], -p[0] * sn + ZO * cs);
+}
+function pose() {
+  const P = [PX, PY], b = st.a1 + st.a2, c = b + st.a3;
+  const elbow = fr(P, st.a1, L1, 0), wrist = fr(elbow, b, L2, 0);
+  upper.rotation.y = st.psi; boom.rotation.z = st.a1; arm.rotation.z = st.a2; bucket.rotation.z = st.a3;
+  setStrut(sBoom, [1.3, 1.08], fr(P, st.a1, 1.55, 0.42));
+  setStrut(sArm, fr(P, st.a1, 1.6, 0.98), fr(elbow, b, -0.5, 0.2));
+  setStrut(sBkt, fr(elbow, b, 0.2, 0.32), fr(wrist, c, 0.05, 0.3));
+  toWorld(fr(wrist, c, L3, 0), K.tip); toWorld(fr(wrist, c, 0.5, 0.2), K.mouth); toWorld(fr(wrist, c, 0.5, 0.66), K.belly); K.c = c;
+  const f = clamp(st.load / CAP, 0, 1);
+  bSoil.visible = f > 0.02; bSoil.scale.y = f; bSoil.position.y = 0.64 * (1 - f);
+}
+
+// ---------- ダンプ ----------
+const TR = { z: -5.0, x0: -1.4, x1: 1.8, z0: -6.0, z1: -4.0, floor: 1.15, cap: 1.5 };
+const truck = new THREE.Group(); truck.position.set(0, 0, TR.z); scene.add(truck);
+const M_BED = mat(DUSK ? 0x2c4a44 : 0x2f6156), M_CAB = mat(0xece8dc);
+box(5.2, 0.28, 0.9, M_DARK, 0.7, 0.78, 0, truck);
+box(3.3, 0.1, 2.1, M_BED, 0.2, TR.floor - 0.05, 0, truck);
+for (const z of [-1.02, 1.02]) box(3.3, 0.7, 0.07, M_BED, 0.2, TR.floor + 0.35, z, truck);
+for (const x of [-1.42, 1.82]) box(0.07, 0.7, 2.1, M_BED, x, TR.floor + 0.35, 0, truck);
+box(0.5, 0.12, 2.1, M_BED, 2.05, TR.floor + 0.76, 0, truck);
+box(1.25, 1.55, 2.05, M_CAB, 2.75, 1.6, 0, truck); box(0.06, 0.6, 1.8, M_GLASS, 3.39, 1.95, 0, truck);
+for (const x of [2.7, -0.35, -1.25]) for (const z of [-0.92, 0.92]) cyl(0.46, 0.34, M_DARK, x, 0.46, z, truck, 12);
+const tSoil = box(3.1, 1, 1.9, M_SOIL, 0.2, TR.floor, 0, truck); tSoil.visible = false;
+const trk = { load: 0, away: 0 };            // away>0 のあいだは出発〜次の車の到着
+
+
+// ---------- 落ちる土の粒 ----------
+const PN = 260, pPos = new Float32Array(PN * 3), pVel = new Float32Array(PN * 3), pEnd = new Float32Array(PN); let pi = 0;
+for (let i = 0; i < PN; i++) pPos[i * 3 + 1] = -50;
+const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const grains = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x7b5435, size: 0.13 })); grains.frustumCulled = false; scene.add(grains);
+function grain(p, floorY) {
+  const k = pi * 3; pi = (pi + 1) % PN;
+  pPos[k] = p.x + (rnd() - .5) * .6; pPos[k + 1] = p.y - rnd() * .2; pPos[k + 2] = p.z + (rnd() - .5) * .6;
+  pVel[k] = (rnd() - .5) * .6; pVel[k + 1] = -rnd(); pVel[k + 2] = (rnd() - .5) * .6; pEnd[k / 3] = floorY;
+}
+function stepGrains(dt) {
+  for (let i = 0; i < PN; i++) { const k = i * 3; if (pPos[k + 1] < -40) continue;
+    pVel[k + 1] -= 9.8 * dt; pPos[k] += pVel[k] * dt; pPos[k + 1] += pVel[k + 1] * dt; pPos[k + 2] += pVel[k + 2] * dt;
+    if (pPos[k + 1] < pEnd[i]) pPos[k + 1] = -50; }
+  pGeo.attributes.position.needsUpdate = true;
+}
+
+// ---------- レバー（タッチ／キー／お手本） ----------
+const touch = { L: { x: 0, y: 0, on: false }, R: { x: 0, y: 0, on: false } }, key = { L: { x: 0, y: 0 }, R: { x: 0, y: 0 } };
+const knobs = {}, labs = {};
+for (const s of ['L', 'R']) {
+  const el = $('L' + s), pad = el.querySelector('.pad'), v = touch[s]; let id = null;
+  knobs[s] = el.querySelector('.knob'); labs[s] = { u: el.querySelector('.u'), d: el.querySelector('.d'), w: el.querySelector('.w'), e: el.querySelector('.e') };
+  const set = e => { const r = pad.getBoundingClientRect(); let x = (e.clientX - r.left) / r.width * 2 - 1, y = (e.clientY - r.top) / r.height * 2 - 1;
+    const m = Math.max(Math.hypot(x, y) / 0.8, 1) * 0.8; v.x = clamp(x / m, -1, 1); v.y = clamp(-y / m, -1, 1); };
+  pad.addEventListener('pointerdown', e => { id = e.pointerId; pad.setPointerCapture(id); v.on = true; set(e); auto = false; audioOn(); e.preventDefault(); });
+  pad.addEventListener('pointermove', e => { if (e.pointerId === id) set(e); });
+  const up = e => { if (e.pointerId === id) { id = null; v.on = false; v.x = v.y = 0; } };
+  pad.addEventListener('pointerup', up); pad.addEventListener('pointercancel', up);
+}
+const keys = {}; for (const c of (Q.get('hold') || '').split(',')) if (c) keys[c] = 1;   // 検証用: キーを押しっぱなしにする
+addEventListener('keydown', e => { keys[e.code] = 1; auto = false; audioOn(); if (e.code.startsWith('Arrow')) e.preventDefault(); });
+addEventListener('keyup', e => { keys[e.code] = 0; });
+const ax = (p, n) => (keys[p] ? 1 : 0) - (keys[n] ? 1 : 0);
+const dz = v => Math.abs(v) < 0.14 ? 0 : (v - Math.sign(v) * 0.14) / 0.86;
+
+let auto = Q.has('auto'), ai = 0, at = 0, cyc = 0;
+const AUTO = [{ psi: 0, a1: .12, a2: -.95, a3: -.55 }, { psi: 0, a1: .34, a2: -1.95, a3: -2.25 }, { psi: 1.57, a1: .8, a2: -1.5, a3: -2.25 },
+              { psi: 1.57, a1: .76, a2: -1.2, a3: .5 }, { psi: 0, a1: .6, a2: -1.2, a3: -.55 }];
+function autopilot(dt) {
+  const g = AUTO[ai], off = [0, .14, -.14, .07][cyc % 4], deep = ai === 0 ? 0.05 * (cyc % 4) : 0;
+  const tp = g.psi === 0 ? off : g.psi, e = [tp - st.psi, g.a1 - deep - st.a1, g.a2 - st.a2, g.a3 - st.a3]; at += dt;
+  key.L.x = -clamp(e[0] * 3, -1, 1); key.R.y = -clamp(e[1] * 5, -1, 1); key.L.y = clamp(e[2] * 4, -1, 1); key.R.x = clamp(e[3] * 3, -1, 1);
+  if (ai === 1 && st.load < CAP * 0.5 && at < 1.2) key.R.y = 0;      // 掘りはじめはブームを止めて食い込ませる
+  if (Math.max(...e.map(Math.abs)) < 0.05 || at > 7 || (ai === 3 && st.load <= 0 && at > .8)) { ai = (ai + 1) % AUTO.length; at = 0; if (ai === 0) cyc++; }
+}
+
+// ---------- 音（エンジンと油圧） ----------
+let AC = null, gMaster, o1, o2, lp, gHyd, soundOn = true;
+function audioOn() {
+  if (AC || SHOT) return; const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
+  AC = new A(); gMaster = AC.createGain(); gMaster.gain.value = soundOn ? 0.7 : 0; gMaster.connect(AC.destination);
+  lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 190;
+  const gE = AC.createGain(); gE.gain.value = 0.16; lp.connect(gE); gE.connect(gMaster);
+  o1 = AC.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = 46; o1.connect(lp); o1.start();
+  o2 = AC.createOscillator(); o2.type = 'square'; o2.frequency.value = 69.4; o2.connect(lp); o2.start();
+  const lfo = AC.createOscillator(), gl = AC.createGain(); lfo.frequency.value = 11.5; gl.gain.value = 0.06; lfo.connect(gl); gl.connect(gE.gain); lfo.start();
+  const buf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const n = AC.createBufferSource(); n.buffer = buf; n.loop = true; const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2300; bp.Q.value = 0.7;
+  gHyd = AC.createGain(); gHyd.gain.value = 0; n.connect(bp); bp.connect(gHyd); gHyd.connect(gMaster); n.start(); AC._noise = buf;
+}
+function thud(v) {
+  if (!AC) return; const n = AC.createBufferSource(); n.buffer = AC._noise; const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 160;
+  const g = AC.createGain(), t = AC.currentTime; g.gain.setValueAtTime(0.5 * v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+  n.connect(f); f.connect(g); g.connect(gMaster); n.start(t, Math.random() * .5, 0.4);
+}
+
+// ---------- 一歩ぶんの物理 ----------
+const prevTip = new THREE.Vector3(), dir = new THREE.Vector3(); let digRate = 0, thudT = 0, cabView = Q.get('view') === 'cab', camYaw = 0;
+function shove(x, z, vol) { addSoil(x + dir.x * 0.75, z + dir.z * 0.75, vol, 1); }
+function step(dt) {
+  if (auto) autopilot(dt); else { key.L.x = ax('KeyD', 'KeyA'); key.L.y = ax('KeyW', 'KeyS'); key.R.x = ax('ArrowRight', 'ArrowLeft'); key.R.y = ax('ArrowUp', 'ArrowDown'); }
+  const L = touch.L.on ? touch.L : key.L, R = touch.R.on ? touch.R : key.R, lx = dz(L.x), ly = dz(L.y), rx = dz(R.x), ry = dz(R.y);
+  for (const [s, v] of [['L', L], ['R', R]]) { knobs[s].style.transform = 'translate(' + v.x * 62 + '%,' + (-v.y * 62) + '%)';
+    const d = { u: v.y > .14, d: v.y < -.14, w: v.x < -.14, e: v.x > .14 }; for (const k in d) labs[s][k].classList.toggle('on', d[k]); }
+  const drag = clamp(1 - digRate / 0.45, 0.3, 1), k = Math.min(1, dt * 7);   // 土の抵抗で油圧がにぶる
+  st.vpsi += (-lx * 0.75 - st.vpsi) * Math.min(1, dt * 3.5);
+  st.v2 += (ly * 0.62 * drag - st.v2) * k; st.v1 += (-ry * 0.42 * drag - st.v1) * k; st.v3 += (rx * 1.15 * drag - st.v3) * k;
+  st.psi += st.vpsi * dt;
+  st.a1 = clamp(st.a1 + st.v1 * dt, -0.2, 1.15); st.a2 = clamp(st.a2 + st.v2 * dt, -2.55, -0.6); st.a3 = clamp(st.a3 + st.v3 * dt, -2.4, 0.7);
+  prevTip.copy(K.tip); pose();
+  dir.set(K.tip.x - prevTip.x, 0, K.tip.z - prevTip.z); if (dir.length() < 0.004) dir.set(Math.cos(st.psi), 0, -Math.sin(st.psi)); dir.normalize();
+
+  // 掘る: 刃先より高い土は、入るぶんだけバケットへ。あふれたぶんは押しのける
+  const wx = Math.sin(st.psi), wz = Math.cos(st.psi), holds = Math.cos(K.c) < 0.15, ty = Math.max(K.tip.y, -2.2); let moved = 0;
+  for (const o of [-0.33, -0.11, 0.11, 0.33]) {
+    const x = K.tip.x + wx * o, z = K.tip.z + wz * o, c = cellOf(x, z);
+    if (H[c] > ty + 0.01) { let vol = (H[c] - ty) * CELL; H[c] = ty; moved += vol;
+      if (holds && st.load < CAP) { const t = Math.min(vol, CAP - st.load); st.load += t; st.dug += t; vol -= t; }
+      if (vol > 0) shove(x, z, vol); groundDirty = true; settle = 90; }
+  }
+  const cb = cellOf(K.belly.x, K.belly.z);                                   // バケットの背で土を押す
+  if (H[cb] > K.belly.y + 0.02) { const vol = (H[cb] - K.belly.y) * CELL; H[cb] = K.belly.y; moved += vol; shove(K.belly.x, K.belly.z, vol); }
+  digRate += (moved / dt - digRate) * Math.min(1, dt * 8);
+
+  // 開ける: 口が下を向いたら落ちる。ダンプの荷台の上なら荷台へ
+  const over = !trk.away && K.mouth.x > TR.x0 && K.mouth.x < TR.x1 && K.mouth.z > TR.z0 && K.mouth.z < TR.z1 && K.mouth.y > TR.floor;
+  if (!holds && st.load > 0) {
+    const out = Math.min(st.load, (0.3 + 0.8 * Math.cos(K.c)) * dt); st.load -= out;
+    if (over) trk.load += out; else addSoil(K.mouth.x, K.mouth.z, out, 1);
+    const fy = over ? TR.floor + 0.2 : heightAt(K.mouth.x, K.mouth.z); for (let i = 0; i < 5; i++) grain(K.mouth, fy);
+    if ((thudT -= dt) < 0) { thud(over ? 1 : 0.5); thudT = 0.16; }
+  }
+  // ダンプ: 満載で出発 → 空の車が入ってくる
+  if (!trk.away && trk.load >= TR.cap) { trk.away = 0.001; st.trucks++; }
+  if (trk.away) { trk.away += dt; const t = trk.away;
+    if (t < 2.4) truck.position.x = 7 * t * t; else { if (trk.load) trk.load = 0; const u = clamp((t - 2.4) / 2.4, 0, 1); truck.position.x = -42 * (1 - u) * (1 - u); if (u >= 1) trk.away = 0; } }
+  const th = clamp(trk.load / TR.cap, 0, 1) * 0.8; tSoil.visible = th > 0.01; tSoil.scale.y = Math.max(th, 0.01); tSoil.position.y = TR.floor + th / 2;
+
+  if (settle > 0) { relax(); settle--; }
+  if (groundDirty) paintGround();
+  stepGrains(dt);
+
+  // 手ほどき
+  const f = st.load / CAP, front = Math.abs(Math.atan2(Math.sin(st.psi), Math.cos(st.psi))) < 0.45, low = K.tip.y - heightAt(K.tip.x, K.tip.z) < 0.35;
+  let n = 1, t = 'アームを伸ばして、ブームを下げる';
+  if (f > 0.02 && over) { n = 4; t = 'バケットを開く'; }
+  else if (f > 0.55) { n = 3; t = 'ブームを上げて、ダンプへ旋回'; }
+  else if (!front) { t = '白線の枠へ旋回して戻る'; }
+  else if (low) { n = 2; t = 'バケットで掘りながら、アームを引く'; }
+  if ($('coachT').textContent !== t) { $('coachT').textContent = t; $('coachN').textContent = n + '/4'; }
+  $('mLoad').textContent = Math.round(f * 100) + '%'; $('bLoad').style.width = f * 100 + '%';
+  $('mTruck').textContent = st.trucks + '台'; $('bTruck').style.width = clamp(trk.load / TR.cap, 0, 1) * 100 + '%';
+  if (AC) { const work = clamp(Math.abs(lx) + Math.abs(ly) + Math.abs(rx) + Math.abs(ry), 0, 1.6) / 1.6 + clamp(digRate, 0, .4), tt = AC.currentTime;
+    o1.frequency.setTargetAtTime(46 * (1 + 0.3 * work), tt, .15); o2.frequency.setTargetAtTime(69.4 * (1 + 0.3 * work), tt, .15);
+    lp.frequency.setTargetAtTime(190 + 300 * work, tt, .15); gHyd.gain.setTargetAtTime(0.045 * Math.min(1, work * 1.5), tt, .06); }
+}
+
+// ---------- カメラと進行 ----------
+const camP = new THREE.Vector3(), camT = new THREE.Vector3();
+function local(x, y, z, yaw, out) { const c = Math.cos(yaw), s = Math.sin(yaw); return out.set(x * c + z * s, y, -x * s + z * c); }
+function frame(dt) {
+  const port = innerHeight > innerWidth;
+  camYaw += (st.psi - camYaw) * Math.min(1, dt * 1.6); cab.visible = !cabView;
+  if (cabView) { local(1.0, 2.3, -0.72, st.psi, camP); local(5.6, 0.0, 0.25, st.psi, camT); camera.fov = port ? 84 : 66; }
+  else { const d = port ? 1.3 : 1; local(-5.4 * d, 6.6 * d, 6.2 * d, camYaw * 0.6, camP); local(2.4, port ? -1.3 : -0.6, -1.2, camYaw * 0.6, camT); camera.fov = port ? 56 : 44; }
+  camera.position.copy(camP); camera.lookAt(camT); camera.updateProjectionMatrix();
+  renderer.render(scene, camera);
+}
+function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; }
+addEventListener('resize', resize); resize();
+$('bView').onclick = () => { cabView = !cabView; $('bView').setAttribute('aria-pressed', cabView); };
+$('bSound').onclick = () => { soundOn = !soundOn; $('bSound').setAttribute('aria-pressed', soundOn); audioOn(); if (gMaster) gMaster.gain.value = soundOn ? 0.7 : 0; };
+$('bDemo').onclick = () => { auto = !auto; ai = 0; at = 0; audioOn(); };
+$('go').onclick = () => { $('start').style.display = 'none'; audioOn(); };
+$('bView').setAttribute('aria-pressed', cabView);
+pose(); prevTip.copy(K.tip); paintGround();
+for (let i = 0, n = (+Q.get('ff') || 0) * 60; i < n; i++) step(1 / 60);   // 撮影・検証用の早送り
+let last = performance.now();
+(function loop(now) {
+  const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000)); last = now;
+  step(dt); frame(dt); $('bDemo').setAttribute('aria-pressed', auto);
+  if (Q.has('dbg')) document.title = JSON.stringify({ t: K.tip.toArray().map(v => +v.toFixed(2)), a: [st.psi, st.a1, st.a2, st.a3].map(v => +v.toFixed(2)), load: +st.load.toFixed(2), trk: +trk.load.toFixed(2), n: st.trucks, ai, cyc });
+  requestAnimationFrame(loop);
+})(last);
+
+</script>
+</body>
+</html>

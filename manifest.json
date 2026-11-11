@@ -145,6 +145,14 @@
       "type": "report",
       "added": "2026-10-25",
       "desc": "設計・系統図・購入品・手順・成立性をまとめた計画書（暗号化）"
+    },
+    {
+      "project": "Yorozuya",
+      "title": "油圧ショベル操縦れんしゅう",
+      "file": "Yorozuya/shovel.html",
+      "type": "panel",
+      "added": "2026-11-11",
+      "desc": "本物と同じ2本レバー（JIS標準の配置）で土を掘ってダンプに積む。スマホの親指2本で操作"
     }
   ]
 }
