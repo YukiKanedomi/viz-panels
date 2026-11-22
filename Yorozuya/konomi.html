@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light">
+<title>好みしらべ</title>
+<style>
+:root{ --ink:#16181d; --sub:#6a6f7a; --line:#e4e4e8; --soft:#f4f4f6; --ok:#1c7c4a; }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.wrap{max-width:860px;margin:0 auto;padding:0 14px}
+header{padding:22px 0 6px}
+h1{font-size:22px;line-height:1.3;margin:0 0 8px;letter-spacing:.02em}
+h1 small{font-size:13px;font-weight:600;color:var(--sub);margin-left:8px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;vertical-align:3px}
+header p{margin:0 0 6px;color:var(--sub);font-size:14px}
+header b{color:var(--ink)}
+h2{font-size:16px;margin:30px 0 2px;padding-top:14px;border-top:1px solid var(--line)}
+.hint{margin:0 0 12px;color:var(--sub);font-size:13px}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.who{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:12px;background:var(--soft);border-radius:12px}
+.who .lab{font-size:14px;font-weight:600;flex:1}
+.who .lab span{display:block;font-weight:400;color:var(--sub);font-size:12.5px}
+.who button{width:56px;height:44px;border-radius:10px;border:1px solid #d5d5db;background:#fff;font-size:16px;font-weight:700}
+.who button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
+@media (min-width:600px){.grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:18px 12px}.grid.two{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.card{min-width:0}
+.pic{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09);transition:opacity .15s}
+.grid.two .pic{aspect-ratio:16/10;display:flex;flex-direction:column}
+.pic i{display:block}
+.pic::after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09);pointer-events:none}
+.no{position:absolute;left:6px;top:6px;z-index:1;font-weight:700;font-size:11px;line-height:1;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 7px}
+.card[data-r="l"] .no{background:var(--ink);border-color:var(--ink);color:#fff}
+.card[data-r="y"] .no{border-color:var(--ink)}
+.card[data-r="n"] .pic{opacity:.18}
+.name{margin:5px 1px 5px;font-size:12px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid.two .name{white-space:normal;min-height:2.8em}
+.btns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+.btns button{height:46px;padding:0;border-radius:9px;border:1px solid #d5d5db;background:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap}
+.btns .s{font-size:15px}
+.btns .t{font-size:10px;font-weight:600;margin-top:3px}
+.btns button[aria-pressed="true"].l{background:var(--ink);border-color:var(--ink);color:#fff}
+.btns button[aria-pressed="true"].y{background:#fff;border:2px solid var(--ink)}
+.btns button[aria-pressed="true"].n{background:#8a8f99;border-color:#8a8f99;color:#fff}
+.q{margin:18px 0 0}
+.q .lab{font-size:14px;font-weight:600;margin:0 0 6px}
+.q .lab span{font-weight:400;color:var(--sub);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-height:40px;padding:6px 13px;border-radius:999px;border:1px solid #d5d5db;background:#fff;font-size:13.5px;text-align:left}
+.chips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+textarea{font:inherit;color:var(--ink)}
+.memo{width:100%;max-width:520px;border:1px solid #d5d5db;border-radius:10px;padding:10px 12px;display:block;resize:vertical}
+#out{white-space:pre-wrap;word-break:break-all;background:var(--soft);border-radius:10px;padding:12px;font-size:12.5px;line-height:1.6;margin:8px 0 0;
+  font-family:ui-monospace,Menlo,Consolas,monospace;width:100%;border:0;resize:none;display:block}
+.reset{margin:14px 0 0;background:none;border:0;padding:8px 0;color:var(--sub);font-size:13px;text-decoration:underline}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.count{flex:1;font-size:13px;line-height:1.35;color:var(--sub)}
+.count b{color:var(--ink);font-size:15px}
+#copy{height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--ink);color:#fff;font-size:15px;font-weight:700;white-space:nowrap}
+#copy.done{background:var(--ok)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>好みしらべ<small id="round"></small></h1>
+    <p>色ごとに<b>「大好き」「好き」「ちがう」</b>のどれかを押してください。迷う色は押さなくて大丈夫です。3 分ほどで終わります。終わったら下の<b>「結果をコピー」</b>を押して、チャットに貼ってください。</p>
+    <p>画面の設定で色は少し変わります。夜間モード（Night Shift）を切って、明るめの画面で見ると正確です。</p>
+    <div class="who">
+      <p class="lab" style="margin:0">答える人<span>ひとりずつ、別々に答えます</span></p>
+      <button type="button" data-w="A">A</button>
+      <button type="button" data-w="B">B</button>
+    </div>
+  </header>
+
+  <main id="main"></main>
+
+  <h2>あと少しだけ</h2>
+  <p class="hint">どれも答えなくて大丈夫です。</p>
+  <div class="q">
+    <p class="lab">選ぶときに思い浮かべた物 <span>いくつでも</span></p>
+    <div class="chips" id="scene">
+      <button type="button" data-v="服">服・身につける物</button>
+      <button type="button" data-v="部屋">部屋・家具</button>
+      <button type="button" data-v="小物">小物・雑貨</button>
+      <button type="button" data-v="なし">とくに考えなかった</button>
+    </div>
+  </div>
+  <div class="q">
+    <p class="lab"><label for="memo">ひとこと</label> <span>自由に書けます</span></p>
+    <textarea id="memo" class="memo" rows="3" placeholder="例: 服なら紺、部屋は白っぽい色が好き。この中に好きな色が無かった"></textarea>
+  </div>
+
+  <h2>いまの結果</h2>
+  <p class="hint">下のボタンでコピーできないときは、この枠の文字を長押しでコピーしてください。</p>
+  <textarea id="out" readonly rows="8"></textarea>
+  <button type="button" class="reset" id="reset">最初からやり直す</button>
+</div>
+
+<div class="bar"><div class="in">
+  <div class="count" id="count"></div>
+  <button type="button" id="copy">結果をコピー</button>
+</div></div>
+
+<script>
+// 回ごとに TOPIC・ROUND・GROUPS を入れ替える。前の回は rounds/ に控える
+const TOPIC = 'color', TOPIC_JA = '色', ROUND = 1;
+const HUES = ['赤', '橙', '黄', '黄緑', '緑', '青緑', '青', '紫', 'ピンク'];
+const tone = (id, ja, cols) => cols.map((c, i) => ({no: id + (i + 1), name: ja + ' ' + HUES[i], c: [c]}));
+const GROUPS = [
+  {title: '淡い色', hint: '白をたっぷり混ぜた、やわらかい色です。', items: tone('P', '淡い',
+    ['#F6C5C0', '#FAD4B4', '#FBEDB0', '#DDEBB4', '#BFE4C8', '#B9E6E0', '#BEDFF3', '#DBCFEF', '#F8CFE1'])},
+  {title: 'あざやかな色', hint: 'にごりのない、はっきりした色です。', items: tone('V', 'あざやかな',
+    ['#E23B36', '#F28A1E', '#F6C915', '#93C83A', '#27A55A', '#12A89B', '#2B88DE', '#8750CC', '#EA4C92'])},
+  {title: 'くすんだ色', hint: '灰色を混ぜた、落ち着いた色です。', items: tone('D', 'くすんだ',
+    ['#B4706B', '#C28D62', '#C6B062', '#A2AE6E', '#7EA088', '#70A39D', '#7B9CB8', '#9888AE', '#C08CA2'])},
+  {title: '深い色', hint: '黒に近づけた、濃い色です。', items: tone('K', '深い',
+    ['#7C1F26', '#8C4A18', '#86691A', '#55701F', '#1E5A3B', '#105E5A', '#1D3E7A', '#46276D', '#882552'])},
+  {title: '白から黒まで', hint: '色みのない色です。', items: [
+    {no: 'N1', name: '白', c: ['#FFFFFF']}, {no: 'N2', name: '生成り', c: ['#F3ECDD']}, {no: 'N3', name: 'ベージュ', c: ['#D8C3A3']},
+    {no: 'N4', name: 'グレー', c: ['#A8ACB1']}, {no: 'N5', name: 'チャコール', c: ['#494C51']}, {no: 'N6', name: '黒', c: ['#161616']}]},
+  {title: '色の組み合わせ', hint: '大きい面、中くらいの面、小さい差し色の順に並べています。', two: 1, items: [
+    {no: 'C1', name: '生成り・淡い青・明るい木', c: ['#F3ECDD', '#BEDFF3', '#D9B98C']},
+    {no: 'C2', name: '生成り・紺・からし', c: ['#F3ECDD', '#1D3E7A', '#D6A32B']},
+    {no: 'C3', name: '白・黒・赤', c: ['#FFFFFF', '#161616', '#E23B36']},
+    {no: 'C4', name: '淡い緑・白・深い緑', c: ['#BFE4C8', '#FFFFFF', '#1E5A3B']},
+    {no: 'C5', name: 'くすんだピンク・グレー・白', c: ['#C08CA2', '#A8ACB1', '#FFFFFF']},
+    {no: 'C6', name: 'ベージュ・こげ茶・生成り', c: ['#D8C3A3', '#5E412A', '#F3ECDD']},
+    {no: 'C7', name: '黄・青・赤', c: ['#F6C915', '#2B88DE', '#E23B36']},
+    {no: 'C8', name: '淡いピンク・淡い青・淡い黄', c: ['#F8CFE1', '#BEDFF3', '#FBEDB0']},
+    {no: 'C9', name: '白・グレー・黒', c: ['#FFFFFF', '#A8ACB1', '#161616']},
+    {no: 'C10', name: '深い緑・生成り・金茶', c: ['#1E5A3B', '#F3ECDD', '#B58B3A']},
+    {no: 'C11', name: '青緑・白・橙', c: ['#12A89B', '#FFFFFF', '#F28A1E']},
+    {no: 'C12', name: '黒・ピンク・黄緑', c: ['#161616', '#EA4C92', '#93C83A']}]}
+];
+const order = [].concat.apply([], GROUPS.map(g => g.items.map(it => it.no)));
+const P = new URLSearchParams(location.search);
+const DEMO = !!P.get('demo');
+const blank = () => ({r: {}, scene: [], memo: ''});
+const key = w => 'konomi-' + TOPIC + '-' + ROUND + '-' + w;
+let who = (P.get('who') || '').toUpperCase(); if (who !== 'A' && who !== 'B') who = '';
+let S = blank();
+function load() {
+  S = blank();
+  if (DEMO) { order.slice(0, 6).forEach((no, i) => { S.r[no] = 'llyynn'[i]; }); S.r.C1 = 'l'; S.r.C3 = 'n'; S.scene = ['部屋']; return; }
+  if (!who) return;
+  try { const j = JSON.parse(localStorage.getItem(key(who)) || 'null'); if (j && j.r) S = Object.assign(blank(), j); } catch (e) {}
+}
+const save = () => { if (DEMO || !who) return; try { localStorage.setItem(key(who), JSON.stringify(S)); } catch (e) {} };
+const $ = (s, el) => (el || document).querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+$('#round').textContent = TOPIC_JA + '・' + ROUND + ' 回目';
+$('#main').innerHTML = GROUPS.map(g =>
+  '<h2>' + esc(g.title) + '</h2><p class="hint">' + esc(g.hint) + '</p><div class="grid' + (g.two ? ' two' : '') + '">' +
+  g.items.map(it =>
+    '<div class="card" data-no="' + it.no + '">' +
+      (it.c.length === 1
+        ? '<div class="pic" style="background:' + it.c[0] + '"><span class="no">' + it.no + '</span></div>'
+        : '<div class="pic"><span class="no">' + it.no + '</span>' +
+          it.c.map((c, i) => '<i style="background:' + c + ';flex:' + [6, 3, 1][i] + '"></i>').join('') + '</div>') +
+      '<p class="name">' + esc(it.name) + '</p>' +
+      '<div class="btns">' +
+        '<button type="button" class="l" data-v="l"><span class="s">◎</span><span class="t">大好き</span></button>' +
+        '<button type="button" class="y" data-v="y"><span class="s">○</span><span class="t">好き</span></button>' +
+        '<button type="button" class="n" data-v="n"><span class="s">×</span><span class="t">ちがう</span></button>' +
+      '</div></div>').join('') + '</div>').join('');
+
+const picked = v => order.filter(no => S.r[no] === v);
+const press = (b, on) => b.setAttribute('aria-pressed', String(on));
+
+function render() {
+  document.querySelectorAll('.who button').forEach(b => press(b, b.dataset.w === who));
+  document.querySelectorAll('.card').forEach(c => {
+    const r = S.r[c.dataset.no] || '';
+    c.dataset.r = r;
+    c.querySelectorAll('.btns button').forEach(b => press(b, b.dataset.v === r));
+  });
+  document.querySelectorAll('#scene button').forEach(b => press(b, S.scene.includes(b.dataset.v)));
+  const love = picked('l'), like = picked('y'), nos = picked('n'), memo = S.memo.trim();
+  $('#count').innerHTML = '大好き <b>' + love.length + '</b>　好き <b>' + like.length + '</b>　ちがう <b>' + nos.length + '</b><br>全 ' + order.length + ' 件';
+  const lines = ['好みしらべの結果（' + TOPIC_JA + '・' + ROUND + ' 回目）',
+    '答えた人: ' + (who || 'まだ選んでいません'),
+    '大好き: ' + (love.join(' ') || 'なし'),
+    '好き: ' + (like.join(' ') || 'なし'),
+    'ちがう: ' + (nos.join(' ') || 'なし')];
+  if (S.scene.length) lines.push('思い浮かべた物: ' + S.scene.join('・'));
+  if (memo) lines.push('ひとこと: ' + memo);
+  lines.push(JSON.stringify({panel: 'konomi', v: 1, topic: TOPIC, round: ROUND, who: who, love: love, like: like, no: nos, scene: S.scene, memo: memo}));
+  const out = $('#out');
+  out.value = lines.join('\n');
+  out.style.height = 'auto'; out.style.height = (out.scrollHeight + 2) + 'px';
+  save();
+}
+
+document.querySelectorAll('.who button').forEach(b => b.addEventListener('click', () => {
+  if (who === b.dataset.w) return;
+  who = b.dataset.w; load(); $('#memo').value = S.memo; render();
+}));
+$('#main').addEventListener('click', e => {
+  const b = e.target.closest('.btns button'); if (!b) return;
+  const no = b.closest('.card').dataset.no;
+  if (S.r[no] === b.dataset.v) delete S.r[no]; else S.r[no] = b.dataset.v;
+  render();
+});
+$('#scene').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const v = b.dataset.v;
+  S.scene = S.scene.includes(v) ? S.scene.filter(x => x !== v) : S.scene.concat(v);
+  render();
+});
+$('#memo').addEventListener('input', e => { S.memo = e.target.value; render(); });
+
+const copyBtn = $('#copy');
+copyBtn.addEventListener('click', async () => {
+  if (!who) {
+    copyBtn.textContent = '答える人を選ぶ';
+    $('.who').scrollIntoView({block: 'center'});
+    setTimeout(() => { copyBtn.textContent = '結果をコピー'; }, 2200);
+    return;
+  }
+  const out = $('#out'); let ok = false;
+  try { await navigator.clipboard.writeText(out.value); ok = true; } catch (e) {}
+  if (!ok) { try { out.focus(); out.select(); out.setSelectionRange(0, 99999); ok = document.execCommand('copy'); } catch (e) {} }
+  copyBtn.textContent = ok ? 'コピーしました' : '下の枠を長押し';
+  copyBtn.classList.toggle('done', ok);
+  if (!ok) out.scrollIntoView({block: 'center'});
+  setTimeout(() => { copyBtn.textContent = '結果をコピー'; copyBtn.classList.remove('done'); }, 2200);
+});
+
+const resetBtn = $('#reset'); let armed = 0;
+resetBtn.addEventListener('click', () => {
+  if (!armed) { armed = 1; resetBtn.textContent = 'もう一度押すと、選んだ内容がすべて消えます';
+    setTimeout(() => { armed = 0; resetBtn.textContent = '最初からやり直す'; }, 4000); return; }
+  S = blank(); $('#memo').value = ''; armed = 0; resetBtn.textContent = '最初からやり直す'; render(); window.scrollTo(0, 0);
+});
+load(); $('#memo').value = S.memo; render();
+</script>
+</body>
+</html>
