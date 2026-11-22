@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light">
+<title>好みしらべ 作品</title>
+<style>
+/* 並べ方: 上に分野の切り替え（貼りつく）、その下に題名の行がずらっと並ぶ。1 行 = 題名 + 5 つのボタン。下に固定の帯 */
+:root{
+  --bg:#ffffff; --ink:#16181d; --sub:#636874; --line:#e6e6ea; --soft:#f3f3f5; --edge:#d3d3da;
+  --on:#ffffff; --mute:#858a94; --ok:#1c7c4a; --want:#1f4fd0; --wantbg:#e9eefc; --focus:#1f4fd0; --barbg:rgba(255,255,255,.96);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;
+  padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+.wrap{max-width:860px;margin:0 auto;padding-block:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+header{padding:22px 0 6px}
+h1{font-size:22px;line-height:1.3;margin:0 0 8px;letter-spacing:.02em}
+h1 small{font-size:13px;font-weight:600;color:var(--sub);margin-left:8px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;vertical-align:3px}
+header p{margin:0 0 6px;color:var(--sub);font-size:14px;max-width:46em}
+header b{color:var(--ink)}
+.legend{margin:10px 0 0;padding:0;list-style:none;font-size:13.5px;color:var(--sub);display:grid;gap:3px;max-width:46em}
+.legend b{color:var(--ink)}
+h2{font-size:16px;margin:30px 0 2px;padding-top:14px;border-top:1px solid var(--line)}
+.hint{margin:0 0 12px;color:var(--sub);font-size:13px}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.who{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:12px;background:var(--soft);border-radius:12px;max-width:520px}
+.who .lab{font-size:14px;font-weight:600;flex:1;margin:0}
+.who .lab span{display:block;font-weight:400;color:var(--sub);font-size:12.5px}
+.who button{width:56px;height:44px;border-radius:10px;border:1px solid var(--edge);background:var(--bg);font-size:16px;font-weight:700}
+.who button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on)}
+
+.tabs{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:var(--bg);margin-top:18px;
+  display:grid;grid-template-columns:repeat(5,minmax(0,auto));justify-content:space-between;gap:2px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:10px 2px 8px;border-bottom:3px solid transparent;margin-bottom:-1px;
+  font-size:13.5px;font-weight:600;color:var(--sub);line-height:1.25;white-space:nowrap;text-align:center}
+.tabs button span{display:block;font-size:11px;font-weight:400;font-variant-numeric:tabular-nums}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.jump button{border:1px solid var(--edge);background:var(--bg);border-radius:999px;padding:5px 11px;font-size:12.5px;color:var(--sub)}
+h3{font-size:13px;font-weight:700;color:var(--sub);margin:26px 0 0;padding:0 0 6px;border-bottom:1px solid var(--ink);letter-spacing:.04em;
+  scroll-margin-top:calc(64px + env(safe-area-inset-top, 0px))}
+.row{padding:9px 0 10px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.ttl{margin:0;font-size:14.5px;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.row[data-r] .ttl::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink);margin-right:7px;vertical-align:1px}
+.row[data-r="w"] .ttl::before{background:var(--want)}
+.row[data-r="n"] .ttl{color:var(--mute)}
+.row[data-r="n"] .ttl::before{background:var(--mute)}
+.btns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.2fr);gap:4px}
+.btns button{height:40px;padding:0;border-radius:8px;border:1px solid var(--edge);background:var(--bg);
+  font-size:12.5px;font-weight:600;line-height:1;white-space:nowrap}
+.btns button.w{margin-left:5px;color:var(--want)}
+.btns button[aria-pressed="true"].l{background:var(--ink);border-color:var(--ink);color:var(--on)}
+.btns button[aria-pressed="true"].y{border:2px solid var(--ink)}
+.btns button[aria-pressed="true"].m{background:var(--soft);border-color:var(--ink)}
+.btns button[aria-pressed="true"].n{background:var(--mute);border-color:var(--mute);color:var(--on)}
+.btns button[aria-pressed="true"].w{background:var(--wantbg);border:2px solid var(--want)}
+@media (min-width:720px){
+  .row{grid-template-columns:minmax(0,1fr) 340px;align-items:center;gap:16px}
+}
+.q{margin:18px 0 0}
+.q .lab{font-size:14px;font-weight:600;margin:0 0 6px}
+.q .lab span{font-weight:400;color:var(--sub);font-size:12.5px}
+textarea{font:inherit;color:var(--ink);background:var(--bg)}
+.memo{width:100%;max-width:520px;border:1px solid var(--edge);border-radius:10px;padding:10px 12px;display:block;resize:vertical}
+#out{white-space:pre-wrap;word-break:break-all;background:var(--soft);border-radius:10px;padding:12px;font-size:12.5px;line-height:1.6;margin:8px 0 0;
+  font-family:ui-monospace,Menlo,Consolas,monospace;width:100%;max-width:640px;border:0;resize:none;display:block}
+.reset{margin:14px 0 0;background:none;border:0;padding:8px 0;color:var(--sub);font-size:13px;text-decoration:underline}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--barbg);border-top:1px solid var(--line);
+  padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.bar .in{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.count{flex:1;font-size:13px;line-height:1.35;color:var(--sub);font-variant-numeric:tabular-nums}
+.count b{color:var(--ink);font-size:15px}
+#copy{height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--ink);color:var(--on);font-size:15px;font-weight:700;white-space:nowrap}
+#copy.done{background:var(--ok)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>好みしらべ<small id="round"></small></h1>
+    <p>アニメ・映画・ゲームの、よく名前が挙がる作品を 977 件並べました。<b>観た物・遊んだ物だけ</b>押してください。知らない物、観ていない物は、押さずに飛ばして大丈夫です。</p>
+    <ul class="legend">
+      <li><b>大好き・好き・ふつう・合わず</b> … 観た、遊んだ物の感想です。途中まででも押せます。</li>
+      <li><b>気になる</b> … まだだけれど、観たい、遊びたい物です。</li>
+      <li>シリーズ物は、どれか 1 つでも観ていれば押してください。</li>
+    </ul>
+    <p style="margin-top:10px">押した内容はこの端末に残るので、何日かに分けても続きから答えられます。途中でも、下の<b>「結果をコピー」</b>を押してチャットに貼れば、そこまでの分が届きます。</p>
+    <div class="who">
+      <p class="lab">答える人<span>ひとりずつ、別々に答えます</span></p>
+      <button type="button" id="who-A" data-w="A">A</button>
+      <button type="button" id="who-B" data-w="B">B</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="jump" id="jump"></div>
+  <main id="main"></main>
+
+  <h2>あと少しだけ</h2>
+  <p class="hint">答えなくても大丈夫です。</p>
+  <div class="q">
+    <p class="lab"><label for="extra">ここに無い、好きな作品</label> <span>題名を並べるだけで大丈夫です</span></p>
+    <textarea id="extra" class="memo" rows="3" placeholder="例: ○○（アニメ）、△△（ゲーム）"></textarea>
+  </div>
+  <div class="q">
+    <p class="lab"><label for="memo">ひとこと</label> <span>自由に書けます</span></p>
+    <textarea id="memo" class="memo" rows="3" placeholder="例: 映画は SF をよく観る。ゲームは最後まで遊ばないことが多い"></textarea>
+  </div>
+
+  <h2>いまの結果</h2>
+  <p class="hint">下のボタンでコピーできないときは、この枠の文字を長押しでコピーしてください。</p>
+  <textarea id="out" readonly rows="8"></textarea>
+  <button type="button" class="reset" id="reset">最初からやり直す</button>
+</div>
+
+<div class="bar"><div class="in">
+  <div class="count" id="count"></div>
+  <button type="button" id="copy">結果をコピー</button>
+</div></div>
+
+<script>
+// build_works.py が回の番号と作品の一覧を差し込む
+const TOPIC = 'works', TOPIC_JA = '作品', ROUND = 1;
+const CATS = [{"k":"T","name":"アニメ（テレビ・配信）","tab":"アニメ","secs":[{"t":"〜1980 年代","items":[["T1","鉄腕アトム"],["T2","ルパン三世（テレビシリーズ）"],["T3","宇宙戦艦ヤマト"],["T4","アルプスの少女ハイジ"],["T5","未来少年コナン"],["T6","機動戦士ガンダム"],["T7","銀河鉄道999"],["T8","ドラえもん"],["T9","うる星やつら"],["T10","超時空要塞マクロス"],["T11","機動戦士Ζガンダム"],["T12","タッチ"],["T13","北斗の拳"],["T14","キン肉マン"],["T15","キャプテン翼"],["T16","Dr.スランプ アラレちゃん"],["T17","ドラゴンボール"],["T18","聖闘士星矢"],["T19","シティーハンター"],["T20","めぞん一刻"],["T21","ゲゲゲの鬼太郎"],["T22","名探偵ホームズ"],["T23","魔神英雄伝ワタル"],["T24","らんま1/2"],["T25","銀河英雄伝説"]]},{"t":"1990 年代","items":[["T26","ドラゴンボールZ"],["T27","ふしぎの海のナディア"],["T28","ちびまる子ちゃん"],["T29","クレヨンしんちゃん"],["T30","美少女戦士セーラームーン"],["T31","幽☆遊☆白書"],["T32","SLAM DUNK"],["T33","機動武闘伝Gガンダム"],["T34","新機動戦記ガンダムW"],["T35","魔法騎士レイアース"],["T36","スレイヤーズ"],["T37","新世紀エヴァンゲリオン"],["T38","名探偵コナン"],["T39","るろうに剣心"],["T40","地獄先生ぬ〜べ〜"],["T41","機動戦艦ナデシコ"],["T42","天空のエスカフローネ"],["T43","こどものおもちゃ"],["T44","金田一少年の事件簿"],["T45","爆走兄弟レッツ&ゴー!!"],["T46","ポケットモンスター"],["T47","少女革命ウテナ"],["T48","勇者王ガオガイガー"],["T49","カウボーイビバップ"],["T50","カードキャプターさくら"],["T51","serial experiments lain"],["T52","トライガン"],["T53","彼氏彼女の事情"],["T54","ONE PIECE"],["T55","HUNTER×HUNTER（1999 年版）"],["T56","デジモンアドベンチャー"],["T57","おジャ魔女どれみ"],["T58","∀ガンダム"],["T59","無限のリヴァイアス"]]},{"t":"2000 年代","items":[["T60","遊☆戯☆王デュエルモンスターズ"],["T61","犬夜叉"],["T62","フルーツバスケット"],["T63","ヒカルの碁"],["T64","テニスの王子様"],["T65","あずまんが大王"],["T66","攻殻機動隊 STAND ALONE COMPLEX"],["T67","機動戦士ガンダムSEED"],["T68","NARUTO -ナルト-"],["T69","十二国記"],["T70","灰羽連盟"],["T71","フルメタル・パニック！"],["T72","鋼の錬金術師（2003 年版）"],["T73","プラネテス"],["T74","巌窟王"],["T75","サムライチャンプルー"],["T76","BLEACH"],["T77","蟲師"],["T78","交響詩篇エウレカセブン"],["T79","ハチミツとクローバー"],["T80","ARIA The ANIMATION"],["T81","灼眼のシャナ"],["T82","涼宮ハルヒの憂鬱"],["T83","コードギアス 反逆のルルーシュ"],["T84","DEATH NOTE"],["T85","銀魂"],["T86","桜蘭高校ホスト部"],["T87","Fate/stay night（2006 年版）"],["T88","ひぐらしのなく頃に"],["T89","天元突破グレンラガン"],["T90","電脳コイル"],["T91","らき☆すた"],["T92","精霊の守り人"],["T93","モノノ怪"],["T94","のだめカンタービレ"],["T95","さよなら絶望先生"],["T96","みなみけ"],["T97","CLANNAD"],["T98","夏目友人帳"],["T99","とらドラ！"],["T100","マクロスF"],["T101","黒執事"],["T102","とある魔術の禁書目録"],["T103","とある科学の超電磁砲"],["T104","けいおん！"],["T105","化物語（物語シリーズ）"],["T106","鋼の錬金術師 FULLMETAL ALCHEMIST"],["T107","東のエデン"],["T108","君に届け"]]},{"t":"2010 年代","items":[["T109","四畳半神話大系"],["T110","Angel Beats!"],["T111","デュラララ!!"],["T112","俺の妹がこんなに可愛いわけがない"],["T113","魔法少女まどか☆マギカ"],["T114","あの日見た花の名前を僕達はまだ知らない。"],["T115","STEINS;GATE"],["T116","Fate/Zero"],["T117","日常"],["T118","輪るピングドラム"],["T119","花咲くいろは"],["T120","THE IDOLM@STER（アニメ）"],["T121","HUNTER×HUNTER（2011 年版）"],["T122","ちはやふる"],["T123","氷菓"],["T124","坂道のアポロン"],["T125","つり球"],["T126","ソードアート・オンライン"],["T127","PSYCHO-PASS サイコパス"],["T128","ジョジョの奇妙な冒険"],["T129","黒子のバスケ"],["T130","中二病でも恋がしたい！"],["T131","ガールズ&パンツァー"],["T132","進撃の巨人"],["T133","ラブライブ！"],["T134","やはり俺の青春ラブコメはまちがっている。"],["T135","銀の匙 Silver Spoon"],["T136","Free!"],["T137","のんのんびより"],["T138","キルラキル"],["T139","弱虫ペダル"],["T140","ハイキュー!!"],["T141","ピンポン THE ANIMATION"],["T142","ご注文はうさぎですか？"],["T143","ノーゲーム・ノーライフ"],["T144","ばらかもん"],["T145","月刊少女野崎くん"],["T146","残響のテロル"],["T147","東京喰種トーキョーグール"],["T148","四月は君の嘘"],["T149","SHIROBAKO"],["T150","寄生獣 セイの格率"],["T151","七つの大罪"],["T152","妖怪ウォッチ"],["T153","響け！ユーフォニアム"],["T154","血界戦線"],["T155","食戟のソーマ"],["T156","暗殺教室"],["T157","オーバーロード"],["T158","おそ松さん"],["T159","ワンパンマン"],["T160","昭和元禄落語心中"],["T161","僕のヒーローアカデミア"],["T162","Re:ゼロから始める異世界生活"],["T163","この素晴らしい世界に祝福を！"],["T164","甲鉄城のカバネリ"],["T165","文豪ストレイドッグス"],["T166","モブサイコ100"],["T167","ユーリ!!! on ICE"],["T168","3月のライオン"],["T169","けものフレンズ"],["T170","幼女戦記"],["T171","小林さんちのメイドラゴン"],["T172","メイドインアビス"],["T173","宝石の国"],["T174","少女終末旅行"],["T175","魔法使いの嫁"],["T176","ヴァイオレット・エヴァーガーデン"],["T177","ゆるキャン△"],["T178","宇宙よりも遠い場所"],["T179","ポプテピピック"],["T180","ウマ娘 プリティーダービー（アニメ）"],["T181","少女☆歌劇 レヴュースタァライト"],["T182","BANANA FISH"],["T183","やがて君になる"],["T184","ゾンビランドサガ"],["T185","SSSS.GRIDMAN"],["T186","転生したらスライムだった件"],["T187","かぐや様は告らせたい"],["T188","どろろ（2019 年版）"],["T189","鬼滅の刃"],["T190","ヴィンランド・サガ"],["T191","約束のネバーランド"],["T192","Dr.STONE"],["T193","彼方のアストラ"],["T194","BEASTARS"]]},{"t":"2020 年代","items":[["T195","映像研には手を出すな！"],["T196","ドロヘドロ"],["T197","呪術廻戦"],["T198","PUI PUI モルカー"],["T199","無職転生"],["T200","SK∞ エスケーエイト"],["T201","Vivy -Fluorite Eye's Song-"],["T202","86―エイティシックス―"],["T203","オッドタクシー"],["T204","東京リベンジャーズ"],["T205","王様ランキング"],["T206","平家物語"],["T207","その着せ替え人形は恋をする"],["T208","SPY×FAMILY"],["T209","サマータイムレンダ"],["T210","リコリス・リコイル"],["T211","サイバーパンク: エッジランナーズ"],["T212","機動戦士ガンダム 水星の魔女"],["T213","ぼっち・ざ・ろっく！"],["T214","チェンソーマン"],["T215","【推しの子】"],["T216","地獄楽"],["T217","天国大魔境"],["T218","スキップとローファー"],["T219","僕の心のヤバイやつ"],["T220","葬送のフリーレン"],["T221","薬屋のひとりごと"],["T222","マッシュル-MASHLE-"],["T223","俺だけレベルアップな件"],["T224","ダンジョン飯"],["T225","ガールズバンドクライ"],["T226","怪獣8号"],["T227","逃げ上手の若君"],["T228","負けヒロインが多すぎる！"],["T229","小市民シリーズ"],["T230","ダンダダン"],["T231","メダリスト"],["T232","SAKAMOTO DAYS"],["T233","機動戦士Gundam GQuuuuuuX（ジークアクス）"],["T234","光が死んだ夏"],["T235","タコピーの原罪"]]}]},{"k":"F","name":"アニメ映画","tab":"アニメ映画","secs":[{"t":"スタジオジブリ","items":[["F1","風の谷のナウシカ"],["F2","天空の城ラピュタ"],["F3","となりのトトロ"],["F4","火垂るの墓"],["F5","魔女の宅急便"],["F6","おもひでぽろぽろ"],["F7","紅の豚"],["F8","平成狸合戦ぽんぽこ"],["F9","耳をすませば"],["F10","もののけ姫"],["F11","千と千尋の神隠し"],["F12","猫の恩返し"],["F13","ハウルの動く城"],["F14","ゲド戦記"],["F15","崖の上のポニョ"],["F16","借りぐらしのアリエッティ"],["F17","コクリコ坂から"],["F18","風立ちぬ"],["F19","かぐや姫の物語"],["F20","思い出のマーニー"],["F21","君たちはどう生きるか"]]},{"t":"国内（〜2000 年代）","items":[["F22","ルパン三世 カリオストロの城"],["F23","銀河鉄道999（劇場版）"],["F24","うる星やつら2 ビューティフル・ドリーマー"],["F25","王立宇宙軍 オネアミスの翼"],["F26","AKIRA"],["F27","機動戦士ガンダム 逆襲のシャア"],["F28","機動警察パトレイバー 2 the Movie"],["F29","GHOST IN THE SHELL / 攻殻機動隊"],["F30","新世紀エヴァンゲリオン劇場版 Air/まごころを、君に"],["F31","PERFECT BLUE"],["F32","劇場版ポケットモンスター ミュウツーの逆襲"],["F33","デジモンアドベンチャー ぼくらのウォーゲーム！"],["F34","クレヨンしんちゃん 嵐を呼ぶ モーレツ！オトナ帝国の逆襲"],["F35","千年女優"],["F36","東京ゴッドファーザーズ"],["F37","マインド・ゲーム"],["F38","時をかける少女"],["F39","パプリカ"],["F40","鉄コン筋クリート"],["F41","秒速5センチメートル"],["F42","ヱヴァンゲリヲン新劇場版（序・破・Q）"],["F43","サマーウォーズ"],["F44","空の境界"],["F45","ドラえもん（映画のどれか）"],["F46","名探偵コナン（劇場版のどれか）"]]},{"t":"国内（2010 年代）","items":[["F47","おおかみこどもの雨と雪"],["F48","劇場版 魔法少女まどか☆マギカ [新編] 叛逆の物語"],["F49","言の葉の庭"],["F50","たまこラブストーリー"],["F51","バケモノの子"],["F52","劇場版 ガールズ&パンツァー"],["F53","君の名は。"],["F54","聲の形"],["F55","この世界の片隅に"],["F56","夜は短し歩けよ乙女"],["F57","夜明け告げるルーのうた"],["F58","劇場版 Fate/stay night [Heaven's Feel]"],["F59","リズと青い鳥"],["F60","ペンギン・ハイウェイ"],["F61","若おかみは小学生！"],["F62","天気の子"],["F63","プロメア"],["F64","海獣の子供"]]},{"t":"国内（2020 年代）","items":[["F65","劇場版メイドインアビス 深き魂の黎明"],["F66","劇場版 ヴァイオレット・エヴァーガーデン"],["F67","劇場版 鬼滅の刃 無限列車編"],["F68","シン・エヴァンゲリオン劇場版"],["F69","映画大好きポンポさん"],["F70","劇場版 少女☆歌劇 レヴュースタァライト"],["F71","竜とそばかすの姫"],["F72","アイの歌声を聴かせて"],["F73","機動戦士ガンダム 閃光のハサウェイ"],["F74","劇場版 呪術廻戦 0"],["F75","犬王"],["F76","ONE PIECE FILM RED"],["F77","すずめの戸締まり"],["F78","THE FIRST SLAM DUNK"],["F79","かがみの孤城"],["F80","BLUE GIANT"],["F81","鬼太郎誕生 ゲゲゲの謎"],["F82","窓ぎわのトットちゃん"],["F83","機動戦士ガンダムSEED FREEDOM"],["F84","劇場版 ハイキュー!! ゴミ捨て場の決戦"],["F85","ルックバック"],["F86","きみの色"],["F87","劇場版 魔法少女まどか☆マギカ〈ワルプルギスの廻天〉"],["F88","劇場版 鬼滅の刃 無限城編"],["F89","劇場版 チェンソーマン レゼ篇"]]},{"t":"海外","items":[["F90","リトル・マーメイド"],["F91","美女と野獣"],["F92","アラジン"],["F93","ライオン・キング"],["F94","ナイトメアー・ビフォア・クリスマス"],["F95","ウォレスとグロミット"],["F96","トイ・ストーリー"],["F97","アイアン・ジャイアント"],["F98","シュレック"],["F99","モンスターズ・インク"],["F100","ファインディング・ニモ"],["F101","Mr.インクレディブル"],["F102","レミーのおいしいレストラン"],["F103","ウォーリー"],["F104","カールじいさんの空飛ぶ家"],["F105","コララインとボタンの魔女"],["F106","ヒックとドラゴン"],["F107","塔の上のラプンツェル"],["F108","怪盗グルー／ミニオンズ"],["F109","シュガー・ラッシュ"],["F110","アナと雪の女王"],["F111","レゴ ムービー"],["F112","ベイマックス"],["F113","インサイド・ヘッド"],["F114","ズートピア"],["F115","KUBO/クボ 二本の弦の秘密"],["F116","モアナと伝説の海"],["F117","リメンバー・ミー"],["F118","スパイダーマン:スパイダーバース"],["F119","ソウルフル・ワールド"],["F120","ザ・スーパーマリオブラザーズ・ムービー"],["F121","野生の島のロズ"],["F122","KPOPガールズ！ デーモン・ハンターズ"]]}]},{"k":"W","name":"洋画・アジア映画（実写）","tab":"洋画","secs":[{"t":"SF・ファンタジー","items":[["W1","2001年宇宙の旅"],["W2","猿の惑星"],["W3","スター・ウォーズ（旧三部作 エピソード4〜6）"],["W4","スター・ウォーズ（エピソード1〜3）"],["W5","スター・ウォーズ（エピソード7〜9）"],["W6","未知との遭遇"],["W7","エイリアン"],["W8","エイリアン2"],["W9","ブレードランナー"],["W10","ブレードランナー 2049"],["W11","E.T."],["W12","ターミネーター"],["W13","ターミネーター2"],["W14","バック・トゥ・ザ・フューチャー"],["W15","シザーハンズ"],["W16","ジュラシック・パーク"],["W17","インデペンデンス・デイ"],["W18","フィフス・エレメント"],["W19","メン・イン・ブラック"],["W20","ガタカ"],["W21","アルマゲドン"],["W22","マトリックス"],["W23","ロード・オブ・ザ・リング"],["W24","ハリー・ポッター（シリーズ）"],["W25","マイノリティ・リポート"],["W26","パイレーツ・オブ・カリビアン"],["W27","チャーリーとチョコレート工場"],["W28","パンズ・ラビリンス"],["W29","アバター"],["W30","第9地区"],["W31","インセプション"],["W32","パシフィック・リム"],["W33","ゼロ・グラビティ"],["W34","her/世界でひとつの彼女"],["W35","インターステラー"],["W36","オール・ユー・ニード・イズ・キル"],["W37","エクス・マキナ"],["W38","マッドマックス 怒りのデス・ロード"],["W39","オデッセイ"],["W40","メッセージ"],["W41","シェイプ・オブ・ウォーター"],["W42","レディ・プレイヤー1"],["W43","TENET テネット"],["W44","DUNE/デューン 砂の惑星"],["W45","エブリシング・エブリウェア・オール・アット・ワンス"],["W46","ウィキッド ふたりの魔女"]]},{"t":"アクション・冒険","items":[["W47","燃えよドラゴン"],["W48","ジョーズ"],["W49","ロッキー"],["W50","インディ・ジョーンズ"],["W51","プロジェクトA"],["W52","トップガン"],["W53","ダイ・ハード"],["W54","スピード"],["W55","レオン"],["W56","ミッション:インポッシブル"],["W57","007（どれか）"],["W58","グラディエーター"],["W59","少林サッカー"],["W60","カンフーハッスル"],["W61","オーシャンズ11"],["W62","ボーン・アイデンティティー"],["W63","キル・ビル"],["W64","ワイルド・スピード"],["W65","キングスマン"],["W66","ジョン・ウィック"],["W67","ベイビー・ドライバー"],["W68","バーフバリ"],["W69","RRR"],["W70","トップガン マーヴェリック"],["W71","F1/エフワン"]]},{"t":"ヒーロー","items":[["W72","スパイダーマン（2002 年〜の三部作）"],["W73","X-MEN"],["W74","ダークナイト"],["W75","アイアンマン"],["W76","キック・アス"],["W77","アベンジャーズ"],["W78","ガーディアンズ・オブ・ギャラクシー"],["W79","デッドプール"],["W80","LOGAN/ローガン"],["W81","ブラックパンサー"],["W82","アベンジャーズ/エンドゲーム"],["W83","ジョーカー"],["W84","スパイダーマン:ノー・ウェイ・ホーム"],["W85","THE BATMAN－ザ・バットマン－"]]},{"t":"サスペンス・ミステリー・犯罪","items":[["W86","十二人の怒れる男"],["W87","裏窓"],["W88","サイコ"],["W89","ゴッドファーザー"],["W90","タクシードライバー"],["W91","グッドフェローズ"],["W92","羊たちの沈黙"],["W93","レザボア・ドッグス"],["W94","パルプ・フィクション"],["W95","セブン"],["W96","ユージュアル・サスペクツ"],["W97","ファイト・クラブ"],["W98","シックス・センス"],["W99","メメント"],["W100","キャッチ・ミー・イフ・ユー・キャン"],["W101","殺人の追憶"],["W102","オールド・ボーイ"],["W103","プレステージ"],["W104","ノーカントリー"],["W105","イングロリアス・バスターズ"],["W106","シャッター アイランド"],["W107","ジャンゴ 繋がれざる者"],["W108","ウルフ・オブ・ウォールストリート"],["W109","ゴーン・ガール"],["W110","search/サーチ"],["W111","ナイブズ・アウト"],["W112","パラサイト 半地下の家族"]]},{"t":"ドラマ・戦争・伝記","items":[["W113","風と共に去りぬ"],["W114","カサブランカ"],["W115","ローマの休日"],["W116","時計じかけのオレンジ"],["W117","地獄の黙示録"],["W118","スタンド・バイ・ミー"],["W119","フルメタル・ジャケット"],["W120","レインマン"],["W121","ニュー・シネマ・パラダイス"],["W122","いまを生きる"],["W123","シンドラーのリスト"],["W124","ショーシャンクの空に"],["W125","フォレスト・ガンプ"],["W126","タイタニック"],["W127","グッド・ウィル・ハンティング"],["W128","ライフ・イズ・ビューティフル"],["W129","プライベート・ライアン"],["W130","トゥルーマン・ショー"],["W131","グリーンマイル"],["W132","ダンサー・イン・ザ・ダーク"],["W133","ビューティフル・マインド"],["W134","ビッグ・フィッシュ"],["W135","ミリオンダラー・ベイビー"],["W136","グラン・トリノ"],["W137","スラムドッグ$ミリオネア"],["W138","きっと、うまくいく"],["W139","ソーシャル・ネットワーク"],["W140","英国王のスピーチ"],["W141","最強のふたり"],["W142","マネーボール"],["W143","イミテーション・ゲーム"],["W144","セッション"],["W145","ドリーム"],["W146","ダンケルク"],["W147","スリー・ビルボード"],["W148","ワンダー 君は太陽"],["W149","グリーンブック"],["W150","ボヘミアン・ラプソディ"],["W151","フォードvsフェラーリ"],["W152","1917 命をかけた伝令"],["W153","ジョジョ・ラビット"],["W154","コーダ あいのうた"],["W155","オッペンハイマー"],["W156","哀れなるものたち"],["W157","バービー"]]},{"t":"コメディ・恋愛・音楽","items":[["W158","雨に唄えば"],["W159","サウンド・オブ・ミュージック"],["W160","ゴーストバスターズ"],["W161","グレムリン"],["W162","グーニーズ"],["W163","プリティ・ウーマン"],["W164","ホーム・アローン"],["W165","天使にラブ・ソングを…"],["W166","マスク"],["W167","ジュマンジ"],["W168","ノッティングヒルの恋人"],["W169","アメリ"],["W170","ブリジット・ジョーンズの日記"],["W171","ラブ・アクチュアリー"],["W172","スクール・オブ・ロック"],["W173","プラダを着た悪魔"],["W174","リトル・ミス・サンシャイン"],["W175","ナイト ミュージアム"],["W176","ホット・ファズ／ショーン・オブ・ザ・デッド"],["W177","マンマ・ミーア！"],["W178","ハングオーバー！"],["W179","(500)日のサマー"],["W180","テッド"],["W181","レ・ミゼラブル"],["W182","アバウト・タイム"],["W183","はじまりのうた"],["W184","グランド・ブダペスト・ホテル"],["W185","シェフ 三ツ星フードトラック始めました"],["W186","パディントン"],["W187","マイ・インターン"],["W188","シング・ストリート 未来へのうた"],["W189","ラ・ラ・ランド"],["W190","グレイテスト・ショーマン"]]},{"t":"ホラー・スリラー","items":[["W191","エクソシスト"],["W192","シャイニング"],["W193","CUBE"],["W194","バイオハザード（映画）"],["W195","ソウ"],["W196","ミスト"],["W197","新感染 ファイナル・エクスプレス"],["W198","ゲット・アウト"],["W199","IT/イット “それ”が見えたら、終わり。"],["W200","クワイエット・プレイス"],["W201","ヘレディタリー/継承"],["W202","ミッドサマー"],["W203","NOPE/ノープ"]]}]},{"k":"J","name":"邦画（実写）","tab":"邦画","secs":[{"t":"〜1980 年代","items":[["J1","羅生門"],["J2","生きる"],["J3","東京物語"],["J4","七人の侍"],["J5","ゴジラ（1954 年）"],["J6","用心棒"],["J7","男はつらいよ"],["J8","仁義なき戦い"],["J9","砂の器"],["J10","犬神家の一族"],["J11","幸福の黄色いハンカチ"],["J12","戦場のメリークリスマス"],["J13","お葬式／マルサの女"],["J14","タンポポ"]]},{"t":"1990〜2000 年代","items":[["J15","Love Letter"],["J16","ガメラ 大怪獣空中決戦"],["J17","Shall we ダンス？"],["J18","スワロウテイル"],["J19","ラヂオの時間"],["J20","CURE"],["J21","HANA-BI"],["J22","リング"],["J23","踊る大捜査線 THE MOVIE"],["J24","菊次郎の夏"],["J25","バトル・ロワイアル"],["J26","ウォーターボーイズ"],["J27","ピンポン"],["J28","呪怨"],["J29","世界の中心で、愛をさけぶ"],["J30","いま、会いにゆきます"],["J31","誰も知らない"],["J32","下妻物語"],["J33","スウィングガールズ"],["J34","海猿"],["J35","電車男"],["J36","サマータイムマシン・ブルース"],["J37","ALWAYS 三丁目の夕日"],["J38","THE 有頂天ホテル"],["J39","嫌われ松子の一生"],["J40","フラガール"],["J41","かもめ食堂"],["J42","デスノート（実写）"],["J43","それでもボクはやってない"],["J44","HERO（映画）"],["J45","キサラギ"],["J46","アフタースクール"],["J47","おくりびと"],["J48","容疑者Xの献身"],["J49","20世紀少年"],["J50","南極料理人"]]},{"t":"2010 年代","items":[["J51","告白"],["J52","悪人"],["J53","テルマエ・ロマエ"],["J54","鍵泥棒のメソッド"],["J55","桐島、部活やめるってよ"],["J56","るろうに剣心（実写）"],["J57","舟を編む"],["J58","そして父になる"],["J59","永遠の0"],["J60","海街diary"],["J61","ビリギャル"],["J62","シン・ゴジラ"],["J63","ちはやふる（実写）"],["J64","アイアムアヒーロー"],["J65","湯を沸かすほどの熱い愛"],["J66","君の膵臓をたべたい（実写）"],["J67","帝一の國"],["J68","銀魂（実写）"],["J69","カメラを止めるな！"],["J70","万引き家族"],["J71","孤狼の血"],["J72","コンフィデンスマンJP"],["J73","翔んで埼玉"],["J74","マスカレード・ホテル"],["J75","キングダム（実写）"]]},{"t":"2020 年代","items":[["J76","すばらしき世界"],["J77","花束みたいな恋をした"],["J78","ドライブ・マイ・カー"],["J79","シン・ウルトラマン"],["J80","ある男"],["J81","怪物"],["J82","ゴジラ-1.0"],["J83","PERFECT DAYS"],["J84","ラストマイル"],["J85","侍タイムスリッパー"],["J86","国宝"]]}]},{"k":"G","name":"ゲーム","tab":"ゲーム","secs":[{"t":"マリオ・ドンキーコング・スマブラ","items":[["G1","スーパーマリオブラザーズ"],["G2","スーパーマリオブラザーズ3"],["G3","スーパーマリオワールド"],["G4","ヨッシーアイランド"],["G5","スーパーマリオRPG"],["G6","スーパードンキーコング"],["G7","スーパーマリオ64"],["G8","スーパーマリオサンシャイン"],["G9","スーパーマリオギャラクシー"],["G10","New スーパーマリオブラザーズ（どれか）"],["G11","スーパーマリオ 3Dワールド"],["G12","スーパーマリオメーカー"],["G13","スーパーマリオ オデッセイ"],["G14","スーパーマリオブラザーズ ワンダー"],["G15","ヨッシー ウールワールド"],["G16","ヨッシークラフトワールド"],["G17","ペーパーマリオ（どれか）"],["G18","マリオ&ルイージRPG（どれか）"],["G19","ルイージマンション（どれか）"],["G20","マリオカート（スーパーファミコン・64）"],["G21","マリオカートDS・Wii"],["G22","マリオカート8 デラックス"],["G23","マリオカート ワールド"],["G24","マリオパーティ（どれか）"],["G25","ドンキーコング バナンザ"],["G26","大乱闘スマッシュブラザーズ（64・DX）"],["G27","大乱闘スマッシュブラザーズX・for"],["G28","大乱闘スマッシュブラザーズ SPECIAL"]]},{"t":"ゼルダの伝説","items":[["G29","ゼルダの伝説（初代）"],["G30","ゼルダの伝説 神々のトライフォース"],["G31","ゼルダの伝説 夢をみる島"],["G32","ゼルダの伝説 時のオカリナ"],["G33","ゼルダの伝説 ムジュラの仮面"],["G34","ゼルダの伝説 風のタクト"],["G35","ゼルダの伝説 トワイライトプリンセス"],["G36","ゼルダの伝説 スカイウォードソード"],["G37","ゼルダの伝説 ブレス オブ ザ ワイルド"],["G38","ゼルダの伝説 ティアーズ オブ ザ キングダム"],["G39","ゼルダの伝説 知恵のかりもの"]]},{"t":"そのほかの任天堂","items":[["G40","星のカービィ スーパーデラックス"],["G41","星のカービィ ディスカバリー"],["G42","カービィのエアライド"],["G43","カービィのエアライダー"],["G44","スーパーメトロイド"],["G45","メトロイドプライム"],["G46","メトロイド ドレッド"],["G47","F-ZERO"],["G48","スターフォックス64"],["G49","MOTHER2"],["G50","MOTHER3"],["G51","ファイアーエムブレム（どれか）"],["G52","ファイアーエムブレム 風花雪月"],["G53","ゼノブレイド"],["G54","ゼノブレイド2"],["G55","ゼノブレイド3"],["G56","ピクミン（1〜3）"],["G57","ピクミン4"],["G58","どうぶつの森（64〜3DS）"],["G59","あつまれ どうぶつの森"],["G60","スプラトゥーン"],["G61","スプラトゥーン2"],["G62","スプラトゥーン3"],["G63","メイド イン ワリオ"],["G64","リズム天国"],["G65","脳を鍛える大人のDSトレーニング"],["G66","トモダチコレクション"],["G67","Wii Sports"],["G68","Wii Fit"],["G69","リングフィット アドベンチャー"],["G70","世界のアソビ大全51"],["G71","ベヨネッタ"]]},{"t":"ポケモン","items":[["G72","ポケットモンスター 赤・緑"],["G73","ポケットモンスター 金・銀"],["G74","ポケットモンスター ルビー・サファイア"],["G75","ポケットモンスター ダイヤモンド・パール"],["G76","ポケットモンスター ブラック・ホワイト"],["G77","ポケットモンスター X・Y"],["G78","ポケットモンスター サン・ムーン"],["G79","ポケットモンスター ソード・シールド"],["G80","Pokémon LEGENDS アルセウス"],["G81","ポケットモンスター スカーレット・バイオレット"],["G82","Pokémon LEGENDS Z-A"],["G83","ポケモンスナップ"],["G84","ポケモン不思議のダンジョン"],["G85","Pokémon GO"],["G86","Pokémon Trading Card Game Pocket"]]},{"t":"ドラゴンクエスト・ファイナルファンタジー","items":[["G87","ドラゴンクエスト"],["G88","ドラゴンクエストII"],["G89","ドラゴンクエストIII"],["G90","ドラゴンクエストIV"],["G91","ドラゴンクエストV"],["G92","ドラゴンクエストVI"],["G93","ドラゴンクエストVII"],["G94","ドラゴンクエストVIII"],["G95","ドラゴンクエストIX"],["G96","ドラゴンクエストX オンライン"],["G97","ドラゴンクエストXI"],["G98","ドラゴンクエストモンスターズ（どれか）"],["G99","ドラゴンクエストビルダーズ"],["G100","ファイナルファンタジー I〜III（どれか）"],["G101","ファイナルファンタジーIV"],["G102","ファイナルファンタジーV"],["G103","ファイナルファンタジーVI"],["G104","ファイナルファンタジーVII"],["G105","ファイナルファンタジーVIII"],["G106","ファイナルファンタジーIX"],["G107","ファイナルファンタジーX"],["G108","ファイナルファンタジーXII"],["G109","ファイナルファンタジーXIII"],["G110","ファイナルファンタジーXIV"],["G111","ファイナルファンタジーXV"],["G112","ファイナルファンタジーXVI"],["G113","ファイナルファンタジーVII リメイク"],["G114","ファイナルファンタジータクティクス"]]},{"t":"国内の RPG・シミュレーション RPG","items":[["G115","クロノ・トリガー"],["G116","聖剣伝説2"],["G117","ロマンシング サ・ガ（どれか）"],["G118","サガ フロンティア"],["G119","ゼノギアス"],["G120","タクティクスオウガ"],["G121","幻想水滸伝II"],["G122","ヴァルキリープロファイル"],["G123","テイルズ オブ（どれか）"],["G124","キングダム ハーツ"],["G125","真・女神転生（どれか）"],["G126","ペルソナ3"],["G127","ペルソナ4"],["G128","ペルソナ5"],["G129","メタファー：リファンタジオ"],["G130","世界樹の迷宮"],["G131","ブレイブリーデフォルト"],["G132","オクトパストラベラー"],["G133","ニーア レプリカント"],["G134","ニーア オートマタ"],["G135","英雄伝説 軌跡シリーズ"],["G136","イース（どれか）"],["G137","スーパーロボット大戦（どれか）"],["G138","魔界戦記ディスガイア"],["G139","アトリエシリーズ（どれか）"],["G140","牧場物語"],["G141","ルーンファクトリー"],["G142","モンスターハンター（ポータブル 2nd G・3rd）"],["G143","モンスターハンター：ワールド"],["G144","モンスターハンターライズ"],["G145","モンスターハンターワイルズ"],["G146","ファンタシースターオンライン（2 を含む）"],["G147","ドラゴンズドグマ"],["G148","十三機兵防衛圏"]]},{"t":"国内のアクション・アドベンチャー","items":[["G149","ロックマン（どれか）"],["G150","悪魔城ドラキュラ（月下の夜想曲 など）"],["G151","ソニック・ザ・ヘッジホッグ"],["G152","バイオハザード（1〜3）"],["G153","バイオハザード4"],["G154","バイオハザード7・ヴィレッジ"],["G155","サイレントヒル2"],["G156","メタルギアソリッド（1〜3）"],["G157","メタルギアソリッドV"],["G158","デビル メイ クライ"],["G159","鬼武者"],["G160","大神"],["G161","ICO"],["G162","ワンダと巨像"],["G163","人喰いの大鷲トリコ"],["G164","塊魂"],["G165","龍が如く（どれか）"],["G166","無双シリーズ（どれか）"],["G167","デモンズソウル"],["G168","ダークソウル（シリーズ）"],["G169","Bloodborne"],["G170","SEKIRO: SHADOWS DIE TWICE"],["G171","ELDEN RING"],["G172","アーマード・コア（VI を含む）"],["G173","デス・ストランディング"],["G174","アストロボット"],["G175","風来のシレン（どれか）"],["G176","トルネコの大冒険"]]},{"t":"対戦・パズル・スポーツ・リズム","items":[["G177","テトリス"],["G178","ぷよぷよ"],["G179","ボンバーマン"],["G180","ストリートファイターII"],["G181","ストリートファイター6"],["G182","鉄拳"],["G183","バーチャファイター"],["G184","桃太郎電鉄"],["G185","いただきストリート"],["G186","実況パワフルプロ野球"],["G187","ウイニングイレブン／eFootball"],["G188","みんなのGOLF"],["G189","グランツーリスモ"],["G190","ダービースタリオン"],["G191","パラッパラッパー"],["G192","太鼓の達人"],["G193","beatmania／Dance Dance Revolution"],["G194","初音ミク -Project DIVA-"],["G195","Beat Saber"],["G196","A Dance of Fire and Ice"],["G197","Crypt of the NecroDancer"]]},{"t":"ノベル・推理・恋愛","items":[["G198","弟切草／かまいたちの夜"],["G199","ときめきメモリアル"],["G200","サクラ大戦"],["G201","逆転裁判"],["G202","レイトン教授"],["G203","428 〜封鎖された渋谷で〜"],["G204","ゴーストトリック"],["G205","ひぐらしのなく頃に（ゲーム）"],["G206","Fate/stay night（ゲーム）"],["G207","AIR／CLANNAD（ゲーム）"],["G208","STEINS;GATE（ゲーム）"],["G209","ダンガンロンパ"],["G210","東方Project"]]},{"t":"街づくり・戦略・ものづくり","items":[["G211","シムシティ"],["G212","A列車で行こう"],["G213","信長の野望"],["G214","三國志"],["G215","Civilization（どれか）"],["G216","Age of Empires"],["G217","カルドセプト"],["G218","Minecraft"],["G219","テラリア"],["G220","Cities: Skylines"],["G221","Factorio"],["G222","RimWorld"],["G223","Satisfactory"],["G224","Stardew Valley"]]},{"t":"スマホ・運営型","items":[["G225","パズル&ドラゴンズ"],["G226","モンスターストライク"],["G227","艦隊これくしょん -艦これ-"],["G228","グランブルーファンタジー"],["G229","Fate/Grand Order"],["G230","アイドルマスター（ゲームのどれか）"],["G231","学園アイドルマスター"],["G232","プロジェクトセカイ カラフルステージ！"],["G233","アークナイツ"],["G234","原神"],["G235","崩壊：スターレイル"],["G236","ブルーアーカイブ"],["G237","ウマ娘 プリティーダービー（ゲーム）"]]},{"t":"海外の大作","items":[["G238","DOOM"],["G239","ディアブロ（どれか）"],["G240","Half-Life（2 を含む）"],["G241","Portal（1・2）"],["G242","Halo"],["G243","Call of Duty（どれか）"],["G244","グランド・セフト・オート（III〜V）"],["G245","BioShock"],["G246","アサシン クリード（どれか）"],["G247","アンチャーテッド"],["G248","Fallout（3・4 など）"],["G249","The Elder Scrolls V: Skyrim"],["G250","The Last of Us"],["G251","ウィッチャー3 ワイルドハント"],["G252","Horizon Zero Dawn"],["G253","ゴッド・オブ・ウォー"],["G254","レッド・デッド・リデンプション2"],["G255","Marvel's Spider-Man"],["G256","Detroit: Become Human"],["G257","サイバーパンク2077"],["G258","Ghost of Tsushima"],["G259","ホグワーツ・レガシー"],["G260","バルダーズ・ゲート3"],["G261","Clair Obscur: Expedition 33"]]},{"t":"対戦・協力・パーティ","items":[["G262","Counter-Strike"],["G263","League of Legends"],["G264","オーバーウォッチ"],["G265","PUBG"],["G266","フォートナイト"],["G267","Apex Legends"],["G268","VALORANT"],["G269","ロケットリーグ"],["G270","Dead by Daylight"],["G271","Among Us"],["G272","Fall Guys"],["G273","Lethal Company"],["G274","パルワールド"],["G275","Overcooked!"],["G276","Unrailed!"],["G277","It Takes Two"],["G278","Human Fall Flat"],["G279","PICO PARK"],["G280","スイカゲーム"]]},{"t":"インディー（ローグライク・カード）","items":[["G281","The Binding of Isaac"],["G282","Spelunky"],["G283","FTL: Faster Than Light"],["G284","Darkest Dungeon"],["G285","Enter the Gungeon"],["G286","Dead Cells"],["G287","Slay the Spire"],["G288","Slay the Spire 2"],["G289","Into the Breach"],["G290","Noita"],["G291","Risk of Rain 2"],["G292","Monster Train"],["G293","Hades"],["G294","Hades II"],["G295","Loop Hero"],["G296","Inscryption"],["G297","Vampire Survivors"],["G298","Cult of the Lamb"],["G299","バックパック・バトル"],["G300","Balatro"]]},{"t":"インディー（そのほか）","items":[["G301","洞窟物語"],["G302","ゆめにっき／青鬼／Ib（フリーゲーム）"],["G303","Braid"],["G304","LIMBO／INSIDE"],["G305","風ノ旅ビト"],["G306","To the Moon"],["G307","Papers, Please"],["G308","Monument Valley"],["G309","UNDERTALE"],["G310","DELTARUNE"],["G311","Ori and the Blind Forest"],["G312","The Witness"],["G313","Firewatch"],["G314","Hollow Knight"],["G315","Hollow Knight: Silksong"],["G316","Cuphead"],["G317","Doki Doki Literature Club!"],["G318","What Remains of Edith Finch"],["G319","Celeste"],["G320","Return of the Obra Dinn"],["G321","Baba Is You"],["G322","Untitled Goose Game"],["G323","Outer Wilds"],["G324","Disco Elysium"],["G325","A Short Hike"],["G326","OMORI"],["G327","Unpacking"],["G328","Stray"],["G329","TUNIC"],["G330","Dave the Diver"],["G331","8番出口"]]}]}];   // [{k, name, secs: [{t, items: [[番号, 題名], ...]}]}]
+const VALS = [['l', '大好き', 'love'], ['y', '好き', 'like'], ['m', 'ふつう', 'ok'], ['n', '合わず', 'no'], ['w', '気になる', 'want']];
+const order = [], catOf = {};
+CATS.forEach(c => c.secs.forEach(s => s.items.forEach(it => { order.push(it[0]); catOf[it[0]] = c.k; })));
+const blank = () => ({r: {}, extra: '', memo: ''});
+const key = w => 'konomi-' + TOPIC + '-' + ROUND + '-' + w;
+let who = '', tab = CATS[0].k;
+let S = blank();
+const stored = w => { try { const j = JSON.parse(localStorage.getItem(key(w)) || 'null'); if (j && j.r) return Object.assign(blank(), j); } catch (e) {} return null; };
+const save = () => { if (!who) return; try { localStorage.setItem(key(who), JSON.stringify(S)); } catch (e) {} };
+const $ = (s, el) => (el || document).querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const press = (b, on) => b.setAttribute('aria-pressed', String(on));
+
+$('#round').textContent = TOPIC_JA + '・' + ROUND + ' 回目';
+$('#tabs').innerHTML = CATS.map(c =>
+  '<button type="button" role="tab" id="tab-' + c.k + '" data-k="' + c.k + '">' + esc(c.tab) + '<span id="tc-' + c.k + '"></span></button>').join('');
+$('#main').innerHTML = CATS.map(c =>
+  '<section id="cat-' + c.k + '" hidden>' + c.secs.map((s, i) =>
+    '<h3 id="sec-' + c.k + '-' + i + '">' + esc(s.t) + '</h3>' + s.items.map(it =>
+      '<div class="row" data-no="' + it[0] + '"><p class="ttl">' + esc(it[1]) + '</p><div class="btns">' +
+      VALS.map(v => '<button type="button" class="' + v[0] + '" id="b-' + it[0] + '-' + v[0] + '" data-v="' + v[0] + '" aria-pressed="false">' + v[1] + '</button>').join('') +
+      '</div></div>').join('')).join('') + '</section>').join('');
+const rows = {};
+document.querySelectorAll('.row').forEach(el => { rows[el.dataset.no] = el; });
+
+function paintRow(no) {
+  const el = rows[no], r = S.r[no] || '';
+  if (r) el.dataset.r = r; else delete el.dataset.r;
+  el.querySelectorAll('button').forEach(b => press(b, b.dataset.v === r));
+}
+function showTab() {
+  CATS.forEach(c => {
+    $('#cat-' + c.k).hidden = c.k !== tab;
+    $('#tab-' + c.k).setAttribute('aria-selected', String(c.k === tab));
+  });
+  const c = CATS.filter(x => x.k === tab)[0];
+  $('#jump').innerHTML = c.secs.map((s, i) => '<button type="button" data-t="sec-' + c.k + '-' + i + '">' + esc(s.t) + '</button>').join('');
+}
+function summary() {
+  const by = {};
+  VALS.forEach(v => { by[v[0]] = order.filter(no => S.r[no] === v[0]); });
+  const seen = by.l.length + by.y.length + by.m.length + by.n.length;
+  $('#count').innerHTML = '観た・遊んだ <b>' + seen + '</b>　気になる <b>' + by.w.length + '</b><br>全 ' + order.length + ' 件';
+  const lines = ['好みしらべの結果（' + TOPIC_JA + '・' + ROUND + ' 回目）', '答えた人: ' + (who || 'まだ選んでいません')];
+  CATS.forEach(c => {
+    const n = VALS.map(v => by[v[0]].filter(no => catOf[no] === c.k).length);
+    $('#tc-' + c.k).textContent = (n[0] + n[1] + n[2] + n[3] + n[4]) + ' 件';
+    lines.push(c.name + ': ' + VALS.map((v, i) => v[1] + ' ' + n[i]).join('・'));
+  });
+  const extra = S.extra.trim(), memo = S.memo.trim();
+  if (extra) lines.push('ここに無い作品: ' + extra);
+  if (memo) lines.push('ひとこと: ' + memo);
+  const j = {panel: 'konomi', v: 1, topic: TOPIC, round: ROUND, who: who};
+  VALS.forEach(v => { j[v[2]] = by[v[0]]; });
+  j.extra = extra; j.memo = memo;
+  lines.push(JSON.stringify(j));
+  const out = $('#out');
+  out.value = lines.join('\n');
+  out.style.height = 'auto'; out.style.height = (out.scrollHeight + 2) + 'px';
+  save();
+}
+function renderAll() {
+  document.querySelectorAll('.who button').forEach(b => press(b, b.dataset.w === who));
+  order.forEach(paintRow);
+  $('#extra').value = S.extra; $('#memo').value = S.memo;
+  summary();
+}
+
+document.querySelectorAll('.who button').forEach(b => b.addEventListener('click', () => {
+  if (who === b.dataset.w) return;
+  const had = who, old = stored(b.dataset.w);
+  who = b.dataset.w;
+  // 答える人を選ぶ前に押した分は、その人の記録がまだ無ければ引き継ぐ
+  if (old) S = old; else if (had) S = blank();
+  renderAll();
+}));
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  tab = b.dataset.k; showTab();
+  const t = $('#tabs').getBoundingClientRect().top;
+  if (t <= 1) $('#jump').scrollIntoView({block: 'start'});
+  window.scrollBy(0, t <= 1 ? -70 : 0);
+});
+$('#jump').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.getElementById(b.dataset.t).scrollIntoView({block: 'start'});
+});
+$('#main').addEventListener('click', e => {
+  const b = e.target.closest('.btns button'); if (!b) return;
+  const no = b.closest('.row').dataset.no;
+  if (S.r[no] === b.dataset.v) delete S.r[no]; else S.r[no] = b.dataset.v;
+  paintRow(no); summary();
+});
+$('#extra').addEventListener('input', e => { S.extra = e.target.value; summary(); });
+$('#memo').addEventListener('input', e => { S.memo = e.target.value; summary(); });
+
+const copyBtn = $('#copy');
+copyBtn.addEventListener('click', async () => {
+  if (!who) {
+    copyBtn.textContent = '答える人を選ぶ';
+    $('.who').scrollIntoView({block: 'center'});
+    setTimeout(() => { copyBtn.textContent = '結果をコピー'; }, 2200);
+    return;
+  }
+  const out = $('#out'); let ok = false;
+  try { await navigator.clipboard.writeText(out.value); ok = true; } catch (e) {}
+  if (!ok) { try { out.focus(); out.select(); out.setSelectionRange(0, 999999); ok = document.execCommand('copy'); } catch (e) {} }
+  copyBtn.textContent = ok ? 'コピーしました' : '下の枠を長押し';
+  copyBtn.classList.toggle('done', ok);
+  if (!ok) out.scrollIntoView({block: 'center'});
+  setTimeout(() => { copyBtn.textContent = '結果をコピー'; copyBtn.classList.remove('done'); }, 2200);
+});
+
+const resetBtn = $('#reset'); let armed = 0;
+resetBtn.addEventListener('click', () => {
+  if (!armed) { armed = 1; resetBtn.textContent = 'もう一度押すと、選んだ内容がすべて消えます';
+    setTimeout(() => { armed = 0; resetBtn.textContent = '最初からやり直す'; }, 4000); return; }
+  S = blank(); armed = 0; resetBtn.textContent = '最初からやり直す'; renderAll(); window.scrollTo(0, 0);
+});
+showTab();
+renderAll();
+</script>
+</body>
+</html>
