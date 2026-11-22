@@ -153,6 +153,14 @@
       "type": "panel",
       "added": "2026-11-11",
       "desc": "本物と同じ2本レバー（JIS標準の配置）で土を掘ってダンプに積む。スマホの親指2本で操作"
+    },
+    {
+      "project": "Yorozuya",
+      "title": "ケースえらび iPhone 18 Pro",
+      "file": "Yorozuya/case-picker.html",
+      "type": "panel",
+      "added": "2026-11-22",
+      "desc": "候補 40 件を画像で見て、好き・ちがうを選んでコピーするパネル"
     }
   ]
 }
