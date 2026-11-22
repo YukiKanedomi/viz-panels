@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light">
+<title>好みしらべ 持ち物</title>
+<style>
+/* 並べ方: 上に分野の切り替え（貼りつく）、その下に品名の行がずらっと並ぶ。1 行 = 品名 + 5 つのボタン。下に固定の帯 */
+:root{
+  --bg:#ffffff; --ink:#16181d; --sub:#636874; --line:#e6e6ea; --soft:#f3f3f5; --edge:#d3d3da;
+  --on:#ffffff; --mute:#858a94; --ok:#1c7c4a; --want:#1f4fd0; --wantbg:#e9eefc; --focus:#1f4fd0; --barbg:rgba(255,255,255,.96);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;
+  padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+.wrap{max-width:860px;margin:0 auto;padding-block:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+header{padding:22px 0 6px}
+h1{font-size:22px;line-height:1.3;margin:0 0 8px;letter-spacing:.02em}
+h1 small{font-size:13px;font-weight:600;color:var(--sub);margin-left:8px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;vertical-align:3px}
+header p{margin:0 0 6px;color:var(--sub);font-size:14px;max-width:46em}
+header b{color:var(--ink)}
+.legend{margin:10px 0 0;padding:0;list-style:none;font-size:13.5px;color:var(--sub);display:grid;gap:3px;max-width:46em}
+.legend b{color:var(--ink)}
+h2{font-size:16px;margin:30px 0 2px;padding-top:14px;border-top:1px solid var(--line)}
+.hint{margin:0 0 12px;color:var(--sub);font-size:13px}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.who{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:12px;background:var(--soft);border-radius:12px;max-width:520px}
+.who .lab{font-size:14px;font-weight:600;flex:1;margin:0}
+.who .lab span{display:block;font-weight:400;color:var(--sub);font-size:12.5px}
+.who button{width:56px;height:44px;border-radius:10px;border:1px solid var(--edge);background:var(--bg);font-size:16px;font-weight:700}
+.who button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on)}
+
+.tabs{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:var(--bg);margin-top:18px;
+  display:grid;grid-template-columns:repeat(5,minmax(0,auto));justify-content:space-between;gap:2px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:10px 2px 8px;border-bottom:3px solid transparent;margin-bottom:-1px;
+  font-size:13.5px;font-weight:600;color:var(--sub);line-height:1.25;white-space:nowrap;text-align:center}
+.tabs button span{display:block;font-size:11px;font-weight:400;font-variant-numeric:tabular-nums}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.jump button{border:1px solid var(--edge);background:var(--bg);border-radius:999px;padding:5px 11px;font-size:12.5px;color:var(--sub)}
+h3{font-size:13px;font-weight:700;color:var(--sub);margin:26px 0 0;padding:0 0 6px;border-bottom:1px solid var(--ink);letter-spacing:.04em;
+  scroll-margin-top:calc(64px + env(safe-area-inset-top, 0px))}
+.row{padding:9px 0 10px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.ttl{margin:0;font-size:14.5px;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.row[data-r] .ttl::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink);margin-right:7px;vertical-align:1px}
+.row[data-r="w"] .ttl::before{background:var(--want)}
+.row[data-r="n"] .ttl{color:var(--mute)}
+.row[data-r="n"] .ttl::before,.row[data-r="g"] .ttl::before{background:var(--mute)}
+.btns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.2fr);gap:4px}
+.btns button{height:40px;padding:0;border-radius:8px;border:1px solid var(--edge);background:var(--bg);
+  font-size:12.5px;font-weight:600;line-height:1;white-space:nowrap}
+.btns button.w{margin-left:5px;color:var(--want)}
+.btns button[aria-pressed="true"].f{background:var(--ink);border-color:var(--ink);color:var(--on)}
+.btns button[aria-pressed="true"].h{background:var(--soft);border:2px solid var(--ink)}
+.btns button[aria-pressed="true"].g{background:var(--soft);border:1px dashed var(--ink)}
+.btns button[aria-pressed="true"].n{background:var(--mute);border-color:var(--mute);color:var(--on)}
+.btns button[aria-pressed="true"].w{background:var(--wantbg);border:2px solid var(--want)}
+@media (min-width:720px){
+  .row{grid-template-columns:minmax(0,1fr) 340px;align-items:center;gap:16px}
+}
+.q{margin:18px 0 0}
+.q .lab{font-size:14px;font-weight:600;margin:0 0 6px}
+.q .lab span{font-weight:400;color:var(--sub);font-size:12.5px}
+textarea{font:inherit;color:var(--ink);background:var(--bg)}
+.memo{width:100%;max-width:520px;border:1px solid var(--edge);border-radius:10px;padding:10px 12px;display:block;resize:vertical}
+#out{white-space:pre-wrap;word-break:break-all;background:var(--soft);border-radius:10px;padding:12px;font-size:12.5px;line-height:1.6;margin:8px 0 0;
+  font-family:ui-monospace,Menlo,Consolas,monospace;width:100%;max-width:640px;border:0;resize:none;display:block}
+.reset{margin:14px 0 0;background:none;border:0;padding:8px 0;color:var(--sub);font-size:13px;text-decoration:underline}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--barbg);border-top:1px solid var(--line);
+  padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.bar .in{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.count{flex:1;font-size:13px;line-height:1.35;color:var(--sub);font-variant-numeric:tabular-nums}
+.count b{color:var(--ink);font-size:15px}
+#copy{height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--ink);color:var(--on);font-size:15px;font-weight:700;white-space:nowrap}
+#copy.done{background:var(--ok)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>好みしらべ<small id="round"></small></h1>
+    <p>家にありそうな物と、使っていそうなサービスの名前を 1135 件並べました。<b>当てはまる物だけ</b>押してください。持っていない物、知らない物は、押さずに飛ばして大丈夫です。</p>
+    <ul class="legend">
+      <li><b>愛用・持ってる</b> … いま家にある物です。家族の物でも押してください。特に気に入っている物は「愛用」です。</li>
+      <li><b>手放した</b> … 前は持っていて、いまは無い物です。</li>
+      <li><b>いらない</b> … 持っていなくて、この先も要らない物です。</li>
+      <li><b>欲しい</b> … 持っていないけれど、欲しい物、気になる物です。</li>
+      <li>「ロボット掃除機」のような種類の名前は、メーカーを問わず押してください。各ページの最後の<b>「名指しの定番」</b>は、その商品やブランドの物に押してください。</li>
+      <li>「サービス」のページでは、ボタンが「使ってる」「やめた」「使いたい」に変わります。</li>
+    </ul>
+    <p style="margin-top:10px">押した内容はこの端末に残るので、何日かに分けても続きから答えられます。途中でも、下の<b>「結果をコピー」</b>を押してチャットに貼れば、そこまでの分が届きます。</p>
+    <div class="who">
+      <p class="lab">答える人<span>ひとりずつ、別々に答えます</span></p>
+      <button type="button" id="who-A" data-w="A">A</button>
+      <button type="button" id="who-B" data-w="B">B</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="jump" id="jump"></div>
+  <main id="main"></main>
+
+  <h2>あと少しだけ</h2>
+  <p class="hint">答えなくても大丈夫です。</p>
+  <div class="q">
+    <p class="lab"><label for="extra">ここに無い、お気に入りの物</label> <span>名前を並べるだけで大丈夫です</span></p>
+    <textarea id="extra" class="memo" rows="3" placeholder="例: ○○のフライパン、△△のイヤホン"></textarea>
+  </div>
+  <div class="q">
+    <p class="lab"><label for="memo">ひとこと</label> <span>買い替えたい物、困っている事など</span></p>
+    <textarea id="memo" class="memo" rows="3" placeholder="例: 掃除機を買い替えたい。台所の収納が足りない"></textarea>
+  </div>
+
+  <h2>いまの結果</h2>
+  <p class="hint">下のボタンでコピーできないときは、この枠の文字を長押しでコピーしてください。</p>
+  <textarea id="out" readonly rows="8"></textarea>
+  <button type="button" class="reset" id="reset">最初からやり直す</button>
+</div>
+
+<div class="bar"><div class="in">
+  <div class="count" id="count"></div>
+  <button type="button" id="copy">結果をコピー</button>
+</div></div>
+
+<script>
+// build_things.py が回の番号と品名の一覧を差し込む
+const TOPIC = 'things', TOPIC_JA = '持ち物', ROUND = 1;
+const CATS = [{"k":"A","name":"家電","tab":"家電","svc":false,"secs":[{"t":"掃除","items":[["A1","ロボット掃除機"],["A2","水拭きロボット（床拭きロボット）"],["A3","コードレスのスティック掃除機"],["A4","キャニスター掃除機（コードつき）"],["A5","ハンディクリーナー"],["A6","布団クリーナー"],["A7","スチームクリーナー"],["A8","高圧洗浄機"],["A9","窓拭きロボット"],["A10","電動の回転モップ"],["A11","卓上クリーナー"]]},{"t":"洗濯・衣類","items":[["A12","ドラム式洗濯乾燥機"],["A13","縦型洗濯機"],["A14","衣類乾燥機（単体）"],["A15","衣類乾燥除湿機"],["A16","浴室乾燥機"],["A17","衣類スチーマー"],["A18","アイロン"],["A19","ズボンプレッサー"],["A20","毛玉取り機"],["A21","布団乾燥機"],["A22","靴乾燥機"],["A23","ミシン"]]},{"t":"空調・空気","items":[["A24","エアコン"],["A25","空気清浄機"],["A26","加湿器"],["A27","除湿機"],["A28","サーキュレーター"],["A29","扇風機"],["A30","タワーファン・羽根のない扇風機"],["A31","セラミックファンヒーター"],["A32","オイルヒーター"],["A33","パネルヒーター"],["A34","石油ファンヒーター"],["A35","ガスファンヒーター"],["A36","電気ストーブ"],["A37","こたつ"],["A38","ホットカーペット"],["A39","電気毛布"],["A40","床暖房"],["A41","足元用の小型ヒーター"],["A42","スポットクーラー・冷風扇"],["A43","ハンディファン"],["A44","ネッククーラー"],["A45","CO2 センサー（二酸化炭素濃度計）"],["A46","温湿度計"]]},{"t":"美容・からだ","items":[["A47","ドライヤー"],["A48","ヘアアイロン"],["A49","電動歯ブラシ"],["A50","口腔洗浄器（水流で洗う物）"],["A51","電気シェーバー"],["A52","バリカン・ヘアカッター"],["A53","ボディトリマー"],["A54","美顔器"],["A55","顔用のスチーマー"],["A56","光美容器（家庭用脱毛器）"],["A57","体組成計・体重計"],["A58","血圧計"],["A59","マッサージガン"],["A60","フットマッサージャー"],["A61","マッサージチェア"],["A62","首・肩のマッサージャー"],["A63","充電式のホットアイマスク"],["A64","EMS 機器（腹筋ベルトなど）"],["A65","細かい泡のシャワーヘッド"],["A66","睡眠記録のマット（ベッドに敷く睡眠計）"],["A67","光で起こす目覚まし時計"],["A68","ホワイトノイズマシン"]]},{"t":"暮らしの家電","items":[["A69","ウォーターサーバー"],["A70","生ごみ処理機"],["A71","センサーで開くゴミ箱"],["A72","自動で袋を閉じるゴミ箱"],["A73","シュレッダー"],["A74","ラベルプリンター"],["A75","アロマディフューザー"],["A76","電気蚊取り"],["A77","電動の鉛筆削り・文具の家電"]]},{"t":"名指しの定番","items":[["A78","ルンバ（iRobot）"],["A79","ブラーバ（iRobot）"],["A80","Roborock"],["A81","エコバックス DEEBOT"],["A82","Anker Eufy のロボット掃除機"],["A83","ダイソンのコードレス掃除機"],["A84","マキタのコードレス掃除機"],["A85","シャークのコードレス掃除機"],["A86","レイコップ"],["A87","ケルヒャーの高圧洗浄機"],["A88","パナソニックのドラム式洗濯乾燥機"],["A89","日立 ビッグドラム"],["A90","シャープのドラム式洗濯乾燥機"],["A91","東芝 ZABOON"],["A92","ダイソンの空気清浄機・扇風機"],["A93","シャープ プラズマクラスターの空気清浄機"],["A94","ダイキン ストリーマ空気清浄機"],["A95","ブルーエア"],["A96","Airdog"],["A97","バルミューダ The GreenFan"],["A98","バルミューダ Rain（加湿器）"],["A99","象印のスチーム式加湿器"],["A100","ダイニチの加湿器"],["A101","カドー（cado）の加湿器"],["A102","デロンギのオイルヒーター"],["A103","アラジン ブルーフレーム"],["A104","コロナの衣類乾燥除湿機"],["A105","アイリスオーヤマのサーキュレーター"],["A106","ボルネード"],["A107","アイリスオーヤマ カラリエ（布団乾燥機）"],["A108","象印 スマートドライ（布団乾燥機）"],["A109","パナソニック ナノケア（ドライヤー）"],["A110","ダイソン Supersonic（ドライヤー）"],["A111","リファ（ReFa）のドライヤー"],["A112","リファのシャワーヘッド"],["A113","ミラブル"],["A114","ブラウンの電気シェーバー"],["A115","パナソニック ラムダッシュ"],["A116","フィリップス ソニッケアー"],["A117","ブラウン オーラルB"],["A118","パナソニック ドルツ（電動歯ブラシ）"],["A119","パナソニック ジェットウォッシャー ドルツ"],["A120","タニタの体組成計"],["A121","オムロンの体組成計・血圧計"],["A122","Withings の体組成計"],["A123","Anker Eufy の体組成計"],["A124","ティファールの衣類スチーマー"],["A125","パナソニックの衣類スチーマー"],["A126","ドクターエア"],["A127","Theragun"],["A128","ルルド"],["A129","ヤーマン"],["A130","Withings Sleep"],["A131","ルーフェン（loofen）"],["A132","パリパリキュー"],["A133","キングジム テプラ"],["A134","ブラザー ピータッチ"]]}]},{"k":"K","name":"台所","tab":"台所","svc":false,"secs":[{"t":"調理家電","items":[["K1","冷蔵庫"],["K2","冷凍庫（2 台目）"],["K3","電子レンジ（単機能）"],["K4","オーブンレンジ"],["K5","スチームオーブンレンジ（過熱水蒸気）"],["K6","トースター"],["K7","炊飯器"],["K8","食洗機（ビルトイン）"],["K9","食洗機（据え置き）"],["K10","電気ケトル"],["K11","温度調節つきの電気ケトル"],["K12","電気ポット"],["K13","自動調理鍋（電気圧力鍋・ほったらかし鍋）"],["K14","ノンフライヤー"],["K15","低温調理器"],["K16","ホットプレート"],["K17","たこ焼き器"],["K18","ホットサンドメーカー"],["K19","卓上 IH コンロ"],["K20","カセットコンロ"],["K21","グリル鍋・電気鍋"],["K22","ミキサー・ブレンダー"],["K23","ハンドブレンダー"],["K24","フードプロセッサー"],["K25","スロージューサー"],["K26","ホームベーカリー"],["K27","ヨーグルトメーカー"],["K28","精米機"],["K29","ワインセラー"],["K30","炭酸水メーカー"],["K31","浄水器（蛇口型・据え置き）"],["K32","ポット型の浄水器"],["K33","製氷機"],["K34","真空パック機"],["K35","キッチンスケール"],["K36","料理用の温度計"]]},{"t":"コーヒー・お茶","items":[["K37","コーヒーメーカー（ドリップ）"],["K38","全自動コーヒーメーカー（豆から）"],["K39","エスプレッソマシン"],["K40","カプセル式のコーヒーマシン"],["K41","電動コーヒーミル"],["K42","手挽きコーヒーミル"],["K43","ハンドドリップの道具（ドリッパー・サーバー）"],["K44","ドリップ用の細口ケトル"],["K45","フレンチプレス"],["K46","エアロプレス"],["K47","マキネッタ"],["K48","水出しコーヒーポット"],["K49","コーヒースケール"],["K50","ミルクフォーマー"],["K51","急須"],["K52","ティーポット"]]},{"t":"鍋・フライパン","items":[["K53","鉄のフライパン"],["K54","フッ素加工のフライパン"],["K55","ステンレスのフライパン"],["K56","取っ手が取れるフライパン・鍋"],["K57","卵焼き器"],["K58","中華鍋"],["K59","鋳物ホーロー鍋"],["K60","無水鍋"],["K61","圧力鍋"],["K62","土鍋"],["K63","ごはん用の土鍋"],["K64","せいろ"],["K65","スキレット"],["K66","ダッチオーブン"],["K67","グリルパン"],["K68","雪平鍋"],["K69","パスタ鍋・寸胴"],["K70","天ぷら鍋"],["K71","蒸し器"]]},{"t":"包丁・道具","items":[["K72","三徳包丁"],["K73","牛刀"],["K74","ペティナイフ"],["K75","パン切り包丁"],["K76","和包丁（出刃・柳刃）"],["K77","砥石"],["K78","包丁研ぎ器（シャープナー）"],["K79","木のまな板"],["K80","ゴム・樹脂のまな板"],["K81","キッチンばさみ"],["K82","ピーラー"],["K83","スライサー"],["K84","おろし金"],["K85","すり鉢"],["K86","トング"],["K87","シリコンのヘラ"],["K88","ボウルとザルのセット"],["K89","バット"],["K90","サラダスピナー"],["K91","ワインオープナー"],["K92","製菓の道具・お菓子の型"],["K93","ひもを引くみじん切り器"],["K94","泡立て器"],["K95","レモン絞り"]]},{"t":"保存・片づけ","items":[["K96","ガラスの保存容器"],["K97","プラスチックの保存容器"],["K98","ホーローの保存容器"],["K99","シリコンの保存袋"],["K100","真空保存容器"],["K101","米びつ"],["K102","調味料ラック"],["K103","オイルポット"],["K104","水切りかご"],["K105","水切りマット"],["K106","シンク上の水切りラック"],["K107","卓上のポリ袋ホルダー（ごみ袋立て）"],["K108","分別ゴミ箱"],["K109","キッチンワゴン"],["K110","冷蔵庫横のマグネット収納"],["K111","かや織りのふきん"],["K112","お弁当箱"],["K113","曲げわっぱ"],["K114","スープジャー"],["K115","水筒・マイボトル"],["K116","真空断熱のタンブラー"]]},{"t":"食卓","items":[["K117","作家物の器"],["K118","そろいの食器セット"],["K119","北欧の食器"],["K120","木の器・木のカトラリー"],["K121","漆器"],["K122","箸置き"],["K123","ランチョンマット"],["K124","ワイングラス"],["K125","うすいビールグラス"],["K126","耐熱ガラスのコップ"],["K127","お気に入りのマグカップ"],["K128","ティーカップとソーサー"],["K129","徳利・おちょこ"],["K130","カトラリーのセット"],["K131","鍋敷き"],["K132","お盆・トレー"],["K133","デカンタ"]]},{"t":"名指しの定番","items":[["K134","バルミューダ The Toaster"],["K135","アラジン グラファイトトースター"],["K136","パナソニック ビストロ（オーブンレンジ）"],["K137","シャープ ヘルシオ（オーブンレンジ）"],["K138","東芝 石窯ドーム"],["K139","日立 ヘルシーシェフ"],["K140","シャープ ヘルシオ ホットクック"],["K141","パナソニック オートクッカー ビストロ"],["K142","ティファール クックフォーミー"],["K143","アイリスオーヤマの電気圧力鍋"],["K144","シロカ おうちシェフ"],["K145","象印 炎舞炊き"],["K146","タイガー 土鍋ご泡火炊き"],["K147","パナソニック おどり炊き"],["K148","バーミキュラ ライスポット"],["K149","パナソニックの据え置き食洗機"],["K150","ミーレの食洗機"],["K151","ボッシュの食洗機"],["K152","BRUNO コンパクトホットプレート"],["K153","象印のホットプレート"],["K154","イワタニ カセットフー"],["K155","イワタニ 炉ばた焼器 炙りや"],["K156","イワタニ やきまる"],["K157","フィリップス ノンフライヤー"],["K158","COSORI ノンフライヤー"],["K159","BONIQ"],["K160","Anova（低温調理器）"],["K161","バイタミックス"],["K162","ブラウン マルチクイック"],["K163","クイジナートのフードプロセッサー"],["K164","ティファールの電気ケトル"],["K165","バルミューダ The Pot"],["K166","デロンギの全自動コーヒーマシン"],["K167","ネスプレッソ"],["K168","ネスカフェ ドルチェ グスト"],["K169","ネスカフェ バリスタ"],["K170","シロカの全自動コーヒーメーカー"],["K171","ツインバードの全自動コーヒーメーカー"],["K172","バルミューダ The Brew"],["K173","ハリオ V60"],["K174","カリタのドリッパー・ミル"],["K175","ケメックス"],["K176","ポーレックスのコーヒーミル"],["K177","コマンダンテ"],["K178","タイムモア（TIMEMORE）"],["K179","Wilfa（ウィルファ）のミル"],["K180","Fellow（フェロー）のケトル・ミル"],["K181","ビアレッティ"],["K182","ソーダストリーム"],["K183","ドリンクメイト"],["K184","ブリタ"],["K185","クリンスイ"],["K186","ストウブ"],["K187","ル・クルーゼ"],["K188","バーミキュラ（鍋・フライパン）"],["K189","ティファール インジニオ（取っ手が取れる）"],["K190","リバーライト 極"],["K191","ターク（turk）"],["K192","ロッジのスキレット"],["K193","ニトリのスキレット（ニトスキ）"],["K194","柳宗理（フライパン・ボウル・ケトルなど）"],["K195","ビタクラフト"],["K196","ジオ・プロダクト"],["K197","フィスラー"],["K198","WMF"],["K199","グローバル（GLOBAL）の包丁"],["K200","貝印 関孫六"],["K201","ツヴィリング・ヘンケルス"],["K202","藤次郎"],["K203","ミソノ"],["K204","庖丁工房タダフサ"],["K205","OXO（オクソー）"],["K206","山崎実業 tower（台所の収納）"],["K207","山崎実業 tower の分別ゴミ袋ホルダー（蓋つき）"],["K208","ラバーゼ（la base）"],["K209","家事問屋"],["K210","無印良品の台所用品"],["K211","iwaki の保存容器"],["K212","野田琺瑯"],["K213","ジップロック コンテナー"],["K214","OXO ポップコンテナ"],["K215","スタッシャー"],["K216","サーモス（水筒・タンブラー・スープジャー）"],["K217","象印の水筒"],["K218","タイガーの水筒"],["K219","スタンレー"],["K220","ハイドロフラスク"],["K221","キントー（KINTO）"],["K222","イッタラ"],["K223","アラビア"],["K224","マリメッコの食器"],["K225","ロイヤル コペンハーゲン"],["K226","波佐見焼"],["K227","白山陶器"],["K228","中川政七商店"],["K229","松徳硝子 うすはり"],["K230","リーデル"],["K231","デュラレックス"],["K232","長谷園 かまどさん"],["K233","ハリオ フタがガラスのご飯釜"],["K234","照宝のせいろ"],["K235","釜浅商店"],["K236","月兎印 スリムポット"],["K237","南部鉄器"]]}]},{"k":"H","name":"住まい","tab":"住まい","svc":false,"secs":[{"t":"寝具","items":[["H1","ベッド用のマットレス"],["H2","三つ折り・敷くだけのマットレス"],["H3","敷布団"],["H4","ベッドフレーム"],["H5","羽毛布団"],["H6","毛布"],["H7","タオルケット・ガーゼケット"],["H8","低反発・高反発の枕"],["H9","オーダーメイドの枕"],["H10","抱き枕"],["H11","電動ベッド"],["H12","重い毛布（加重ブランケット）"],["H13","リカバリーウェアの寝巻き"],["H14","シルクの枕カバー"],["H15","遮光カーテン"],["H16","耳栓・アイマスク"]]},{"t":"家具","items":[["H17","ソファ"],["H18","ローテーブル"],["H19","ダイニングテーブル"],["H20","デスク（机）"],["H21","昇降デスク"],["H22","ワークチェア（事務椅子）"],["H23","ゲーミングチェア"],["H24","座椅子"],["H25","ビーズクッション"],["H26","ラグ"],["H27","本棚"],["H28","オープンラック"],["H29","テレビ台"],["H30","スツール"],["H31","ベンチ"],["H32","サイドテーブル"],["H33","姿見・全身鏡"],["H34","ハンガーラック"],["H35","ラウンジチェア・ロッキングチェア"]]},{"t":"収納・片づけ","items":[["H36","突っ張り棒・突っ張り棚"],["H37","有孔ボード"],["H38","壁に付けられる棚"],["H39","衣装ケース"],["H40","ファイルボックス"],["H41","スチールラック"],["H42","マグネットのフック・収納"],["H43","傘立て"],["H44","靴の収納ラック"],["H45","ケーブル収納ボックス"],["H46","ランドリーバスケット"],["H47","圧縮袋"],["H48","平台車（キャスター付きの台）"],["H49","ポールハンガー"],["H50","宅配ボックス"]]},{"t":"照明・インテリア","items":[["H51","間接照明（フロアライト・テーブルランプ）"],["H52","ペンダントライト"],["H53","調光・調色できるシーリングライト"],["H54","デスクライト"],["H55","モニターに掛けるライト"],["H56","人感センサーのライト"],["H57","キャンドル"],["H58","お香・香炉"],["H59","スティック型のルームフレグランス"],["H60","観葉植物"],["H61","花瓶"],["H62","アートポスター・額装"],["H63","絵・版画（原画）"],["H64","壁掛け時計"],["H65","置き時計"],["H66","ドライフラワー"],["H67","水槽・アクアリウム"],["H68","モビール"]]},{"t":"スマートホーム","items":[["H69","スマートロック"],["H70","スマートリモコン"],["H71","スマートスピーカー"],["H72","スマートディスプレイ"],["H73","スマートプラグ"],["H74","スマート電球"],["H75","カーテンの自動開閉"],["H76","スマート温湿度計"],["H77","屋内の見守りカメラ"],["H78","ドア・窓の開閉センサー"],["H79","人感センサー"],["H80","スイッチを押すロボット"],["H81","メッシュ Wi-Fi"],["H82","紛失防止タグ"]]},{"t":"風呂・洗面・トイレ","items":[["H83","珪藻土のバスマット"],["H84","布のバスマット"],["H85","お気に入りのバスタオル"],["H86","風呂用のマグネット収納（浮かせる収納）"],["H87","バスチェア"],["H88","定番の入浴剤"],["H89","防水スピーカー"],["H90","風呂用のタブレットスタンド"],["H91","自動のソープディスペンサー"],["H92","洗濯機横のマグネット収納"],["H93","温水洗浄便座"]]},{"t":"防災・備え","items":[["H94","防災リュック"],["H95","保存水・非常食の備蓄"],["H96","ポータブル電源"],["H97","持ち運べるソーラーパネル"],["H98","カセットガスの備蓄"],["H99","簡易トイレ"],["H100","LED ランタン"],["H101","手回し・電池式のラジオ"],["H102","家具の転倒防止"],["H103","消火器"],["H104","ヘルメット"],["H105","感震ブレーカー"]]},{"t":"名指しの定番","items":[["H106","エアウィーヴ"],["H107","シモンズ"],["H108","シーリー"],["H109","サータ"],["H110","日本ベッド"],["H111","フランスベッド"],["H112","コアラマットレス"],["H113","エマ・スリープ"],["H114","NELL マットレス"],["H115","テンピュール"],["H116","トゥルースリーパー"],["H117","西川の寝具（AiR など）"],["H118","ニトリ N クール・N ウォーム"],["H119","ブレインスリープ ピロー"],["H120","ヒツジのいらない枕"],["H121","TENTIAL BAKUNE"],["H122","ベネクス（VENEX）"],["H123","無印良品 体にフィットするソファ"],["H124","Yogibo"],["H125","ハーマンミラー アーロンチェア"],["H126","エルゴヒューマン"],["H127","オカムラのワークチェア"],["H128","FlexiSpot の昇降デスク"],["H129","無印良品 スタッキングシェルフ"],["H130","無印良品 ユニットシェルフ"],["H131","無印良品 壁に付けられる家具"],["H132","無印良品 ポリプロピレン収納"],["H133","IKEA カラックス"],["H134","IKEA ビリー"],["H135","ニトリ N クリック・カラーボックス"],["H136","アルテック スツール 60"],["H137","イームズ シェルチェア"],["H138","Y チェア（カール・ハンセン＆サン）"],["H139","セブンチェア（フリッツ・ハンセン）"],["H140","カリモク（カリモク60 など）"],["H141","マルニ木工"],["H142","飛騨産業"],["H143","アクタス"],["H144","unico"],["H145","LOWYA"],["H146","Francfranc"],["H147","HAY"],["H148","山崎実業 tower（リビング・玄関・洗面の収納）"],["H149","ルイスポールセン"],["H150","イサムノグチ AKARI"],["H151","バルミューダ The Lantern"],["H152","BenQ ScreenBar"],["H153","フィリップス Hue"],["H154","SwitchBot ハブ"],["H155","SwitchBot ロック"],["H156","SwitchBot カーテン"],["H157","SwitchBot ボット"],["H158","SwitchBot 温湿度計"],["H159","Nature Remo"],["H160","Qrio Lock"],["H161","SESAME（セサミ）"],["H162","Amazon Echo"],["H163","Echo Show"],["H164","Google Nest Hub・Nest Mini"],["H165","Apple HomePod"],["H166","TP-Link Tapo（カメラ・プラグ）"],["H167","TP-Link Deco"],["H168","Google Nest Wifi"],["H169","Apple AirTag"],["H170","Tile"],["H171","MAMORIO"],["H172","soil 珪藻土バスマット"],["H173","今治タオル"],["H174","ホットマン"],["H175","BARTH"],["H176","クナイプ"],["H177","松栄堂のお香"],["H178","Jackery"],["H179","EcoFlow"],["H180","Anker のポータブル電源"],["H181","ジェントスのライト"]]}]},{"k":"D","name":"機器","tab":"機器","svc":false,"secs":[{"t":"PC・机まわり","items":[["D1","デスクトップ PC"],["D2","ノート PC"],["D3","自作 PC"],["D4","ミニ PC"],["D5","外付けモニター"],["D6","ウルトラワイドモニター"],["D7","4K モニター"],["D8","ポータブルモニター"],["D9","モニターアーム"],["D10","メカニカルキーボード"],["D11","静電容量無接点キーボード"],["D12","分割キーボード"],["D13","薄型のワイヤレスキーボード"],["D14","エルゴノミクスマウス"],["D15","トラックボール"],["D16","ゲーミングマウス"],["D17","左手デバイス（片手キーボード・ショートカット機器）"],["D18","ペンタブレット・液晶タブレット"],["D19","Web カメラ"],["D20","USB マイク・コンデンサーマイク"],["D21","マイクアーム"],["D22","オーディオインターフェース"],["D23","ドッキングステーション・USB ハブ"],["D24","外付け SSD"],["D25","外付け HDD"],["D26","NAS"],["D27","プリンター"],["D28","ドキュメントスキャナー"],["D29","無停電電源装置（UPS）"],["D30","Wi-Fi ルーター"],["D31","USB つきの電源タップ"],["D32","ノート PC スタンド"],["D33","フットレスト"],["D34","リストレスト"],["D35","デスクマット"],["D36","ケーブルトレー"]]},{"t":"スマホ・タブレット・身につける機器","items":[["D37","iPhone"],["D38","Android スマホ"],["D39","折りたたみスマホ"],["D40","iPad"],["D41","Android タブレット"],["D42","電子書籍リーダー"],["D43","電子ペーパーの手書きノート"],["D44","タブレット用のペン"],["D45","スマートウォッチ"],["D46","リストバンド型の活動量計"],["D47","スマートリング"],["D48","モバイルバッテリー"],["D49","急速充電器（GaN）"],["D50","ワイヤレス充電器"],["D51","MagSafe の充電スタンド"],["D52","スマホスタンド"],["D53","スマホ用ジンバル"],["D54","車載ホルダー"],["D55","モバイルルーター"],["D56","スマートグラス・AR グラス"]]},{"t":"音","items":[["D57","完全ワイヤレスイヤホン"],["D58","ノイズキャンセリングヘッドホン"],["D59","有線の高音質イヤホン"],["D60","開放型ヘッドホン"],["D61","耳をふさがないイヤホン（骨伝導など）"],["D62","寝ながら使える睡眠用イヤホン"],["D63","ゲーミングヘッドセット"],["D64","Bluetooth スピーカー"],["D65","サウンドバー"],["D66","ブックシェルフスピーカー"],["D67","AV アンプ・ホームシアター"],["D68","レコードプレーヤー"],["D69","レコード（アナログ盤）"],["D70","CD プレーヤー"],["D71","ネットワークオーディオ・DAC"],["D72","ポータブルオーディオプレーヤー"]]},{"t":"映像・ゲーム","items":[["D73","テレビ"],["D74","有機 EL テレビ"],["D75","プロジェクター"],["D76","照明一体型のプロジェクター"],["D77","モバイルプロジェクター"],["D78","スクリーン"],["D79","テレビに挿すストリーミング端末"],["D80","ブルーレイレコーダー"],["D81","Nintendo Switch"],["D82","Nintendo Switch 2"],["D83","PlayStation 5"],["D84","PlayStation 4"],["D85","Xbox Series X|S"],["D86","Steam Deck"],["D87","ポータブルゲーミング PC（ROG Ally など）"],["D88","ゲーミング PC"],["D89","VR ヘッドセット"],["D90","追加のコントローラー（Pro コントローラーなど）"],["D91","アーケードコントローラー・レバーレス"],["D92","ハンドルコントローラー"],["D93","レトロゲーム機（実機・復刻版）"],["D94","キャプチャーボード"],["D95","ボードゲーム"],["D96","トレーディングカード"],["D97","麻雀牌・麻雀マット"]]},{"t":"カメラ","items":[["D98","ミラーレス一眼"],["D99","一眼レフ"],["D100","コンパクトデジタルカメラ"],["D101","フィルムカメラ"],["D102","インスタントカメラ"],["D103","アクションカメラ"],["D104","360 度カメラ"],["D105","ドローン"],["D106","単焦点の交換レンズ"],["D107","望遠の交換レンズ"],["D108","三脚"],["D109","カメラバッグ"],["D110","フォトプリンター"],["D111","双眼鏡"],["D112","天体望遠鏡"]]},{"t":"つくる・趣味の道具","items":[["D113","3D プリンター"],["D114","レーザー加工機・カッティングマシン"],["D115","はんだごて"],["D116","電動ドライバー・インパクトドライバー"],["D117","工具セット"],["D118","ノギス・精密測定の道具"],["D119","Raspberry Pi"],["D120","Arduino・マイコンボード"],["D121","電子工作のキット"],["D122","プラモデルの道具"],["D123","エアブラシ"],["D124","水彩・画材"],["D125","万年筆"],["D126","お気に入りのボールペン・シャープペン"],["D127","定番の手帳・ノート"],["D128","ギター・ベース"],["D129","電子ピアノ・キーボード"],["D130","シンセサイザー・MIDI 機器"],["D131","ウクレレ"],["D132","カリンバ"],["D133","電子ドラム"],["D134","ルービックキューブ・立体パズル"],["D135","レゴ"],["D136","ジグソーパズル"]]},{"t":"名指しの定番","items":[["D137","MacBook Air"],["D138","MacBook Pro"],["D139","Mac mini"],["D140","iMac"],["D141","Mac Studio"],["D142","ThinkPad"],["D143","Surface"],["D144","iPad Pro"],["D145","iPad Air"],["D146","iPad mini"],["D147","Apple Pencil"],["D148","Apple Watch"],["D149","Apple Watch Ultra"],["D150","AirPods"],["D151","AirPods Pro"],["D152","AirPods Max"],["D153","Apple TV 4K"],["D154","Apple Vision Pro"],["D155","Google Pixel"],["D156","Galaxy"],["D157","Xperia"],["D158","Pixel Watch"],["D159","Garmin"],["D160","Fitbit"],["D161","Xiaomi Smart Band"],["D162","Oura Ring"],["D163","Kindle Paperwhite"],["D164","Kindle Scribe"],["D165","Kobo の端末"],["D166","reMarkable"],["D167","BOOX"],["D168","HHKB"],["D169","REALFORCE"],["D170","Keychron"],["D171","ロジクール MX Keys"],["D172","ロジクール MX Master"],["D173","ロジクール MX Ergo"],["D174","ケンジントンのトラックボール"],["D175","ロジクール G PRO（マウス・キーボード）"],["D176","Razer"],["D177","Elgato Stream Deck"],["D178","ワコムのペンタブレット"],["D179","ScanSnap"],["D180","エルゴトロンのモニターアーム"],["D181","Dell のモニター"],["D182","LG のモニター"],["D183","BenQ のモニター"],["D184","EIZO"],["D185","Synology の NAS"],["D186","Anker の充電器・モバイルバッテリー"],["D187","CIO"],["D188","Belkin"],["D189","Sony WH-1000X シリーズ（ヘッドホン）"],["D190","Sony WF-1000X シリーズ（イヤホン）"],["D191","Bose QuietComfort"],["D192","ゼンハイザー"],["D193","Shokz"],["D194","Technics のイヤホン"],["D195","Anker Soundcore"],["D196","JBL のスピーカー"],["D197","Bose のスピーカー"],["D198","Sonos"],["D199","マーシャルのスピーカー"],["D200","オーディオテクニカのレコードプレーヤー"],["D201","ソニー ブラビア"],["D202","LG の有機 EL テレビ"],["D203","パナソニック ビエラ"],["D204","シャープ アクオス"],["D205","レグザ"],["D206","ハイセンス・TCL"],["D207","Aladdin X（popIn Aladdin）"],["D208","Anker Nebula"],["D209","XGIMI"],["D210","エプソンのプロジェクター"],["D211","Fire TV Stick"],["D212","Chromecast・Google TV Streamer"],["D213","Meta Quest"],["D214","PlayStation VR2"],["D215","PlayStation Portal"],["D216","8BitDo"],["D217","Sony α"],["D218","キヤノン EOS R"],["D219","ニコン Z"],["D220","富士フイルム X"],["D221","リコー GR"],["D222","OM SYSTEM・オリンパス"],["D223","パナソニック LUMIX"],["D224","ライカ"],["D225","GoPro"],["D226","DJI Osmo Pocket"],["D227","DJI Osmo Action"],["D228","Insta360"],["D229","DJI のドローン"],["D230","チェキ（instax）"],["D231","Bambu Lab"],["D232","Creality"],["D233","マキタの電動工具"],["D234","ボッシュの電動工具"],["D235","白光（HAKKO）のはんだごて"],["D236","LAMY サファリ"],["D237","パイロット カクノ"],["D238","ジェットストリーム"],["D239","クルトガ"],["D240","ほぼ日手帳"],["D241","トラベラーズノート"],["D242","モレスキン"],["D243","ロルバーン"],["D244","ミドリ MD ノート"],["D245","カタン"],["D246","ドミニオン"],["D247","カルカソンヌ"],["D248","宝石の煌き"],["D249","アズール"],["D250","ウイングスパン"],["D251","テラフォーミング・マーズ"],["D252","パンデミック"],["D253","コードネーム"],["D254","ディクシット"],["D255","ito"],["D256","はぁって言うゲーム"],["D257","マジック：ザ・ギャザリング"],["D258","ポケモンカードゲーム"]]}]},{"k":"O","name":"外と身の回り","tab":"身の回り","svc":false,"secs":[{"t":"かばん・小物","items":[["O1","通勤リュック"],["O2","トートバッグ"],["O3","ショルダーバッグ・サコッシュ"],["O4","ボディバッグ"],["O5","ビジネスバッグ"],["O6","エコバッグ"],["O7","革の財布"],["O8","小さい財布"],["O9","カードケース・名刺入れ"],["O10","キーケース"],["O11","機械式の腕時計"],["O12","クオーツ・ソーラーの腕時計"],["O13","サングラス"],["O14","お気に入りの眼鏡"],["O15","折りたたみ傘"],["O16","お気に入りの長傘"],["O17","日傘"],["O18","定番のハンカチ"],["O19","香水"],["O20","定番のハンドクリーム"]]},{"t":"服と靴の定番","items":[["O21","ダウンジャケット"],["O22","マウンテンパーカー"],["O23","フリース"],["O24","保温の機能性インナー"],["O25","メリノウールのインナー・靴下"],["O26","白いスニーカー"],["O27","ランニングシューズ"],["O28","革靴"],["O29","ブーツ"],["O30","サンダル"],["O31","室内履き・スリッパ"],["O32","防水の靴・レインシューズ"],["O33","お気に入りのジーンズ"],["O34","オーダーのスーツ"],["O35","セットアップ"],["O36","帽子"],["O37","マフラー・ストール"],["O38","手袋"],["O39","定番の部屋着"],["O40","パジャマ"],["O41","レインウェア"]]},{"t":"旅","items":[["O42","スーツケース（機内持ち込み）"],["O43","スーツケース（大型）"],["O44","旅行用のバックパック"],["O45","ガジェットポーチ・トラベルポーチ"],["O46","圧縮バッグ"],["O47","ネックピロー"],["O48","変換プラグ・旅行用の電源"],["O49","パスポートケース"],["O50","荷物タグ・スーツケースベルト"],["O51","折りたたみのボストンバッグ"],["O52","携帯用のスリッパ"]]},{"t":"山・キャンプ・乗り物","items":[["O53","登山靴・トレッキングシューズ"],["O54","登山用のザック"],["O55","トレッキングポール"],["O56","レインウェア（登山用）"],["O57","ヘッドランプ"],["O58","テント"],["O59","タープ"],["O60","寝袋"],["O61","キャンプ用のマット"],["O62","キャンプ用のチェア"],["O63","キャンプ用のテーブル"],["O64","焚き火台"],["O65","シングルバーナー"],["O66","クッカー（山用の鍋）"],["O67","クーラーボックス"],["O68","ランタン"],["O69","メスティン"],["O70","ホットサンドメーカー（直火）"],["O71","ハンモック"],["O72","釣り道具"],["O73","ロードバイク・クロスバイク"],["O74","電動アシスト自転車"],["O75","折りたたみ自転車"],["O76","車"],["O77","バイク・原付"],["O78","スキー・スノーボードの道具"],["O79","サーフボード・SUP"]]},{"t":"運動","items":[["O80","ヨガマット"],["O81","ダンベル・ケトルベル"],["O82","懸垂バー"],["O83","フォームローラー・ストレッチポール"],["O84","バランスボール"],["O85","腹筋ローラー"],["O86","縄跳び"],["O87","エアロバイク"],["O88","ルームランナー"],["O89","ステッパー"],["O90","トレーニングチューブ"],["O91","水泳の道具"],["O92","ゴルフクラブ"],["O93","テニス・バドミントンのラケット"],["O94","ボルダリングシューズ"],["O95","プロテインシェイカー"]]},{"t":"名指しの定番","items":[["O96","SUBU（冬用サンダル）"],["O97","ビルケンシュトック"],["O98","クロックス"],["O99","KEEN"],["O100","テバ"],["O101","ウーフォス（OOFOS）"],["O102","ニューバランス"],["O103","ナイキ"],["O104","アディダス（スタンスミス・サンバなど）"],["O105","オニツカタイガー"],["O106","コンバース"],["O107","On（オン）"],["O108","HOKA"],["O109","アシックス"],["O110","サロモン"],["O111","メレル"],["O112","ダナー"],["O113","ドクターマーチン"],["O114","レッドウィング"],["O115","リーガル"],["O116","ユニクロ ヒートテック"],["O117","ユニクロ ウルトラライトダウン"],["O118","ユニクロ エアリズム"],["O119","無印良品の衣類"],["O120","ザ・ノース・フェイス"],["O121","パタゴニア"],["O122","アークテリクス"],["O123","モンベル"],["O124","マムート"],["O125","コロンビア"],["O126","ワークマン"],["O127","スノーピーク"],["O128","コールマン"],["O129","ロゴス"],["O130","ヘリノックス"],["O131","SOTO"],["O132","プリムス"],["O133","ジェットボイル"],["O134","イワタニ ジュニアコンパクトバーナー"],["O135","ユニフレーム"],["O136","トランギア"],["O137","ナンガ"],["O138","サーマレスト"],["O139","ブラックダイヤモンド"],["O140","ペツル"],["O141","レキ（LEKI）"],["O142","グレゴリー"],["O143","オスプレー"],["O144","ミステリーランチ"],["O145","カリマー"],["O146","ミレー"],["O147","ポーター（吉田カバン）"],["O148","マンハッタンポーテージ"],["O149","フライターグ"],["O150","土屋鞄"],["O151","ブリーフィング"],["O152","トゥミ"],["O153","Aer（エアー）"],["O154","ピークデザイン"],["O155","エース プロテカ"],["O156","リモワ"],["O157","サムソナイト"],["O158","無印良品のスーツケース"],["O159","イノベーター"],["O160","アブラサス（薄い財布・小さい財布）"],["O161","ベルロイ"],["O162","イルビゾンテ"],["O163","カシオ G-SHOCK"],["O164","セイコー"],["O165","グランドセイコー"],["O166","シチズン"],["O167","オメガ"],["O168","ロレックス"],["O169","ハミルトン"],["O170","レイバン"],["O171","オークリー"],["O172","JINS"],["O173","Zoff"],["O174","金子眼鏡"],["O175","モンベルの折りたたみ傘"],["O176","Wpc."],["O177","サンバリア100"],["O178","Aesop"],["O179","SHIRO"],["O180","ロクシタン"],["O181","ブロンプトン"],["O182","ルルレモン"],["O183","マンドゥカ"],["O184","トリガーポイント"],["O185","リングフィット アドベンチャー"],["O186","フィットボクシング"]]}]},{"k":"S","name":"サービス","tab":"サービス","svc":true,"secs":[{"t":"動画","items":[["S1","Netflix"],["S2","Amazon プライム・ビデオ"],["S3","Disney+"],["S4","U-NEXT"],["S5","Hulu"],["S6","DAZN"],["S7","ABEMA プレミアム"],["S8","dアニメストア"],["S9","Apple TV+"],["S10","YouTube Premium"],["S11","NHK オンデマンド"],["S12","TVer"],["S13","Lemino"],["S14","WOWOW"],["S15","スカパー!"],["S16","ニコニコ プレミアム"],["S17","DMM TV"],["S18","FOD"]]},{"t":"音楽・音声","items":[["S19","Spotify"],["S20","Apple Music"],["S21","YouTube Music"],["S22","Amazon Music Unlimited"],["S23","LINE MUSIC"],["S24","AWA"],["S25","Audible"],["S26","audiobook.jp"],["S27","radiko プレミアム"],["S28","Voicy"],["S29","よく聴くポッドキャストがある"]]},{"t":"本・漫画・ニュース","items":[["S30","Kindle Unlimited"],["S31","Kindle の電子書籍（よく買う）"],["S32","楽天Kobo の電子書籍"],["S33","少年ジャンプ+"],["S34","コミックシーモア"],["S35","ピッコマ"],["S36","LINE マンガ"],["S37","BOOK☆WALKER"],["S38","dマガジン"],["S39","楽天マガジン"],["S40","日本経済新聞 電子版"],["S41","NewsPicks"],["S42","紙の新聞の定期購読"],["S43","note の有料マガジン・メンバーシップ"],["S44","図書館（よく使う）"]]},{"t":"ゲーム","items":[["S45","Nintendo Switch Online"],["S46","Nintendo Switch Online + 追加パック"],["S47","PlayStation Plus"],["S48","Xbox Game Pass"],["S49","Steam"],["S50","Epic Games Store"],["S51","Apple Arcade"],["S52","GeForce NOW"]]},{"t":"買い物・食","items":[["S53","Amazon プライム"],["S54","楽天市場（よく使う）"],["S55","Yahoo!ショッピング・LYP プレミアム"],["S56","ヨドバシ・ドット・コム"],["S57","コストコの会員"],["S58","ネットスーパー"],["S59","生協・コープの宅配"],["S60","オイシックス"],["S61","大地を守る会・らでぃっしゅぼーや"],["S62","ヨシケイ"],["S63","nosh（ナッシュ）"],["S64","Uber Eats"],["S65","出前館"],["S66","コーヒー豆の定期便"],["S67","花・枝ものの定期便"],["S68","ウォーターサーバーの定期契約"],["S69","お酒の定期便・頒布会"],["S70","パンスク"],["S71","スナックミー"],["S72","ふるさと納税"],["S73","メルカリ"],["S74","Yahoo!オークション・Yahoo!フリマ"],["S75","ZOZOTOWN"],["S76","ロハコ"]]},{"t":"AI・仕事の道具","items":[["S77","ChatGPT（有料プラン）"],["S78","Claude（有料プラン）"],["S79","Gemini（有料プラン）"],["S80","GitHub Copilot"],["S81","Cursor"],["S82","Perplexity"],["S83","Midjourney"],["S84","NotebookLM"],["S85","Notion"],["S86","Obsidian"],["S87","Evernote"],["S88","Todoist"],["S89","Microsoft 365"],["S90","Adobe Creative Cloud"],["S91","Canva"],["S92","Figma"],["S93","1Password"],["S94","Bitwarden"],["S95","DeepL"]]},{"t":"クラウド・通信","items":[["S96","Google One"],["S97","iCloud+"],["S98","Dropbox"],["S99","Amazon Photos"],["S100","Apple One"],["S101","AppleCare+"],["S102","自宅の光回線"],["S103","ホームルーター（据え置き型の無線回線）"],["S104","大手キャリアのスマホ回線"],["S105","オンライン専用プラン（ahamo・povo・LINEMO）"],["S106","楽天モバイル"],["S107","格安 SIM"],["S108","VPN サービス"]]},{"t":"暮らし・お金・移動","items":[["S109","家計簿アプリ"],["S110","ネット銀行"],["S111","ネット証券"],["S112","NISA"],["S113","iDeCo"],["S114","ゴールド以上のクレジットカード"],["S115","QR コード決済"],["S116","モバイル Suica・PASMO"],["S117","JAL マイレージ"],["S118","ANA マイレージ"],["S119","えきねっと"],["S120","スマート EX・EX 予約"],["S121","カーシェア"],["S122","シェアサイクル"],["S123","タクシーアプリ"],["S124","食べログ プレミアム"],["S125","一休"],["S126","楽天トラベル"],["S127","じゃらん"],["S128","ジム・フィットネスクラブ"],["S129","24 時間ジム"],["S130","ヨガ・ピラティスの教室"],["S131","オンライン英会話"],["S132","語学アプリ"],["S133","学びの動画サービス（Udemy・Schoo など）"],["S134","家事代行"],["S135","宅配クリーニング"],["S136","トランクルーム・宅配型の収納"],["S137","ファンクラブ（アーティスト・チーム）"],["S138","年間パスポート（美術館・水族館・テーマパークなど）"],["S139","映画館の会員"]]}]}];   // [{k, name, tab, svc, secs: [{t, items: [[番号, 品名], ...]}]}]  svc = サービスの分野（ボタンの言葉が変わる）
+const VALS = [['f', '愛用', 'fav'], ['h', '持ってる', 'have'], ['g', '手放した', 'had'], ['n', 'いらない', 'no'], ['w', '欲しい', 'want']];
+const SVC = {f: '愛用', h: '使ってる', g: 'やめた', n: 'いらない', w: '使いたい'};
+const lab = (c, v) => c.svc ? SVC[v[0]] : v[1];
+const order = [], catOf = {};
+CATS.forEach(c => c.secs.forEach(s => s.items.forEach(it => { order.push(it[0]); catOf[it[0]] = c.k; })));
+const blank = () => ({r: {}, extra: '', memo: ''});
+const key = w => 'konomi-' + TOPIC + '-' + ROUND + '-' + w;
+let who = '', tab = CATS[0].k;
+let S = blank();
+const stored = w => { try { const j = JSON.parse(localStorage.getItem(key(w)) || 'null'); if (j && j.r) return Object.assign(blank(), j); } catch (e) {} return null; };
+const save = () => { if (!who) return; try { localStorage.setItem(key(who), JSON.stringify(S)); } catch (e) {} };
+const $ = (s, el) => (el || document).querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const press = (b, on) => b.setAttribute('aria-pressed', String(on));
+
+$('#round').textContent = TOPIC_JA + '・' + ROUND + ' 回目';
+$('#tabs').innerHTML = CATS.map(c =>
+  '<button type="button" role="tab" id="tab-' + c.k + '" data-k="' + c.k + '">' + esc(c.tab) + '<span id="tc-' + c.k + '"></span></button>').join('');
+$('#main').innerHTML = CATS.map(c =>
+  '<section id="cat-' + c.k + '" hidden>' + c.secs.map((s, i) =>
+    '<h3 id="sec-' + c.k + '-' + i + '">' + esc(s.t) + '</h3>' + s.items.map(it =>
+      '<div class="row" data-no="' + it[0] + '"><p class="ttl">' + esc(it[1]) + '</p><div class="btns">' +
+      VALS.map(v => '<button type="button" class="' + v[0] + '" id="b-' + it[0] + '-' + v[0] + '" data-v="' + v[0] + '" aria-pressed="false">' + lab(c, v) + '</button>').join('') +
+      '</div></div>').join('')).join('') + '</section>').join('');
+$('#tabs').style.gridTemplateColumns = 'repeat(' + CATS.length + ',minmax(0,auto))';
+const rows = {};
+document.querySelectorAll('.row').forEach(el => { rows[el.dataset.no] = el; });
+
+function paintRow(no) {
+  const el = rows[no], r = S.r[no] || '';
+  if (r) el.dataset.r = r; else delete el.dataset.r;
+  el.querySelectorAll('button').forEach(b => press(b, b.dataset.v === r));
+}
+function showTab() {
+  CATS.forEach(c => {
+    $('#cat-' + c.k).hidden = c.k !== tab;
+    $('#tab-' + c.k).setAttribute('aria-selected', String(c.k === tab));
+  });
+  const c = CATS.filter(x => x.k === tab)[0];
+  $('#jump').innerHTML = c.secs.map((s, i) => '<button type="button" data-t="sec-' + c.k + '-' + i + '">' + esc(s.t) + '</button>').join('');
+}
+function summary() {
+  const by = {};
+  VALS.forEach(v => { by[v[0]] = order.filter(no => S.r[no] === v[0]); });
+  const have = by.f.length + by.h.length;
+  $('#count').innerHTML = 'ある <b>' + have + '</b>　欲しい <b>' + by.w.length + '</b><br>全 ' + order.length + ' 件';
+  const lines = ['好みしらべの結果（' + TOPIC_JA + '・' + ROUND + ' 回目）', '答えた人: ' + (who || 'まだ選んでいません')];
+  CATS.forEach(c => {
+    const n = VALS.map(v => by[v[0]].filter(no => catOf[no] === c.k).length);
+    $('#tc-' + c.k).textContent = (n[0] + n[1] + n[2] + n[3] + n[4]) + ' 件';
+    lines.push(c.name + ': ' + VALS.map((v, i) => lab(c, v) + ' ' + n[i]).join('・'));
+  });
+  const extra = S.extra.trim(), memo = S.memo.trim();
+  if (extra) lines.push('ここに無い物: ' + extra);
+  if (memo) lines.push('ひとこと: ' + memo);
+  const j = {panel: 'konomi', v: 1, topic: TOPIC, round: ROUND, who: who};
+  VALS.forEach(v => { j[v[2]] = by[v[0]]; });
+  j.extra = extra; j.memo = memo;
+  lines.push(JSON.stringify(j));
+  const out = $('#out');
+  out.value = lines.join('\n');
+  out.style.height = 'auto'; out.style.height = (out.scrollHeight + 2) + 'px';
+  save();
+}
+function renderAll() {
+  document.querySelectorAll('.who button').forEach(b => press(b, b.dataset.w === who));
+  order.forEach(paintRow);
+  $('#extra').value = S.extra; $('#memo').value = S.memo;
+  summary();
+}
+
+document.querySelectorAll('.who button').forEach(b => b.addEventListener('click', () => {
+  if (who === b.dataset.w) return;
+  const had = who, old = stored(b.dataset.w);
+  who = b.dataset.w;
+  // 答える人を選ぶ前に押した分は、その人の記録がまだ無ければ引き継ぐ
+  if (old) S = old; else if (had) S = blank();
+  renderAll();
+}));
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  tab = b.dataset.k; showTab();
+  const t = $('#tabs').getBoundingClientRect().top;
+  if (t <= 1) $('#jump').scrollIntoView({block: 'start'});
+  window.scrollBy(0, t <= 1 ? -70 : 0);
+});
+$('#jump').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.getElementById(b.dataset.t).scrollIntoView({block: 'start'});
+});
+$('#main').addEventListener('click', e => {
+  const b = e.target.closest('.btns button'); if (!b) return;
+  const no = b.closest('.row').dataset.no;
+  if (S.r[no] === b.dataset.v) delete S.r[no]; else S.r[no] = b.dataset.v;
+  paintRow(no); summary();
+});
+$('#extra').addEventListener('input', e => { S.extra = e.target.value; summary(); });
+$('#memo').addEventListener('input', e => { S.memo = e.target.value; summary(); });
+
+const copyBtn = $('#copy');
+copyBtn.addEventListener('click', async () => {
+  if (!who) {
+    copyBtn.textContent = '答える人を選ぶ';
+    $('.who').scrollIntoView({block: 'center'});
+    setTimeout(() => { copyBtn.textContent = '結果をコピー'; }, 2200);
+    return;
+  }
+  const out = $('#out'); let ok = false;
+  try { await navigator.clipboard.writeText(out.value); ok = true; } catch (e) {}
+  if (!ok) { try { out.focus(); out.select(); out.setSelectionRange(0, 999999); ok = document.execCommand('copy'); } catch (e) {} }
+  copyBtn.textContent = ok ? 'コピーしました' : '下の枠を長押し';
+  copyBtn.classList.toggle('done', ok);
+  if (!ok) out.scrollIntoView({block: 'center'});
+  setTimeout(() => { copyBtn.textContent = '結果をコピー'; copyBtn.classList.remove('done'); }, 2200);
+});
+
+const resetBtn = $('#reset'); let armed = 0;
+resetBtn.addEventListener('click', () => {
+  if (!armed) { armed = 1; resetBtn.textContent = 'もう一度押すと、選んだ内容がすべて消えます';
+    setTimeout(() => { armed = 0; resetBtn.textContent = '最初からやり直す'; }, 4000); return; }
+  S = blank(); armed = 0; resetBtn.textContent = '最初からやり直す'; renderAll(); window.scrollTo(0, 0);
+});
+showTab();
+renderAll();
+</script>
+</body>
+</html>
